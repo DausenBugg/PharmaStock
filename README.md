@@ -4,14 +4,11 @@ PharmaStock is a website that helps small pharmacies keep track of their medicin
 
 # What It Does
 
-Track Medicine: Keep a list of how much medicine is on the shelf.
-
+--Track Medicine:-- Keep a list of how much medicine is on the shelf.
 
 Watch Expiration Dates: Get alerts before medicine goes bad so it doesn't go to waste.
 
-
 Easy Dashboard: See everything that needs attention in one simple view.
-
 
 Secure Login: Keep data safe by letting only staff and bosses sign in.
 
@@ -29,6 +26,5 @@ For medicines that don't sell often, it waits longer to send an alert.
 Frontend: Angular (for the part you see).
 
 Backend: C# and ASP.NET Core (for the logic).
-
 
 Database: PostgreSQL or SQL Server (to save your data).
