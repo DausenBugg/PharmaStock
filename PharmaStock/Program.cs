@@ -1,5 +1,16 @@
 var builder = WebApplication.CreateBuilder(args);
 
+// --------------------------
+// Configuration
+// --------------------------
+// Configuration values are loaded from:
+// - appsettings.json
+// - appsettings.Development.json (when in Development environment)
+// - Environment Variables
+// These will be used later for database connection and JWT settings.
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+
 // Add services to the container.
 
 builder.Services.AddControllers();
