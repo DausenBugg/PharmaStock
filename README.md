@@ -28,3 +28,8 @@ For medicines that don't sell often, it waits longer to send an alert.
 **Backend:** C# and ASP.NET Core (for the logic).
 
 **Database:** PostgreSQL or SQL Server (to save your data).
+
+# Front End Setup
+Download and install Angular Material
+Create new Angular project
+Commit and push to personal dev branch
