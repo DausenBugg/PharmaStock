@@ -1,12 +1,15 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { LogonScreen } from './logon-screen/logon-screen';
+
 
 @Component({
-  selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.html',
-  styleUrl: './app.css'
+  selector: 'my-root',
+  standalone: true,
+  imports: [MatToolbarModule, LogonScreen],
+  template: `
+    <mat-toolbar color="primary">PharmaStock</mat-toolbar>
+    <app-logon-screen></app-logon-screen>
+  `
 })
-export class App {
-  protected readonly title = signal('frontend');
-}
+export class App {}
