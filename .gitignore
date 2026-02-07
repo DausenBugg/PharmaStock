@@ -43,3 +43,4 @@ obj/
 .DS_Store
 Thumbs.db
 >>>>>>> main
+/.vs/slnx.sqlite
