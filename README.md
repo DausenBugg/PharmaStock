@@ -119,8 +119,8 @@ Swagger will be available at:
 
 ## Contributors
     James Carter
-    (Team Member)
-    (Team Member)
+    Eric Sutton
+    Dausen Bugg
 
 ## Project Status
     Current Status: Alpha
