@@ -1,3 +1,9 @@
+
+// These using are for the Database context and Entity Framework Core
+using Microsoft.EntityFrameworkCore;
+using PharmaStock.Data;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------------
@@ -8,8 +14,19 @@ var builder = WebApplication.CreateBuilder(args);
 // - appsettings.Development.json (when in Development environment)
 // - Environment Variables
 // These will be used later for database connection and JWT settings.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+
+// --------------------------
+// Database (EF Core and MySQL)
+// --------------------------
+// Get the connection string from configuration
+var connectionString = builder.Configuration.GetConnectionString("PharmaStockDb")
+    // Guard clause to ensure connection string is provided
+    ?? throw new InvalidOperationException("Connection string 'PharmaStockDb' not found.");
+
+// Register the DbContext with the dependency injection container
+builder.Services.AddDbContext<PharmaStockDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 // Add services to the container.
 
