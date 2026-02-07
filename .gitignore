@@ -3,7 +3,43 @@
 ################################################################################
 
 /.vs/PharmaStock/CopilotIndices/17.12.38.29086
+<<<<<<< HEAD
 /.vs/PharmaStock/copilot-chat/6c050bef/sessions
 /.vs/PharmaStock/FileContentIndex
 /.vs/PharmaStock/v17
 /PharmaStock/obj/Release/net8.0
+=======
+/.vs/PharmaStock/FileContentIndex
+/.vs/PharmaStock/v17
+/PharmaStock/.vs/PharmaStock/CopilotIndices/17.12.38.29086
+/PharmaStock/.vs/PharmaStock/DesignTimeBuild
+/PharmaStock/.vs/PharmaStock/FileContentIndex
+/PharmaStock/.vs/PharmaStock/v17
+
+##############################################################################
+# Standard Visual Studio ignore
+##############################################################################
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.cache
+
+##############################################################################
+# .NET build/log files
+##############################################################################
+*.log
+
+##############################################################################
+# Rider/VS Code
+##############################################################################
+.idea/
+.vscode/
+
+##############################################################################
+# OS Junk Files
+##############################################################################
+.DS_Store
+Thumbs.db
+>>>>>>> main

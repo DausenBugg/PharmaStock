@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 @PharmaStock_HostAddress = http://localhost:5177
 
 GET {{PharmaStock_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+=======
+@PharmaStock_HostAddress = http://localhost:5177
+
+GET {{PharmaStock_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+>>>>>>> main
