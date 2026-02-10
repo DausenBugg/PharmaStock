@@ -31,7 +31,20 @@ namespace PharmaStock.Data
         // To remove a migration (if needed), use:
         // dotnet ef migrations remove
         // removes the last migration without applying it to the database
-        public DbSet<TestMedication> TestMedications => Set<TestMedication>();
+        public DbSet<Medication> Medications { get; set; } = null!;
+        public DbSet<InventoryStock> InventoryStocks { get; set; } = null!;
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<InventoryStock>()
+                .HasOne(i => i.Medication)
+                .WithMany(m => m.InventoryStocks)
+                .HasForeignKey(i => i.MedicationId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+
 
     }
 }
