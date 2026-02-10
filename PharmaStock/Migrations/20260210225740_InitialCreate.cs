@@ -33,7 +33,7 @@ namespace PharmaStock.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false)
-                },
+                },  
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Medications", x => x.Id);
