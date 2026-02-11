@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PharmaStock.Data.Entities;
 
@@ -5,10 +7,17 @@ namespace PharmaStock.Data
 {
     
     // DBContext is the gateway to the database
-    public class PharmaStockDbContext : DbContext
+    // Inherits from IdentityDbContext to include ASP.NET Core Identity tables
+    public class PharmaStockDbContext : IdentityDbContext<IdentityUser>
     {
         public PharmaStockDbContext(DbContextOptions<PharmaStockDbContext> options) : base(options)
         {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            // Additional Identity configuration can be added here if needed
         }
 
         // Define DbSets for your entities here (medications, InventoryStock, Users, etc.)

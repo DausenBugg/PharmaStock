@@ -1,5 +1,6 @@
 
 // These using are for the Database context and Entity Framework Core
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PharmaStock.Data;
 
@@ -28,6 +29,29 @@ var connectionString = builder.Configuration.GetConnectionString("PharmaStockDb"
 builder.Services.AddDbContext<PharmaStockDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
+// --------------------------
+// ASP.NET Core Identity
+// --------------------------
+// Configure Identity services for authentication and user management
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    // Password settings (can be customized as needed)
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
+    
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    
+    // User settings
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<PharmaStockDbContext>()
+.AddDefaultTokenProviders();
+
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -45,6 +69,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
