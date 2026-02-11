@@ -3,12 +3,6 @@
 ################################################################################
 
 /.vs/PharmaStock/CopilotIndices/17.12.38.29086
-<<<<<<< HEAD
-/.vs/PharmaStock/copilot-chat/6c050bef/sessions
-/.vs/PharmaStock/FileContentIndex
-/.vs/PharmaStock/v17
-/PharmaStock/obj/Release/net8.0
-=======
 /.vs/PharmaStock/FileContentIndex
 /.vs/PharmaStock/v17
 /PharmaStock/.vs/PharmaStock/CopilotIndices/17.12.38.29086
@@ -42,8 +36,3 @@ obj/
 ##############################################################################
 .DS_Store
 Thumbs.db
->>>>>>> main
-/.vs/slnx.sqlite
-/PharmaStock/.vs/PharmaStock/CopilotIndices/17.12.38.29086/SemanticSymbols.db
-/PharmaStock/.vs/PharmaStock/CopilotIndices/17.12.38.29086/SemanticSymbols.db-shm
-/PharmaStock/.vs/PharmaStock/CopilotIndices/17.12.38.29086/SemanticSymbols.db-wal
