@@ -261,6 +261,7 @@ namespace PharmaStock.Data.Infrastucture
         // Blocking invalid insert
         // docker exec -it pharmastock-mysql mysql -u dev -padim -e "USE pharmastockdb; INSERT INTO InventoryStocks (MedicationId, QuantityOnHand, ReorderLevel, BinLocation, LotNumber, ExpirationDate, BeyondUseDate, UpdatedAtUtc) VALUES (999999, 1, 1, 'TEST', 'TEST-FK-FAIL', NOW(6), NOW(6), NOW(6));"
         // Blocking invalid update
+        // docker exec -it pharmastock-mysql mysql -u dev -padim -e "USE pharmastockdb; UPDATE InventoryStocks SET MedicationId = 999999 WHERE Id = 1;"
 
         // Testing passed - FK constraints are working as expected (insertion/update with non-existent MedicationId fails)
 
