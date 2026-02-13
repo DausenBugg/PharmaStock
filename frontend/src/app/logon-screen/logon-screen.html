@@ -3,13 +3,16 @@
   <img src="assets/pharmastock-logo-transparent-light.png"
      class="login-logo logo-light" />
 <!-- Dark theme logo -->
-<img src="assets/pharmastock-logo-transparent-dark.png"
+  <img src="assets/pharmastock-logo-transparent-dark.png"
      class="login-logo logo-dark" />
 
   <div class="login-card">
     <h2>Login</h2>
     <input id="username" type="text" placeholder="Username" />
     <input id="password" type="password" placeholder="Password" />
-    <button id="login-btn">Log In</button>
+    <button id="login-btn" (click)="onSubmit()">
+  Log In
+</button>
+
   </div>
 </div>

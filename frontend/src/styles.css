@@ -8,21 +8,51 @@ body.light-theme {
   --bg-color: #c4d9f0;
   --text-color: #1f4e79;
   --button-bg: #1f4e79;
-  --button-text: #ffffff;
+  --button-text: #6dbe45;
   --card-text: #1f4e79;
   --card-bg: #6dbe45;
+  --sidebar-bg: #1f4e79;
+  --sidebar-text: #6dbe45;
+  --active-bg: #6dbe45;
+  --active-text: #1f4e79;
 }
 
 /* Dark theme */
 body.dark-theme {
-  --bg-color: #1f4e79;      /* entire background */
-  --text-color: #ffffff;     /* default text */
-  --button-bg: #6dbe45;      /* buttons */
-  --button-text: #1f4e79;    /* button text */
+  --bg-color: #1f4e79;   
+  --text-color: #ffffff; 
+  --button-bg: #6dbe45;  
+  --button-text: #1f4e79;
   --card-text: #6dbe45;
+  --sidebar-bg: #6dbe45;
+  --sidebar-text: #1f4e79;
+  --active-bg: #1f4e79;
+  --active-text: #6dbe45;
 }
 
 body {
   background-color: var(--bg-color);
   color: var(--text-color);
 }
+
+:root {
+  --light-accent: #c4d9f0;  /* or whatever pale blue you're using */
+}
+
+.primary-button {
+  display: block;
+  padding: 10px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16pt;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+}
+
+.primary-button:hover {
+  opacity: 0.9;
+}
+
