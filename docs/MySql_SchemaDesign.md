@@ -8,7 +8,7 @@
 - Name (varchar(200), NOT NULL)
 - NationalDrugCode (varchar(50), NULL)
 - Form (tablet, capsule, gel, etc.) (varchar(50), NULL)
-- Strength (varchar(50), NULL)
+- Strength (varchar(50), NOT NUll)
 - Manufacturer (varchar(100), NULL)
 - CreatedAtUtc (when it was added) (datetime, NOT NULL)
 - UpdatedAtUtc (when it was adjusted) (datetime, NOT NULL)
@@ -21,8 +21,8 @@
 - MedicationId (Foreign Key → Medications.Id, NOT NULL)
 - QuantityOnHand (int, NOT NULL)
 - ReorderLevel (int, NOT NULL)
-- BinLocation (varchar(100), NULL) *(needed when we scale to multi-location)*
-- LotNumber (varchar(100), NULL)
+- BinLocation (varchar(100), NOT NULL) *(needed when we scale to multi-location)*
+- LotNumber (varchar(100), NOT NULL)
 - ExpirationDate (datetime, NULL)
 - BeyondUseDate (datetime, NULL)
 - UpdatedAtUtc (datetime, NOT NULL)

@@ -21,19 +21,19 @@ namespace PharmaStock.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "longtext", nullable: false)
+                    Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    NationalDrugCode = table.Column<string>(type: "longtext", nullable: false)
+                    NationalDrugCode = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Form = table.Column<string>(type: "longtext", nullable: false)
+                    Form = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Strength = table.Column<string>(type: "longtext", nullable: false)
+                    Strength = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Manufacturer = table.Column<string>(type: "longtext", nullable: false)
+                    Manufacturer = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "datetime(6)", nullable: false)
-                },  
+                },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Medications", x => x.Id);
@@ -49,9 +49,9 @@ namespace PharmaStock.Migrations
                     MedicationId = table.Column<int>(type: "int", nullable: false),
                     QuantityOnHand = table.Column<int>(type: "int", nullable: false),
                     ReorderLevel = table.Column<int>(type: "int", nullable: false),
-                    BinLocation = table.Column<string>(type: "longtext", nullable: false)
+                    BinLocation = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    LotNumber = table.Column<string>(type: "longtext", nullable: false)
+                    LotNumber = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ExpirationDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     BeyondUseDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
@@ -73,6 +73,12 @@ namespace PharmaStock.Migrations
                 name: "IX_InventoryStocks_MedicationId",
                 table: "InventoryStocks",
                 column: "MedicationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Medications_NationalDrugCode",
+                table: "Medications",
+                column: "NationalDrugCode",
+                unique: true);
         }
 
         /// <inheritdoc />
