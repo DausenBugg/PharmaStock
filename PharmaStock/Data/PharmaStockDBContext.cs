@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PharmaStock.Data.Entities;
 using System;
@@ -9,7 +11,7 @@ namespace PharmaStock.Data
 {
     
     // DBContext is the gateway to the database
-    public class PharmaStockDbContext : DbContext
+    public class PharmaStockDbContext : IdentityDbContext<IdentityUser>
     {
         public PharmaStockDbContext(DbContextOptions<PharmaStockDbContext> options) : base(options)
         {
