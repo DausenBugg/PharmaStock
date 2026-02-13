@@ -36,6 +36,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Seed the database
+using (var scope = app.Services.CreateScope())
+{
+    
+    var db = scope.ServiceProvider.GetRequiredService<PharmaStockDbContext>();
+    await PharmaStock.Data.Infrastucture.SeedData.SeedAsync(db); 
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
