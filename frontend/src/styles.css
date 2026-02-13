@@ -1,1 +1,28 @@
-/* You can add global styles to this file, and also import other style files */
+body {
+  margin: 0;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Light theme */
+body.light-theme {
+  --bg-color: #c4d9f0;
+  --text-color: #1f4e79;
+  --button-bg: #1f4e79;
+  --button-text: #ffffff;
+  --card-text: #1f4e79;
+  --card-bg: #6dbe45;
+}
+
+/* Dark theme */
+body.dark-theme {
+  --bg-color: #1f4e79;      /* entire background */
+  --text-color: #ffffff;     /* default text */
+  --button-bg: #6dbe45;      /* buttons */
+  --button-text: #1f4e79;    /* button text */
+  --card-text: #6dbe45;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
