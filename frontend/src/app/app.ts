@@ -1,12 +1,16 @@
 import { Component, OnInit } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { LogonScreen } from './logon-screen/logon-screen';
-import { RouterOutlet } from "@angular/router";
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'my-root',
   standalone: true,
-  imports: [MatToolbarModule, RouterOutlet],
+  imports: [
+    RouterOutlet,
+    MatToolbarModule,
+    MatButtonModule
+  ],
   template: `
     <mat-toolbar color="primary">
       PharmaStock
@@ -19,12 +23,19 @@ import { RouterOutlet } from "@angular/router";
 })
 export class App implements OnInit {
 
-  ngOnInit() {
+  ngOnInit(): void {
     document.body.classList.add('light-theme'); // default theme
   }
 
-  toggleTheme() {
-    document.body.classList.toggle('dark-theme');
-    document.body.classList.toggle('light-theme');
+  toggleTheme(): void {
+    const body = document.body;
+
+    if (body.classList.contains('dark-theme')) {
+      body.classList.remove('dark-theme');
+      body.classList.add('light-theme');
+    } else {
+      body.classList.remove('light-theme');
+      body.classList.add('dark-theme');
+    }
   }
 }
