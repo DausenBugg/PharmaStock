@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -14,15 +15,18 @@ namespace PharmaStock.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
 
         public AuthController(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IConfiguration configuration)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _configuration = configuration;
         }
 
@@ -79,16 +83,18 @@ namespace PharmaStock.Controllers
                 return Unauthorized();
             }
 
-            var token = CreateJwtToken(user);
+            var token = await CreateJwtTokenAsync(user);
+            var roles = await _userManager.GetRolesAsync(user);
 
             return Ok(new
             {
                 token,
-                expiresInMinutes = GetJwtDurationInMinutes()
+                expiresInMinutes = GetJwtDurationInMinutes(),
+                roles
             });
         }
 
-        private string CreateJwtToken(IdentityUser user)
+        private async Task<string> CreateJwtTokenAsync(IdentityUser user)
         {
             var key = _configuration["Jwt:Key"];
             if (string.IsNullOrWhiteSpace(key))
@@ -107,6 +113,13 @@ namespace PharmaStock.Controllers
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
+            // Add role claims to the JWT token
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
+
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
             var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
@@ -124,6 +137,114 @@ namespace PharmaStock.Controllers
         {
             var duration = _configuration["Jwt:DurationInMinutes"];
             return int.TryParse(duration, out var minutes) && minutes > 0 ? minutes : 60;
+        }
+
+        /// <summary>
+        /// Assigns a role to a user. Admin only.
+        /// </summary>
+        [HttpPost("assign-role")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            // Validate that the role exists
+            if (!await _roleManager.RoleExistsAsync(request.Role))
+            {
+                return BadRequest(new { message = $"Role '{request.Role}' does not exist." });
+            }
+
+            // Check if user already has the role
+            if (await _userManager.IsInRoleAsync(user, request.Role))
+            {
+                return BadRequest(new { message = $"User already has the role '{request.Role}'." });
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, request.Role);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(error.Code, error.Description);
+                }
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok(new { message = $"Role '{request.Role}' assigned to user '{request.Email}'." });
+        }
+
+        /// <summary>
+        /// Removes a role from a user. Admin only.
+        /// </summary>
+        [HttpPost("remove-role")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> RemoveRole([FromBody] AssignRoleRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var user = await _userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            // Check if user has the role
+            if (!await _userManager.IsInRoleAsync(user, request.Role))
+            {
+                return BadRequest(new { message = $"User does not have the role '{request.Role}'." });
+            }
+
+            var result = await _userManager.RemoveFromRoleAsync(user, request.Role);
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    ModelState.AddModelError(error.Code, error.Description);
+                }
+                return ValidationProblem(ModelState);
+            }
+
+            return Ok(new { message = $"Role '{request.Role}' removed from user '{request.Email}'." });
+        }
+
+        /// <summary>
+        /// Gets all available roles. Admin only.
+        /// </summary>
+        [HttpGet("roles")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult GetRoles()
+        {
+            var roles = _roleManager.Roles.Select(r => r.Name).ToList();
+            return Ok(roles);
+        }
+
+        /// <summary>
+        /// Gets the roles for a specific user. Admin only.
+        /// </summary>
+        [HttpGet("user-roles/{email}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetUserRoles(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+            {
+                return NotFound(new { message = "User not found." });
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            return Ok(new { email = user.Email, roles });
         }
     }
 }
