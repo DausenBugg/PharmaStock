@@ -14,10 +14,34 @@ namespace PharmaStock.Controllers
     public class StaffController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly PharmaStock.Data.PharmaStockDbContext _dbContext;
 
-        public StaffController(UserManager<IdentityUser> userManager)
+        public StaffController(UserManager<IdentityUser> userManager, PharmaStock.Data.PharmaStockDbContext dbContext)
         {
             _userManager = userManager;
+            _dbContext = dbContext;
+        }
+        /// <summary>
+        /// Returns a summary of inventory: total items, low-stock count, and expiring count.
+        /// </summary>
+        [HttpGet("inventory/summary")]
+        public IActionResult GetInventorySummary()
+        {
+            var now = DateTime.UtcNow;
+            var expiringThreshold = now.AddDays(7);
+
+            var totalItems = _dbContext.TestMedications.Count();
+            var lowStockCount = _dbContext.TestMedications.Count(m => m.QuantityInStock < 10);
+            var expiringCount = _dbContext.TestMedications.Count(m => m.ExpirationDate <= expiringThreshold);
+
+            var summary = new PharmaStock.Data.Data.Entities.InventorySummaryDto
+            {
+                TotalItems = totalItems,
+                LowStockCount = lowStockCount,
+                ExpiringCount = expiringCount
+            };
+
+            return Ok(summary);
         }
 
         /// <summary>
