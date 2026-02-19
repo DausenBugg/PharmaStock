@@ -7,7 +7,7 @@ services:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: pharmastockdb
       MYSQL_USER: dev
-      MYSQL_PASSWORD: adims
+      MYSQL_PASSWORD: admin
     ports:
       - "3306:3306"
     volumes:
