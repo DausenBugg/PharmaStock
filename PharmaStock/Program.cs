@@ -75,6 +75,31 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Exception hander
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500; // Internal Server Error
+        context.Response.ContentType = "application/json";
+
+        var errorFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (errorFeature != null)
+        {
+            var exception = errorFeature.Error;
+
+            // Log the exception (you can use a logging framework here)
+            Console.Error.WriteLine(exception);
+
+            // Return a generic error response
+            await context.Response.WriteAsJsonAsync(new
+            {
+                Message = "An unexpected error occurred. Please try again later."
+            });
+        }
+    });
+});
+
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
