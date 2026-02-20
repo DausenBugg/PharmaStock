@@ -3,7 +3,7 @@ namespace PharmaStock.Data.Entities
 {
     public class InventoryStock
     {
-        public int Id { get; set; }
+        public int InventoryStockId { get; set; }
 
         public int MedicationId { get; set; }
 

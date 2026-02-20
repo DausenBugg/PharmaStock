@@ -1,8 +1,10 @@
 
 // These using are for the Database context and Entity Framework Core
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using PharmaStock.Data;
+using PharmaStock.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,6 +59,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<MedicationServiceInterface, MedicationService>();
 
 var app = builder.Build();
 
@@ -74,6 +77,31 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Exception hander
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = 500; // Internal Server Error
+        context.Response.ContentType = "application/json";
+
+        var errorFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (errorFeature != null)
+        {
+            var exception = errorFeature.Error;
+
+            // Log the exception (you can use a logging framework here)
+            Console.Error.WriteLine(exception);
+
+            // Return a generic error response
+            await context.Response.WriteAsJsonAsync(new
+            {
+                Message = "An unexpected error occurred. Please try again later."
+            });
+        }
+    });
+});
 
 app.UseHttpsRedirection();
 

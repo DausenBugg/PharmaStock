@@ -6,7 +6,7 @@ namespace PharmaStock.Data.Entities
 
     public class Medication
     {
-        public int Id { get; set; }
+        public int MedicationId { get; set; }
 
         public string Name { get; set; } = string.Empty;
 
