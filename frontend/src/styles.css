@@ -26,6 +26,9 @@ body.light-theme {
   --button-text: #6dbe45;
   --card-color: #6dbe45;
   --card-text: #1f4e79;
+
+  --table-bg: #ffffff;
+  --table-text: #1f4e79
 }
 
 /* ================= DARK THEME ================= */
@@ -43,6 +46,9 @@ body.dark-theme {
   --button-text: #1f4e79;
   --card-color: #1f4e79;
   --card-text: #6dbe45;
+
+  --table-bg: #c4d9f0;
+  --table-text: #1f4e79
 }
 
 /* ================= LOGO SWITCHING ================= */
