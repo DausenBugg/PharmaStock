@@ -24,6 +24,10 @@ namespace PharmaStock.Controllers
             _context = context;
         }
 
+
+       
+
+
         // --------------------------------------------------------------------------------------
         // GET: api/medications
         // ----------------------------------------------------------------------------------------
@@ -86,6 +90,8 @@ namespace PharmaStock.Controllers
                 result.data);
         }
 
+
+
         // --------------------------------------------------------------------------------------
         // PUT: api/medications/{id}
         // --------------------------------------------------------------------------------------
@@ -114,9 +120,7 @@ namespace PharmaStock.Controllers
         // PATCH: api/medications/{id}
         // --------------------------------------------------------------------------------------
         [HttpPatch("{id:int}")]
-        public async Task<ActionResult> PatchMedication(
-            int id,
-             [FromBody] UpdatePatchMedicationDto request)
+        public async Task<ActionResult> PatchMedication(int id, [FromBody] UpdatePatchMedicationDto request)
         {
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);

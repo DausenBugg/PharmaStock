@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace PharmaStock.Dtos.Requests
+namespace PharmaStock.Dtos.Requests.Inventory
 {
     public class CreateInventoryStockDto
     {

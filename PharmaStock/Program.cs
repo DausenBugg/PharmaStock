@@ -60,6 +60,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<MedicationServiceInterface, MedicationService>();
+builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService>();
 
 var app = builder.Build();
 
