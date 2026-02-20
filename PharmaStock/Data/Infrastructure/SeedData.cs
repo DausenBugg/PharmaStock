@@ -116,7 +116,7 @@ namespace PharmaStock.Data.Infrastucture
             await db.SaveChangesAsync();
 
             // Build a lookup by NDC to get MedicationIds for the InventoryStock entries below
-            var medByNdc = meds.ToDictionary(m => m.NationalDrugCode, m => m.Id);
+            var medByNdc = meds.ToDictionary(m => m.NationalDrugCode, m => m.MedicationId);
 
             // 10 Inventory rows with edge-case coverage
             var stocks = new List<InventoryStock>
@@ -261,6 +261,7 @@ namespace PharmaStock.Data.Infrastucture
         // Blocking invalid insert
         // docker exec -it pharmastock-mysql mysql -u dev -padim -e "USE pharmastockdb; INSERT INTO InventoryStocks (MedicationId, QuantityOnHand, ReorderLevel, BinLocation, LotNumber, ExpirationDate, BeyondUseDate, UpdatedAtUtc) VALUES (999999, 1, 1, 'TEST', 'TEST-FK-FAIL', NOW(6), NOW(6), NOW(6));"
         // Blocking invalid update
+        // docker exec -it pharmastock-mysql mysql -u dev -padim -e "USE pharmastockdb; UPDATE InventoryStocks SET MedicationId = 999999 WHERE Id = 1;"
 
         // Testing passed - FK constraints are working as expected (insertion/update with non-existent MedicationId fails)
 
