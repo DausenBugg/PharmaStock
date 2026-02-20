@@ -5,6 +5,7 @@ using PharmaStock.Data;
 using PharmaStock.Data.Entities;
 using PharmaStock.Dtos.Requests;
 using PharmaStock.Dtos.Responses;
+using PharmaStock.Services;
 
 
 namespace PharmaStock.Controllers
@@ -13,204 +14,146 @@ namespace PharmaStock.Controllers
     [Route("api/[controller]")]
     public class MedicationsController : ControllerBase
     {
-        // TODO: implement SCRUM-33 to SCRUM-36
-        // This controller will handle CRUD operations for Medication entities
-        // It will use the PharmaStockDbContext to interact with the database
-        // and will return appropriate HTTP responses based on the outcome of each operation.
 
-        private readonly PharmaStockDbContext _context;
+        private readonly MedicationServiceInterface _medicationService;
+         private readonly PharmaStockDbContext _context;
 
-        public MedicationsController(PharmaStockDbContext context)
+        public MedicationsController(MedicationServiceInterface medicationService, PharmaStockDbContext context)
         {
+            _medicationService = medicationService;
             _context = context;
         }
 
         // --------------------------------------------------------------------------------------
         // GET: api/medications
-        // This endpoint retrieves a list of medications with optional search parameters
-        // It returns a list of MedicationResponse DTOs that include medication details and associated inventory stock
-        // Search parameters include:
-        // - searchByName: filters medications by name (partial match)
-        // - searchByManufacturer: filters medications by manufacturer (partial match)
-        // - searchByForm: filters medications by form (partial match)
-        // - searchByNationalDrugCode: filters medications by national drug code (partial match)
         // ----------------------------------------------------------------------------------------
         [HttpGet]
-        public async Task<ActionResult<List<MedicationResponse>>> GetAllMed(
-            [FromQuery] string? searchByName,
-            [FromQuery] string? searchByManufacturer,
-            [FromQuery] string? searchByForm,
-            [FromQuery] string? searchByNationalDrugCode
+        public async Task<ActionResult<List<MedicationResponse>>> GetAllMedications(
+             [FromQuery] string? name,
+             [FromQuery] string? manufacturer,
+             [FromQuery] string? form,
+             [FromQuery] string? NationalDrugCode
         )
         {
-            var query = _context.Medications
-                .AsNoTracking()
-                .Include(m => m.InventoryStocks)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchByName))
-                query = query.Where(m => EF.Functions.Like(m.Name, $"%{searchByName}%"));
-
-            if (!string.IsNullOrWhiteSpace(searchByManufacturer))
-                query = query.Where(m => EF.Functions.Like(m.Manufacturer, $"%{searchByManufacturer}%"));
-
-            if (!string.IsNullOrWhiteSpace(searchByForm))
-                query = query.Where(m => EF.Functions.Like(m.Form, $"%{searchByForm}%"));
-
-            if (!string.IsNullOrWhiteSpace(searchByNationalDrugCode))
-                query = query.Where(m => EF.Functions.Like(m.NationalDrugCode, $"%{searchByNationalDrugCode}%"));
-
-            var response = await query
-                .Select(m => new MedicationResponse
-                {
-                    Id = m.Id,
-                    Name = m.Name,
-                    Manufacturer = m.Manufacturer,
-                    Form = m.Form,
-                    NationalDrugCode = m.NationalDrugCode,
-                    Inventory = m.InventoryStocks.Select(s => new InventoryStockResponse
-                    {
-                        Id = s.Id,
-                        QuantityOnHand = s.QuantityOnHand,
-                        ReorderLevel = s.ReorderLevel,
-                        BinLocation = s.BinLocation,
-                        LotNumber = s.LotNumber,
-                        ExpirationDate = s.ExpirationDate,
-                        BeyondUseDate = s.BeyondUseDate
-                    }).ToList()
-                })
-                .ToListAsync();
-
-            return Ok(response);
+            var medications = await _medicationService.GetAllMedicationsAsync(name, manufacturer, form, NationalDrugCode);
+            return Ok(medications);
         }
 
         // --------------------------------------------------------------------------------------
         // GET: api/medications/{id}
-        // This endpoint retrieves a single medication by its ID
-        // It returns a MedicationResponse DTO that includes medication details and associated inventory stock
-        // If the medication is not found, it returns a 404 Not Found response with an appropriate error message
         // --------------------------------------------------------------------------------------
         [HttpGet("{id:int}")]
         public async Task<ActionResult<MedicationResponse>> GetMedicationById(int id)
         {
-            var medication = await _context.Medications
-                .AsNoTracking()
-                .Include(m => m.InventoryStocks)
-                .Where(m => m.Id == id)
-                .Select(m => new MedicationResponse
-                {
-                    Id = m.Id,
-                    Name = m.Name,
-                    Manufacturer = m.Manufacturer,
-                    Form = m.Form,
-                    NationalDrugCode = m.NationalDrugCode,
-                    Inventory = m.InventoryStocks.Select(s => new InventoryStockResponse
-                    {
-                        Id = s.Id,
-                        QuantityOnHand = s.QuantityOnHand,
-                        ReorderLevel = s.ReorderLevel,
-                        BinLocation = s.BinLocation,
-                        LotNumber = s.LotNumber,
-                        ExpirationDate = s.ExpirationDate,
-                        BeyondUseDate = s.BeyondUseDate
-                    }).ToList()
-                })
-                .FirstOrDefaultAsync();
-
+            var medication = await _medicationService.GetMedicationByIdAsync(id);
             if (medication == null)
                 return NotFound(new { message = $"Medication with ID {id} not found." });
 
-            var response = new MedicationResponse
-            {
-                Id = medication.Id,
-                Name = medication.Name,
-                Manufacturer = medication.Manufacturer,
-                Form = medication.Form,
-                NationalDrugCode = medication.NationalDrugCode,
-                Inventory = medication.Inventory.Select(s => new InventoryStockResponse
-                {
-                    Id = s.Id,
-                    QuantityOnHand = s.QuantityOnHand,
-                    ReorderLevel = s.ReorderLevel,
-                    BinLocation = s.BinLocation,
-                    LotNumber = s.LotNumber,
-                    ExpirationDate = s.ExpirationDate,
-                    BeyondUseDate = s.BeyondUseDate
-                }).ToList()
-            };
-
-            return Ok(response);
+            return Ok(medication);
         }
-
+        
         // --------------------------------------------------------------------------------------
         // POST: api/medications
-        // This endpoint creates a new medication
-        // It accepts a MedicationCreateRequest DTO in the request body and returns the created MedicationResponse
-        // If the request is invalid, it returns a 400 Bad Request response with validation error messages
         // --------------------------------------------------------------------------------------
+        // This endpoint creates a new medication
         [HttpPost]
         public async Task<ActionResult<MedicationResponse>> CreateMedication([FromBody] CreateMedicationDto request)
         {
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
-        
-            // Normalize input data
-            var NationalDrugCode = request.NationalDrugCode.Trim();
-            var Name = request.Name.Trim();
-            var Form = request.Form?.Trim();
-            var Strength = request.Strength.Trim();
-            var Manufacturer = request.Manufacturer?.Trim();
+            var result = await _medicationService.CreateAsync(request);
 
-            // Check for existing medication with the same National Drug Code
-            var existingMedication = await _context.Medications
-                .AsNoTracking()
-                .FirstOrDefaultAsync(m => m.NationalDrugCode == NationalDrugCode);
-
-            if (existingMedication != null)
-                return Conflict(new { message = $"Medication with National Drug Code '{NationalDrugCode}' already exists." });
-
-            var newMedication = new Medication
+            if (!result.ok)
             {
-                Name = Name,
-                NationalDrugCode = NationalDrugCode,
-                Form = Form,
-                Strength = Strength,
-                Manufacturer = Manufacturer     
-            };
-
-            _context.Medications.Add(newMedication);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                // Handle potential database update exceptions, such as unique constraint violations
-                return StatusCode(500, new { message = $"An Medication with National Drug Code '{NationalDrugCode}' already exists." });
+                return result.error switch
+                {
+                    "DUPLICATE_NDC" => Conflict(new
+                    {
+                        message = $"Medication with National Drug Code '{request.NationalDrugCode}' already exists."
+                    }),
+                    "VALIDATION_ERROR" => BadRequest(new
+                    {
+                        message = "Invalid request data.",
+                        errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)
+                    }),
+                    _ => StatusCode(500, new { message = "An unexpected error occurred." })
+                };
             }
 
-            // Return the created medication with a 201 Created response
-            var response = new MedicationResponse
-            {
-                Id = newMedication.Id,
-                Name = newMedication.Name,
-                Manufacturer = newMedication.Manufacturer,
-                Form = newMedication.Form,
-                Strength = newMedication.Strength,
-                NationalDrugCode = newMedication.NationalDrugCode,
-                Inventory = new List<InventoryStockResponse>() // New medication will have no inventory stock initially
-            };
-
-            return CreatedAtAction(nameof(GetMedicationById), new { id = newMedication.Id }, response);
+            return CreatedAtAction(nameof(GetMedicationById),
+                new { id = result.data!.MedicationId },
+                result.data);
         }
 
+        // --------------------------------------------------------------------------------------
+        // PUT: api/medications/{id}
+        // --------------------------------------------------------------------------------------
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult<MedicationResponse>> UpdateMedication(int id, [FromBody] UpdateMedicationDto request)
+        {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
 
+            var result = await _medicationService.UpdateAsync(id, request);
 
+            if (!result.ok)
+            {
+                return result.error switch
+                {
+                    "NOT_FOUND" => NotFound(new { message = $"Medication with ID {id} not found." }),
+                    "DUPLICATE_NDC" => Conflict(new { message = $"Medication with National Drug Code '{request.NationalDrugCode}' already exists." }),
+                    _ => StatusCode(500, new { message = "An unexpected error occurred." })
+                };
+            }
 
+            return Ok(result.data);
+        }
 
+        // --------------------------------------------------------------------------------------
+        // PATCH: api/medications/{id}
+        // --------------------------------------------------------------------------------------
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> PatchMedication(
+            int id,
+             [FromBody] UpdatePatchMedicationDto request)
+        {
+            if (!ModelState.IsValid)
+                return ValidationProblem(ModelState);
 
+            var result = await _medicationService.PatchAsync(id, request);
 
+            if (!result.ok)
+            {
+                return result.error switch
+                {
+                    "NOT_FOUND" => NotFound(new { message = $"Medication with ID {id} not found." }),
+                    "DUPLICATE_NDC" => Conflict(new { message = $"Medication with National Drug Code '{request.NationalDrugCode}' already exists." }),
+                    _ => StatusCode(500, new { message = "An unexpected error occurred." })
+                };
+            }
+
+            return NoContent();
+        }   
+
+        // --------------------------------------------------------------------------------------
+        // DELETE: api/medications/{id}
+        // --------------------------------------------------------------------------------------
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> DeleteMedication(int id)
+        {
+            var result = await _medicationService.DeleteAsync(id);
+
+            if (!result.ok)
+            {
+                return result.error switch
+                {
+                    "NOT_FOUND" => NotFound(new { message = $"Medication with ID {id} not found." }),
+                    _ => StatusCode(500, new { message = "An unexpected error occurred." })
+                };
+            }
+
+            return NoContent();
+        }
     }
 }

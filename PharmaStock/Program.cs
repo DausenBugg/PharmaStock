@@ -1,8 +1,10 @@
 
 // These using are for the Database context and Entity Framework Core
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using PharmaStock.Data;
+using PharmaStock.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -57,6 +59,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<MedicationServiceInterface, MedicationService>();
 
 var app = builder.Build();
 

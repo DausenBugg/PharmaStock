@@ -73,7 +73,7 @@ namespace PharmaStock.Migrations
                 name: "Medications",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    MedicationId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -90,7 +90,7 @@ namespace PharmaStock.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Medications", x => x.Id);
+                    table.PrimaryKey("PK_Medications", x => x.MedicationId);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -225,7 +225,7 @@ namespace PharmaStock.Migrations
                 name: "InventoryStocks",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    InventoryStockId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     MedicationId = table.Column<int>(type: "int", nullable: false),
                     QuantityOnHand = table.Column<int>(type: "int", nullable: false),
@@ -240,12 +240,12 @@ namespace PharmaStock.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_InventoryStocks", x => x.Id);
+                    table.PrimaryKey("PK_InventoryStocks", x => x.InventoryStockId);
                     table.ForeignKey(
                         name: "FK_InventoryStocks_Medications_MedicationId",
                         column: x => x.MedicationId,
                         principalTable: "Medications",
-                        principalColumn: "Id",
+                        principalColumn: "MedicationId",
                         onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");

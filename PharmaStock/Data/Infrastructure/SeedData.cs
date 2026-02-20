@@ -116,7 +116,7 @@ namespace PharmaStock.Data.Infrastucture
             await db.SaveChangesAsync();
 
             // Build a lookup by NDC to get MedicationIds for the InventoryStock entries below
-            var medByNdc = meds.ToDictionary(m => m.NationalDrugCode, m => m.Id);
+            var medByNdc = meds.ToDictionary(m => m.NationalDrugCode, m => m.MedicationId);
 
             // 10 Inventory rows with edge-case coverage
             var stocks = new List<InventoryStock>
