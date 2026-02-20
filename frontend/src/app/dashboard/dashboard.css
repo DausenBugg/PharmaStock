@@ -1,0 +1,209 @@
+.dashboard-container {
+  height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background-color: var(--sidebar-bg);
+  padding-top: 0;
+}
+
+.sidebar .mat-mdc-list-item {
+  margin: 0;
+  border-radius: 0;
+}
+
+.sidebar-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.sidebar-logo-img {
+  width: 120px;
+  height: auto;
+}
+
+.logo-dark {
+  display: none;
+}
+
+/* When dark theme is active */
+body.dark-theme .logo-light {
+  display: none;
+}
+
+body.dark-theme .logo-dark {
+  display: block;
+}
+
+.nav-item {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Inactive text */
+:host ::ng-deep .sidebar .mat-mdc-list-item .mdc-list-item__primary-text {
+  color: var(--sidebar-text);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.nav-item:hover {
+  opacity: 0.9;
+}
+
+/* Active indicator */
+.nav-item.active {
+  background-color: var(--active-bg);
+  border-radius: 0;
+  width: 100%;
+}
+
+:host ::ng-deep .nav-item.active .mdc-list-item__primary-text {
+  color: var(--active-text);
+  font-weight: 700;
+  font-size: 18px;
+}
+
+mat-sidenav-content {
+  background-color: var(--bg-color);
+}
+
+.dashboard-header {
+  background-color: var(--bg-color);
+  color: var(--card-text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 140px;
+  height: auto;
+  padding-top: 24px 0;
+}
+
+.header-container {
+  text-align: center;
+}
+
+.pharmacy-title {
+  font-size: 64px;  
+  font-weight: 700;
+  margin: 0;
+}
+
+.dashboard-subtitle {
+  font-size: 48px;
+  font-weight: 500;
+  margin: 24px 0 0 0;
+}
+
+.content {
+  padding: 32px;
+}
+
+.large-row {
+  display: flex;
+  max-width: 800px;
+  justify-content: space-evenly;
+  gap: 24px;
+  margin: 0 auto 32px auto;
+}
+
+.small-row {
+  display: flex;
+  max-width: 800px;
+  justify-content: space-evenly;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  margin: 0 auto 32px auto;
+}
+
+.large-card {
+  width: 240px;
+  aspect-ratio: 1 / 1;
+}
+
+.small-card {
+  width: 160px;
+  aspect-ratio: 1 / 1;
+}
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid var(--light-accent);
+  color: var(--light-accent);
+}
+
+.dashboard-card h3,
+.dashboard-card h4 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.card-value {
+  margin-top: 12px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* ===== INVENTORY HEALTH COLORS ===== */
+
+.health-good {
+  background-color: #2e7d32;
+  color: white;
+}
+
+.health-warning {
+  background-color: #ed6c02;
+  color: white;
+}
+
+.health-critical {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.dashboard-actions {
+  display: flex;
+  max-width: 800px;
+  justify-content: space-evenly;
+  margin: 0 auto 32px auto;
+  padding-bottom: 40px;
+}
+
+.dashboard-btn {
+  display: block;
+  flex-shrink: 0;
+  width: 300px;
+  padding: 5px;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16pt;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.dashboard-btn:hover {
+  opacity: 0.7;
+}
+
+.clickable-card{
+  cursor: pointer;
+}
+

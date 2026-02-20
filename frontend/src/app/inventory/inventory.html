@@ -1,0 +1,156 @@
+<mat-sidenav-container class="inventory-container">
+
+  <!-- SIDEBAR -->
+  <mat-sidenav mode="side" opened class="sidebar">
+
+    <a routerLink="/dashboard" class="logo-link">
+        <div class="sidebar-logo">
+        <img src="assets/pharmastock-logo-transparent-dark.png"
+            class="sidebar-logo-img logo-light"
+            alt="PharmaStock Logo" />
+
+        <img src="assets/pharmastock-logo-transparent-nav.png"
+            class="sidebar-logo-img logo-dark"
+            alt="PharmaStock Logo" />
+        </div>
+    </a>
+    
+    <mat-nav-list>
+      <a mat-list-item
+         routerLink="/dashboard"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         class="nav-item">
+        Dashboard
+      </a>
+
+      <a mat-list-item
+         routerLink="/inventory"
+         routerLinkActive="active"
+         class="nav-item">
+         Inventory
+      </a>
+
+      <a mat-list-item
+         routerLink="/orders"
+         routerLinkActive="active"
+         class="nav-item">
+         Orders
+      </a>
+
+      <a mat-list-item
+         routerLink="/reports"
+         routerLinkActive="active"
+         class="nav-item">
+         Reports
+      </a>
+
+      <a mat-list-item
+         routerLink="/settings"
+         routerLinkActive="active"
+         class="nav-item">
+         Settings
+      </a>
+
+      <a mat-list-item
+         routerLink="/administration"
+         routerLinkActive="active"
+         class="nav-item">
+         Administration
+      </a>
+
+    </mat-nav-list>
+
+  </mat-sidenav>
+
+  <!-- MAIN AREA -->
+  <mat-sidenav-content>
+
+    <!-- HEADER -->
+    <mat-toolbar class="inventory-header">
+      <div class="header-container">
+          <div class="pharmacy-title">Pharmacy Name</div>
+          <div class="inventory-subtitle">Inventory</div>
+        </div>
+    </mat-toolbar>
+
+    <div class="content">
+
+  <table mat-table [dataSource]="dataSource" class="inventory-table mat-elevation-z2">
+
+    <!-- Brand Name -->
+    <ng-container matColumnDef="brand">
+      <th mat-header-cell *matHeaderCellDef> Brand Name </th>
+      <td mat-cell *matCellDef="let element"> {{ element.brand }} </td>
+    </ng-container>
+
+    <!-- Generic Name -->
+    <ng-container matColumnDef="generic">
+      <th mat-header-cell *matHeaderCellDef> Generic Name </th>
+      <td mat-cell *matCellDef="let element"> {{ element.generic }} </td>
+    </ng-container>
+
+    <!-- Lot Number -->
+    <ng-container matColumnDef="lot">
+      <th mat-header-cell *matHeaderCellDef> Lot # </th>
+      <td mat-cell *matCellDef="let element"> {{ element.lot }} </td>
+    </ng-container>
+
+    <!-- Quantity -->
+    <ng-container matColumnDef="quantity">
+      <th mat-header-cell *matHeaderCellDef> Quantity </th>
+      <td mat-cell *matCellDef="let element"> {{ element.quantity }} </td>
+    </ng-container>
+
+    <!-- Lead Time -->
+    <ng-container matColumnDef="leadTime">
+      <th mat-header-cell *matHeaderCellDef> Lead Time (Days) </th>
+      <td mat-cell *matCellDef="let element"> {{ element.leadTime }} </td>
+    </ng-container>
+
+    <!-- Expiration -->
+    <ng-container matColumnDef="expiration">
+      <th mat-header-cell *matHeaderCellDef> Expiration </th>
+      <td mat-cell *matCellDef="let element"
+      [ngClass]="getExpirationClass(element)"> {{ element.expiration }} </td>
+    </ng-container>
+ 
+    <!-- Reorder point -->
+    <ng-container matColumnDef="reorderPoint">
+      <th mat-header-cell *matHeaderCellDef> Reorder Point </th>
+      <td mat-cell *matCellDef="let element"
+      [ngClass]="getReorderClass(element)"> {{ element.reorderPoint }} </td>
+    </ng-container>
+
+    <!-- Days of inventory -->
+    <ng-container matColumnDef="daysInv">
+      <th mat-header-cell *matHeaderCellDef> Days of Inventory </th>
+      <td mat-cell *matCellDef="let element"
+        [ngClass]="getDaysInvClass(element)"> {{ element.daysInv }} </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+  </table>
+
+  <div class="table-legend">
+
+    <div class="legend-item">
+      <span class="legend-box health-critical"></span>
+      <span class="legend-text">Critical (Below Threshold)</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="legend-box health-warning"></span>
+      <span class="legend-text">Warning (Near Threshold)</span>
+    </div>
+
+</div>
+
+</div>
+
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
