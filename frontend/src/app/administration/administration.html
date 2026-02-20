@@ -1,0 +1,88 @@
+<mat-sidenav-container class="administration-container">
+
+  <!-- SIDEBAR -->
+  <mat-sidenav mode="side" opened class="sidebar">
+
+    <a routerLink="/dashboard" class="logo-link">
+        <div class="sidebar-logo">
+        <img src="assets/pharmastock-logo-transparent-dark.png"
+            class="sidebar-logo-img logo-light"
+            alt="PharmaStock Logo" />
+
+        <img src="assets/pharmastock-logo-transparent-nav.png"
+            class="sidebar-logo-img logo-dark"
+            alt="PharmaStock Logo" />
+        </div>
+    </a>
+    
+    <mat-nav-list>
+      <a mat-list-item
+         routerLink="/dashboard"
+         routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         class="nav-item">
+        Dashboard
+      </a>
+
+      <a mat-list-item
+         routerLink="/inventory"
+         routerLinkActive="active"
+         class="nav-item">
+         Inventory
+      </a>
+
+      <a mat-list-item
+         routerLink="/orders"
+         routerLinkActive="active"
+         class="nav-item">
+         Orders
+      </a>
+
+      <a mat-list-item
+         routerLink="/reports"
+         routerLinkActive="active"
+         class="nav-item">
+         Reports
+      </a>
+
+      <a mat-list-item
+         routerLink="/settings"
+         routerLinkActive="active"
+         class="nav-item">
+         Settings
+      </a>
+
+      <a mat-list-item
+         routerLink="/administration"
+         routerLinkActive="active"
+         class="nav-item">
+         Administration
+      </a>
+      
+    </mat-nav-list>
+
+  </mat-sidenav>
+
+  <!-- MAIN AREA -->
+  <mat-sidenav-content>
+
+    <!-- HEADER -->
+    <mat-toolbar class="administration-header">
+      <div class="header-container">
+          <div class="pharmacy-title">Pharmacy Name</div>
+          <div class="administration-subtitle">Administration</div>
+        </div>
+    </mat-toolbar>
+
+    <div class="content">
+
+    
+
+
+    </div>
+
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>
+
