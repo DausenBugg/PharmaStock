@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PharmaStock.Data;
+using PharmaStock.Data.Data.Entities;
 using System.Security.Claims;
 
 namespace PharmaStock.Controllers
@@ -14,31 +17,33 @@ namespace PharmaStock.Controllers
     public class StaffController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly PharmaStock.Data.PharmaStockDbContext _dbContext;
+        private readonly PharmaStockDbContext _dbContext;
 
-        public StaffController(UserManager<IdentityUser> userManager, PharmaStock.Data.PharmaStockDbContext dbContext)
+        public StaffController(UserManager<IdentityUser> userManager, PharmaStockDbContext dbContext)
         {
             _userManager = userManager;
             _dbContext = dbContext;
         }
         /// <summary>
-        /// Returns a summary of inventory: total items, low-stock count, and expiring count.
+        /// Returns a summary of inventory: total items, low-stock count, expired count, and expiring count.
         /// </summary>
         [HttpGet("inventory/summary")]
-        public IActionResult GetInventorySummary()
+        public async Task<ActionResult<InventorySummaryDto>> GetInventorySummary()
         {
             var now = DateTime.UtcNow;
-            var expiringThreshold = now.AddDays(7);
+            var expiringSoonCutoff = now.AddDays(7);
 
-            var totalItems = _dbContext.TestMedications.Count();
-            var lowStockCount = _dbContext.TestMedications.Count(m => m.QuantityInStock < 10);
-            var expiringCount = _dbContext.TestMedications.Count(m => m.ExpirationDate <= expiringThreshold);
+            var totalItems = await _dbContext.TestMedications.CountAsync();
+            var lowStockCount = await _dbContext.TestMedications.CountAsync(m => m.QuantityInStock < 10);
+            var expiredCount = await _dbContext.TestMedications.CountAsync(m => m.ExpirationDate < now);
+            var expiringCount = await _dbContext.TestMedications.CountAsync(m => m.ExpirationDate >= now && m.ExpirationDate <= expiringSoonCutoff);
 
-            var summary = new PharmaStock.Data.Data.Entities.InventorySummaryDto
+            var summary = new InventorySummaryDto
             {
                 TotalItems = totalItems,
                 LowStockCount = lowStockCount,
-                ExpiringCount = expiringCount
+                ExpiringCount = expiringCount,
+                ExpiredCount = expiredCount
             };
 
             return Ok(summary);
@@ -76,7 +81,7 @@ namespace PharmaStock.Controllers
         }
 
         /// <summary>
-        /// Sample endpoint for both Admin and Staff to access inventory.
+        /// Gets inventory data placeholder. Accessible by Admin and Staff.
         /// </summary>
         [HttpGet("inventory")]
         public IActionResult GetInventory()

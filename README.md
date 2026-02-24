@@ -28,6 +28,12 @@ Expiration Monitoring
 - Support beyond-use dating
 - Future alert functionality for expiring inventory
 
+### Inventory Status Rules (Current Backend)
+- Low stock: medication is considered low stock when `QuantityInStock < 10`
+- Expired: medication is considered expired when `ExpirationDate < current UTC date/time`
+- Expiring soon: medication is considered expiring soon when `ExpirationDate` is within the next 7 days (`>= now` and `<= now + 7 days`)
+- Expired medications are excluded from expiring-soon results
+
 # Beta
 Role-Based Access 
 - Secure login system
