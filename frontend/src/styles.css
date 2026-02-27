@@ -8,7 +8,7 @@ body {
 /* ================= ROOT VARIABLES ================= */
 
 :root {
-  --light-accent: #c4d9f0;   /* pale blue accent */
+  --light-accent: #c4d9f0; 
 }
 
 /* ================= LIGHT THEME ================= */
@@ -28,7 +28,7 @@ body.light-theme {
   --card-text: #1f4e79;
 
   --table-bg: #ffffff;
-  --table-text: #1f4e79
+  --table-text: #1f4e79;
 }
 
 /* ================= DARK THEME ================= */
@@ -84,4 +84,18 @@ body.dark-theme .logo-dark {
 
 .primary-button:hover {
   opacity: 0.7;
+}
+
+body.compact-density .mat-mdc-row {
+  height: 36px !important;
+}
+
+body.compact-density .mat-mdc-header-row {
+  height: 40px !important;
+}
+
+body.compact-density .mat-mdc-cell,
+body.compact-density .mat-mdc-header-cell {
+  padding: 4px 8px !important;
+  font-size: 13px !important;
 }
