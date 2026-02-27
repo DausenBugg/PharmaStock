@@ -2,6 +2,8 @@
   height: 100vh;
 }
 
+/* ================= SIDEBAR ================= */
+
 .sidebar {
   width: 220px;
   background-color: var(--sidebar-bg);
@@ -29,7 +31,7 @@
   display: none;
 }
 
-/* When dark theme is active */
+/* Dark theme logo swap */
 body.dark-theme .logo-light {
   display: none;
 }
@@ -48,7 +50,6 @@ body.dark-theme .logo-dark {
   letter-spacing: 0.3px;
 }
 
-/* Inactive text */
 :host ::ng-deep .sidebar .mat-mdc-list-item .mdc-list-item__primary-text {
   color: var(--sidebar-text);
   font-size: 18px;
@@ -59,7 +60,6 @@ body.dark-theme .logo-dark {
   opacity: 0.9;
 }
 
-/* Active indicator */
 .nav-item.active {
   background-color: var(--active-bg);
   border-radius: 0;
@@ -72,6 +72,8 @@ body.dark-theme .logo-dark {
   font-size: 18px;
 }
 
+/* ================= MAIN CONTENT ================= */
+
 mat-sidenav-content {
   background-color: var(--bg-color);
 }
@@ -79,10 +81,26 @@ mat-sidenav-content {
 .orders-header {
   background-color: var(--bg-color);
   color: var(--card-text);
-  font-weight: 700;
-  font-size: 64px;
+  display: flex;
   justify-content: center;
-  padding-top: 32px;
+  align-items: center;
+  min-height: 140px;
+}
+
+.header-container {
+  text-align: center;
+}
+
+.pharmacy-title {
+  font-size: 64px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.orders-subtitle {
+  font-size: 48px;
+  font-weight: 500;
+  margin: 24px 0 0 0;
 }
 
 .content {
@@ -92,19 +110,50 @@ mat-sidenav-content {
   align-items: center;
 }
 
-.orders-actions {
-  display: flex;
+/* ================= SEARCH SECTION ================= */
+
+.orders-search {
+  width: 100%;
   max-width: 800px;
-  justify-content: space-evenly;
   margin: 0 auto 32px auto;
-  padding-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
 }
+
+.search-fields {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Custom Input System */
+.app-input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 6px;
+  border: 2px solid var(--light-accent);
+  background-color: white;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+  max-width: 175px;
+}
+
+.app-input:focus {
+  border-color: var(--button-bg);
+  box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.15);
+}
+
+/* ================= BUTTON ================= */
 
 .orders-btn {
   display: block;
-  flex-shrink: 0;
-  width: 300px;
-  padding: 5px;
+  width: 150px;
+  padding: 8px;
   background-color: var(--button-bg);
   color: var(--button-text);
   border-radius: 4px;
@@ -112,26 +161,20 @@ mat-sidenav-content {
   font-size: 16pt;
   font-weight: 600;
   transition: opacity 0.2s ease;
-  white-space: nowrap;
   text-align: center;
+  border: none;
 }
 
 .orders-btn:hover {
   opacity: 0.7;
 }
 
-/* Table styling */
-
-.content {
-  padding: 32px;
-  display: flex;
-  justify-content: center;
+.small-button {
+  padding: 6px 12px;
+  font-size: 14px;
 }
 
-.orders-table {
-  width: 100%;
-  max-width: 1100px;
-}
+/* ================= TABLE ================= */
 
 th {
   font-weight: 700;
@@ -156,40 +199,26 @@ td {
   background-color: var(--table-bg);
 }
 
-
-
 :host ::ng-deep .mat-mdc-cell {
   color: var(--table-text);
 }
 
-.orders-header {
-  background-color: var(--bg-color);
-  color: var(--card-text);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 140px;
-  height: auto;
-  padding-top: 24px 0;
+/* Vertical Borders */
+
+:host ::ng-deep .mat-mdc-header-cell {
+  border-right: 2px solid var(--card-color);
 }
 
-.header-container {
-  text-align: center;
+:host ::ng-deep .mat-mdc-cell {
+  border-right: 1px solid var(--table-text);
 }
 
-.pharmacy-title {
-  font-size: 64px;
-  font-weight: 700;
-  margin: 0;
+:host ::ng-deep .mat-mdc-header-cell:last-child,
+:host ::ng-deep .mat-mdc-cell:last-child {
+  border-right: none;
 }
 
-.orders-subtitle {
-  font-size: 48px;
-  font-weight: 500;
-  margin: 24px 0 0 0;
-}
-
-/* ===== INVENTORY HEALTH COLORS ===== */
+/* ================= INVENTORY HEALTH COLORS ================= */
 
 :host ::ng-deep .mat-mdc-cell.health-warning {
   background-color: #ed6c02;
@@ -201,19 +230,98 @@ td {
   color: white;
 }
 
-/* Add vertical borders to header cells */
-:host ::ng-deep .mat-mdc-header-cell {
-  border-right: 2px solid var(--card-color);
+/* ================= LEGEND ================= */
+
+.table-legend {
+  margin-top: 24px;
+  display: flex;
+  gap: 32px;
+  justify-content: center;
 }
 
-/* Add vertical borders to body cells */
-:host ::ng-deep .mat-mdc-cell {
-  border-right: 1px solid var(--table-text);
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Remove border from last column */
-:host ::ng-deep .mat-mdc-header-cell:last-child,
-:host ::ng-deep .mat-mdc-cell:last-child {
-  border-right: none;
+.legend-box.health-critical {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background-color: #d32f2f;
 }
 
+.legend-box.health-warning {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background-color: #ed6c02;
+}
+
+.legend-text {
+  font-size: 14px;
+  color: var(--table-body-text);
+}
+
+.order-adjustment {
+  width: 100%;
+  max-width: 400px;
+  margin: 32px auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: #6dbe45;
+  padding: 32px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  align-items: center;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.modal-title {
+  font-size: 40px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #d32f2f;
+}
+
+.modal-text {
+  font-size: 18px;      
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: var(--card-text);
+}
+
+.modal-box .app-input {
+  width: 100%;
+  max-width: 200px;
+  text-align: center;
+}

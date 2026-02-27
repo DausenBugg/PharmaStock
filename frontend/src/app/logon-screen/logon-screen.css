@@ -42,7 +42,6 @@
   align-content: center;
 }
 
-/* Optional subtle focus style */
 .login-card input:focus {
   outline: none;
   border-color: var(--light-accent);

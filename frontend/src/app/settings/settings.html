@@ -75,13 +75,121 @@
     </mat-toolbar>
 
     <div class="content">
+          <!-- ================= PROFILE ================= -->
+      <div class="settings-card">
 
-    
+        <h2>Profile</h2>
 
+        <div class="profile-picture-section">
+          <img
+            *ngIf="profileImage"
+            [src]="profileImage"
+            class="profile-preview"
+          />
+
+          <div *ngIf="!profileImage" class="profile-placeholder">
+            No Image
+          </div>
+
+          <label class="file-upload-button">
+            Choose File
+            <input
+              type="file"
+              accept="image/*"
+              (change)="onImageUpload($event)"
+              hidden
+            />
+          </label>
+        </div>
+
+        <input
+          class="app-input"
+          type="text"
+          placeholder="Display Name"
+          [(ngModel)]="displayName"
+          name="displayName"
+        />
+
+        <input
+          class="app-input"
+          type="email"
+          placeholder="Email Address"
+          [(ngModel)]="email"
+          name="email"
+        />
+
+        <div class="role-display">
+          Role: <strong>{{ role }}</strong>
+        </div>
+
+      </div>
+
+      <!-- ================= SECURITY ================= -->
+      <div class="settings-card">
+
+        <h2>Change Password</h2>
+
+        <input
+          class="app-input"
+          type="password"
+          placeholder="Current Password"
+          [(ngModel)]="currentPassword"
+          name="currentPassword"
+        />
+
+        <input
+          class="app-input"
+          type="password"
+          placeholder="New Password"
+          [(ngModel)]="newPassword"
+          name="newPassword"
+        />
+
+        <input
+          class="app-input"
+          type="password"
+          placeholder="Confirm New Password"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+        />
+
+        <button class="file-upload-button" (click)="changePassword()">
+          Update Password
+        </button>
+
+      </div>
+
+      <!-- ================= APPEARANCE ================= -->
+      <div class="settings-card">
+
+        <h2>Appearance</h2>
+
+        <div class="toggle-row">
+          <label>
+            <input
+              type="checkbox"
+              [(ngModel)]="darkMode"
+              (change)="toggleTheme()"
+            />
+            Enable Dark Mode
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <label>
+            <input
+              type="checkbox"
+              [(ngModel)]="compactDensity"
+              (change)="toggleDensity()"
+            />
+            Compact Table Density
+          </label>
+        </div>
+
+      </div>
 
     </div>
-
-
+    
   </mat-sidenav-content>
 
 </mat-sidenav-container>

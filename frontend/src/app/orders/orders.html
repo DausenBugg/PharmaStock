@@ -4,86 +4,221 @@
   <mat-sidenav mode="side" opened class="sidebar">
 
     <a routerLink="/dashboard" class="logo-link">
-        <div class="sidebar-logo">
+      <div class="sidebar-logo">
         <img src="assets/pharmastock-logo-transparent-dark.png"
-            class="sidebar-logo-img logo-light"
-            alt="PharmaStock Logo" />
+             class="sidebar-logo-img logo-light"
+             alt="PharmaStock Logo" />
 
         <img src="assets/pharmastock-logo-transparent-nav.png"
-            class="sidebar-logo-img logo-dark"
-            alt="PharmaStock Logo" />
-        </div>
+             class="sidebar-logo-img logo-dark"
+             alt="PharmaStock Logo" />
+      </div>
     </a>
-    
+
     <mat-nav-list>
-      <a mat-list-item
-         routerLink="/dashboard"
-         routerLinkActive="active"
-         [routerLinkActiveOptions]="{ exact: true }"
-         class="nav-item">
+      <a mat-list-item routerLink="/dashboard" routerLinkActive="active"
+         [routerLinkActiveOptions]="{ exact: true }" class="nav-item">
         Dashboard
       </a>
 
-      <a mat-list-item
-         routerLink="/inventory"
-         routerLinkActive="active"
-         class="nav-item">
-         Inventory
+      <a mat-list-item routerLink="/inventory" routerLinkActive="active" class="nav-item">
+        Inventory
       </a>
 
-      <a mat-list-item
-         routerLink="/orders"
-         routerLinkActive="active"
-         class="nav-item">
-         Orders
+      <a mat-list-item routerLink="/orders" routerLinkActive="active" class="nav-item">
+        Orders
       </a>
 
-      <a mat-list-item
-         routerLink="/reports"
-         routerLinkActive="active"
-         class="nav-item">
-         Reports
+      <a mat-list-item routerLink="/reports" routerLinkActive="active" class="nav-item">
+        Reports
       </a>
 
-      <a mat-list-item
-         routerLink="/settings"
-         routerLinkActive="active"
-         class="nav-item">
-         Settings
+      <a mat-list-item routerLink="/settings" routerLinkActive="active" class="nav-item">
+        Settings
       </a>
 
-      <a mat-list-item
-         routerLink="/administration"
-         routerLinkActive="active"
-         class="nav-item">
-         Administration
+      <a mat-list-item routerLink="/administration" routerLinkActive="active" class="nav-item">
+        Administration
       </a>
-      
     </mat-nav-list>
 
   </mat-sidenav>
 
-    <!-- MAIN AREA -->
+  <!-- MAIN AREA -->
   <mat-sidenav-content>
 
     <!-- HEADER -->
     <mat-toolbar class="orders-header">
       <div class="header-container">
-          <div class="pharmacy-title">Pharmacy Name</div>
-          <div class="orders-subtitle">Orders</div>
-        </div>
+        <div class="pharmacy-title">Pharmacy Name</div>
+        <div class="orders-subtitle">Orders</div>
+      </div>
     </mat-toolbar>
 
     <div class="content">
 
-    
+      <!-- SEARCH SECTION -->
+      <form class="orders-search" (ngSubmit)="searchInventory()">
 
+        <div class="search-fields">
+
+          <input
+            class="app-input"
+            type="text"
+            placeholder="Medication Name"
+            [(ngModel)]="searchName"
+            name="searchName"
+          />
+
+          <input
+            class="app-input"
+            type="text"
+            placeholder="Dosage"
+            [(ngModel)]="searchDosage"
+            name="searchDosage"
+          />
+
+        </div>
+
+        <button
+          type="submit"
+          class="orders-btn">
+          Search
+        </button>
+
+      </form>
+
+      <!-- RESULTS TABLE -->
+      <table mat-table
+             [dataSource]="filteredInventory"
+             class="orders-table mat-elevation-z2"
+             *ngIf="filteredInventory.length > 0">
+
+             <!-- Select -->
+            <ng-container matColumnDef="select">
+              <th mat-header-cell *matHeaderCellDef> Edit </th>
+              <td mat-cell *matCellDef="let element">
+                <input
+                  type="checkbox"
+                  (change)="onSelectRow(element, $event)"
+                />
+              </td>
+            </ng-container>
+
+                <!-- Brand Name -->
+            <ng-container matColumnDef="brand">
+              <th mat-header-cell *matHeaderCellDef> Brand Name </th>
+              <td mat-cell *matCellDef="let element"> {{ element.brand }} </td>
+            </ng-container>
+
+            <!-- Generic Name -->
+            <ng-container matColumnDef="generic">
+              <th mat-header-cell *matHeaderCellDef> Generic Name </th>
+              <td mat-cell *matCellDef="let element"> {{ element.generic }} </td>
+            </ng-container>
+
+            <!-- Dosage -->
+            <ng-container matColumnDef="dosage">
+              <th mat-header-cell *matHeaderCellDef> Dosage </th>
+              <td mat-cell *matCellDef="let element"> {{ element.dosage }} </td>
+            </ng-container>
+
+            <!-- Lot Number -->
+            <ng-container matColumnDef="lot">
+              <th mat-header-cell *matHeaderCellDef> Lot # </th>
+              <td mat-cell *matCellDef="let element"> {{ element.lot }} </td>
+            </ng-container>
+
+            <!-- Quantity -->
+            <ng-container matColumnDef="quantity">
+              <th mat-header-cell *matHeaderCellDef> Quantity </th>
+              <td mat-cell *matCellDef="let element"> {{ element.quantity }} </td>
+            </ng-container>
+
+            <!-- Lead Time -->
+            <ng-container matColumnDef="leadTime">
+              <th mat-header-cell *matHeaderCellDef> Lead Time (Days) </th>
+              <td mat-cell *matCellDef="let element"> {{ element.leadTime }} </td>
+            </ng-container>
+
+            <!-- Expiration -->
+            <ng-container matColumnDef="expiration">
+              <th mat-header-cell *matHeaderCellDef> Expiration </th>
+              <td mat-cell *matCellDef="let element"
+              [ngClass]="getExpirationClass(element)"> {{ element.expiration }} </td>
+            </ng-container>
+        
+            <!-- Reorder point -->
+            <ng-container matColumnDef="reorderPoint">
+              <th mat-header-cell *matHeaderCellDef> Reorder Point </th>
+              <td mat-cell *matCellDef="let element"
+              [ngClass]="getReorderClass(element)"> {{ element.reorderPoint }} </td>
+            </ng-container>
+
+            <!-- Days of inventory -->
+            <ng-container matColumnDef="daysInv">
+              <th mat-header-cell *matHeaderCellDef> Days of Inventory </th>
+              <td mat-cell *matCellDef="let element"
+                [ngClass]="getDaysInvClass(element)"> {{ element.daysInv }} </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+
+      </table>
+
+      <div *ngIf="selectedItem" class="order-adjustment">
+
+          <input
+            class="app-input"
+            type="number"
+            placeholder="Enter quantity to subtract"
+            [(ngModel)]="adjustQuantity"
+            name="adjustQuantity"
+          />
+
+          <button
+            class="primary-button"
+            (click)="confirmAdjustment()">
+            Confirm
+          </button>
+
+        </div>
 
     </div>
 
+    <!-- CONFIRMATION MODAL -->
+    <div class="modal-overlay" *ngIf="showConfirmModal">
+
+      <div class="modal-box">
+
+        <h3 class="modal-title">You Must Confirm Inventory Adjustment!</h3>
+
+        <p class="modal-text">Please re-enter the lot number to confirm this change.</p>
+
+        <input
+          class="app-input"
+          type="text"
+          placeholder="Enter Lot Number"
+          [(ngModel)]="confirmLotInput"
+          name="confirmLotInput"
+        />
+
+        <div class="modal-actions">
+          <button class="orders-btn" (click)="finalizeAdjustment()">
+            Confirm
+          </button>
+
+          <button class="orders-btn" (click)="cancelAdjustment()">
+            Cancel
+          </button>
+        </div>
+
+      </div>
+
+    </div>
 
   </mat-sidenav-content>
 
 </mat-sidenav-container>
-
-
