@@ -16,6 +16,19 @@ public class InventoryStockService : InventoryStockServiceInterface
     }
 
     // --------------------------------------------------------------------------------------
+    // Get all inventory stock records
+    // Uses the InventoryStockMapping to convert stock entities to response DTOs    
+    // --------------------------------------------------------------------------------------
+    public async Task<List<InventoryStockResponse>> GetAllInventoryStockAsync()
+    {
+        var stocks = await _context.InventoryStocks
+            .AsNoTracking()
+            .OrderBy(s => s.InventoryStockId)
+            .ToListAsync();
+        return stocks.Select(s => s.ToInventoryStockResponse()).ToList();
+    }
+
+    // --------------------------------------------------------------------------------------
     // Adjust inventory stock quantity by a specified amount (positive or negative)
     // Throw errors if the resulting quantity would be negative or if the stock record is not found
     // Throws ArgumentNullException if the request is null

@@ -33,10 +33,10 @@ namespace PharmaStock.Controllers
             var now = DateTime.UtcNow;
             var expiringSoonCutoff = now.AddDays(7);
 
-            var totalItems = await _dbContext.TestMedications.CountAsync();
-            var lowStockCount = await _dbContext.TestMedications.CountAsync(m => m.QuantityInStock < 10);
-            var expiredCount = await _dbContext.TestMedications.CountAsync(m => m.ExpirationDate < now);
-            var expiringCount = await _dbContext.TestMedications.CountAsync(m => m.ExpirationDate >= now && m.ExpirationDate <= expiringSoonCutoff);
+            var totalItems = await _dbContext.InventoryStocks.CountAsync();
+            var lowStockCount = await _dbContext.InventoryStocks.CountAsync(m => m.QuantityOnHand < 10);
+            var expiredCount = await _dbContext.InventoryStocks.CountAsync(m => m.ExpirationDate < now);
+            var expiringCount = await _dbContext.InventoryStocks.CountAsync(m => m.ExpirationDate >= now && m.ExpirationDate <= expiringSoonCutoff);
 
             var summary = new InventorySummaryDto
             {
