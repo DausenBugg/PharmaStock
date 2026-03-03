@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
@@ -6,16 +6,13 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
-export interface InventoryItem {
-  brand: string;
-  generic: string;
-  lot: string;
-  quantity: number;
-  expiration: string;
-  leadTime: number;
-  reorderPoint: number;
-  daysInv: number;
-}
+// Importing the InventoryItem interface which defines the structure of inventory items used in the component.
+import { InventoryService } from '../services/inventory.service';
+import { InventoryRow } from './inventory.model';
+import { mapInventoryApiToRow } from './inventory.mapper';
+
+// Removed the export interface to the model file since we are now using InventoryRow as the main interface 
+// for inventory items, which includes all necessary fields and is mapped from the API data.
 
 @Component({
   selector: 'app-inventory',
@@ -31,39 +28,53 @@ export interface InventoryItem {
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.css']
 })
-export class InventoryComponent {
+
+export class InventoryComponent implements AfterViewInit {
 
   displayedColumns: string[] = [
-    'brand',
-    'generic',
     'lot',
-    'expiration',  
+    'binLocation',
+    'expiration',
+    'beyondUseDate',
     'quantity',
-    'reorderPoint',
-    'leadTime',   
-    'daysInv'
+    'reorderPoint'
+    //'brand',  // Uncomment if you still want to show these columns
+    //'generic',
+    //'leadTime',
+    //'daysInv'
   ];
 
-  dataSource: InventoryItem[] = [
-    { brand: 'Lipitor', generic: 'Atorvastatin', lot: 'A1023', quantity: 150, expiration: '2026-04-12', leadTime: 14, reorderPoint: 75, daysInv: 14 },
-    { brand: 'Zoloft', generic: 'Sertraline', lot: 'B8831', quantity: 75, expiration: '2025-11-02', leadTime: 10, reorderPoint: 100, daysInv: 7 },
-    { brand: 'Amoxil', generic: 'Amoxicillin', lot: 'C4490', quantity: 220, expiration: '2026-01-18', leadTime: 7, reorderPoint: 75, daysInv: 20 },
-    { brand: 'Glucophage', generic: 'Metformin', lot: 'D7722', quantity: 300, expiration: '2027-03-30', leadTime: 21, reorderPoint: 50, daysInv: 126 },
-    { brand: 'Synthroid', generic: 'Levothyroxine', lot: 'E9910', quantity: 180, expiration: '2026-03-18', leadTime: 12, reorderPoint: 180, daysInv: 12 },
-    { brand: 'Ventolin', generic: 'Albuterol', lot: 'F6611', quantity: 90, expiration: '2026-07-20', leadTime: 8, reorderPoint: 25, daysInv: 14 },
-    { brand: 'Plavix', generic: 'Clopidogrel', lot: 'G3344', quantity: 140, expiration: '2026-12-05', leadTime: 16, reorderPoint: 40, daysInv: 28 },
-    { brand: 'Nexium', generic: 'Esomeprazole', lot: 'H5509', quantity: 110, expiration: '2025-08-22', leadTime: 9, reorderPoint: 150, daysInv: 6 },
-    { brand: 'Lantus', generic: 'Insulin Glargine', lot: 'J7812', quantity: 60, expiration: '2026-05-14', leadTime: 5, reorderPoint: 60, daysInv: 5 },
-    { brand: 'Advil', generic: 'Ibuprofen', lot: 'K9021', quantity: 400, expiration: '2027-02-10', leadTime: 6, reorderPoint: 15, daysInv: 160 }
-  ];
+  dataSource: InventoryRow[] = [];
 
-  getReorderClass(item: InventoryItem): string {
+
+// The constructor injects the InventoryService for fetching inventory data and the ChangeDetectorRef for manually triggering change detection after data is loaded.
+  constructor(private inventoryService: InventoryService,
+              private cdr: ChangeDetectorRef
+  ) {}
+
+  ngAfterViewInit(): void {
+    console.log('Loading inventory...');
+    this.loadInventory();
+  }
+
+  loadInventory(): void {
+    this.inventoryService.getInventoryStocks().subscribe({
+      next: (data) => {
+        this.dataSource = data.map(mapInventoryApiToRow)
+        console.log('row:', this.dataSource.length, this.dataSource[0]);
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('GET /InventoryStocks failed', err)
+    });
+  }
+
+  getReorderClass(item: InventoryRow): string {
     if (item.quantity < item.reorderPoint) return 'health-critical';
     if (item.quantity === item.reorderPoint) return 'health-warning';
     return '';
   }
 
-  getExpirationClass(item: InventoryItem): string {
+  getExpirationClass(item: InventoryRow): string {
     const today = new Date();
     const expirationDate = new Date(item.expiration);
 
@@ -83,14 +94,16 @@ export class InventoryComponent {
     return '';
   }
   
-  getDaysInvClass(item: InventoryItem): string {
 
-    const diff = item.daysInv - item.leadTime;
+  // might need to implement this in the API first before we can use it, since it requires leadTime and daysInv fields which we currently don't have in the API response
+  // getDaysInvClass(item: InventoryRow): string {
 
-    if (diff < 0) return 'health-critical';
-    if (diff <= 2) return 'health-warning';
-    return '';
-  }
+  //   const diff = item.daysInv - item.leadTime;
+
+  //   if (diff < 0) return 'health-critical';
+  //   if (diff <= 2) return 'health-warning';
+  //   return '';
+  // }
 }
 
 
