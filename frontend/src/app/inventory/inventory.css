@@ -128,6 +128,63 @@ mat-sidenav-content {
   justify-content: center;
 }
 
+.inventory-search {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 24px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.search-fields {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  width: 100%;
+}
+
+.app-input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 6px;
+  border: 2px solid var(--light-accent);
+  background-color: white;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
+  max-width: 220px;
+}
+
+.app-input:focus {
+  border-color: var(--button-bg);
+  box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.15);
+}
+
+.near-expiration-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--table-text);
+  font-size: 14px;
+}
+
+.search-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.search-btn {
+  width: 150px;
+  border: none;
+}
+
+.secondary-btn {
+  background-color: var(--light-accent);
+}
+
 .inventory-table {
   width: 100%;
   max-width: 1100px;

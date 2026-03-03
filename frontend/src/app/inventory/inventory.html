@@ -76,49 +76,83 @@
 
     <div class="content">
 
+  <form class="inventory-search" (ngSubmit)="onSearch()">
+    <div class="search-fields">
+      <input
+        class="app-input"
+        type="text"
+        placeholder="Medication Name"
+        [(ngModel)]="searchName"
+        name="searchName"
+      />
+
+      <input
+        class="app-input"
+        type="text"
+        placeholder="Lot Number"
+        [(ngModel)]="searchLot"
+        name="searchLot"
+      />
+    </div>
+
+    <label class="near-expiration-toggle">
+      <input
+        type="checkbox"
+        [(ngModel)]="nearExpirationOnly"
+        name="nearExpirationOnly"
+      />
+      Near expiration (next 7 days)
+    </label>
+
+    <div class="search-actions">
+      <button type="submit" class="inventory-btn search-btn">Search</button>
+      <button type="button" class="inventory-btn search-btn secondary-btn" (click)="clearFilters()">Clear</button>
+    </div>
+  </form>
+
   <table mat-table [dataSource]="dataSource" class="inventory-table mat-elevation-z2">
 
-    <!-- Brand Name -->
-    <ng-container matColumnDef="brand">
-      <th mat-header-cell *matHeaderCellDef> Brand Name </th>
-      <td mat-cell *matCellDef="let element"> {{ element.brand }} </td>
+    <!-- Medication -->
+    <ng-container matColumnDef="medicationName">
+      <th mat-header-cell *matHeaderCellDef> Medication </th>
+      <td mat-cell *matCellDef="let element"> {{ element.medicationName }} </td>
     </ng-container>
 
-    <!-- Generic Name -->
-    <ng-container matColumnDef="generic">
-      <th mat-header-cell *matHeaderCellDef> Generic Name </th>
-      <td mat-cell *matCellDef="let element"> {{ element.generic }} </td>
+    <!-- Form -->
+    <ng-container matColumnDef="form">
+      <th mat-header-cell *matHeaderCellDef> Form </th>
+      <td mat-cell *matCellDef="let element"> {{ element.form }} </td>
     </ng-container>
 
-    <!-- Dosage -->
-    <ng-container matColumnDef="dosage">
-      <th mat-header-cell *matHeaderCellDef> Dosage </th>
-      <td mat-cell *matCellDef="let element"> {{ element.dosage }} </td>
+    <!-- Strength -->
+    <ng-container matColumnDef="strength">
+      <th mat-header-cell *matHeaderCellDef> Strength </th>
+      <td mat-cell *matCellDef="let element"> {{ element.strength }} </td>
+    </ng-container>
+
+    <!-- NDC -->
+    <ng-container matColumnDef="nationalDrugCode">
+      <th mat-header-cell *matHeaderCellDef> NDC </th>
+      <td mat-cell *matCellDef="let element"> {{ element.nationalDrugCode }} </td>
     </ng-container>
 
     <!-- Lot Number -->
-    <ng-container matColumnDef="lot">
+    <ng-container matColumnDef="lotNumber">
       <th mat-header-cell *matHeaderCellDef> Lot # </th>
-      <td mat-cell *matCellDef="let element"> {{ element.lot }} </td>
+      <td mat-cell *matCellDef="let element"> {{ element.lotNumber }} </td>
     </ng-container>
 
-    <!-- Quantity -->
-    <ng-container matColumnDef="quantity">
+    <!-- Quantity On Hand -->
+    <ng-container matColumnDef="quantityOnHand">
       <th mat-header-cell *matHeaderCellDef> Quantity </th>
-      <td mat-cell *matCellDef="let element"> {{ element.quantity }} </td>
+      <td mat-cell *matCellDef="let element"> {{ element.quantityOnHand }} </td>
     </ng-container>
 
-    <!-- Lead Time -->
-    <ng-container matColumnDef="leadTime">
-      <th mat-header-cell *matHeaderCellDef> Lead Time (Days) </th>
-      <td mat-cell *matCellDef="let element"> {{ element.leadTime }} </td>
-    </ng-container>
-
-    <!-- Expiration -->
-    <ng-container matColumnDef="expiration">
+    <!-- Expiration Date -->
+    <ng-container matColumnDef="expirationDate">
       <th mat-header-cell *matHeaderCellDef> Expiration </th>
       <td mat-cell *matCellDef="let element"
-      [ngClass]="getExpirationClass(element)"> {{ element.expiration }} </td>
+      [ngClass]="getExpirationClass(element)"> {{ element.expirationDate | date:'yyyy-MM-dd' }} </td>
     </ng-container>
  
     <!-- Reorder point -->
@@ -128,11 +162,10 @@
       [ngClass]="getReorderClass(element)"> {{ element.reorderPoint }} </td>
     </ng-container>
 
-    <!-- Days of inventory -->
-    <ng-container matColumnDef="daysInv">
-      <th mat-header-cell *matHeaderCellDef> Days of Inventory </th>
-      <td mat-cell *matCellDef="let element"
-        [ngClass]="getDaysInvClass(element)"> {{ element.daysInv }} </td>
+    <!-- Bin location -->
+    <ng-container matColumnDef="binLocation">
+      <th mat-header-cell *matHeaderCellDef> Bin Location </th>
+      <td mat-cell *matCellDef="let element"> {{ element.binLocation }} </td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

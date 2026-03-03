@@ -34,6 +34,20 @@ var connectionString = builder.Configuration.GetConnectionString("PharmaStockDb"
 builder.Services.AddDbContext<PharmaStockDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
+builder.Services.AddScoped<MedicationServiceInterface, MedicationService>();
+builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendDev", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 // --------------------------
 // ASP.NET Core Identity
 // --------------------------
@@ -200,6 +214,8 @@ app.UseExceptionHandler(errorApp =>
 });
 
 app.UseHttpsRedirection();
+
+app.UseCors("FrontendDev");
 
 app.UseAuthentication();
 app.UseAuthorization();
