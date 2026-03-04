@@ -155,3 +155,14 @@ Swagger will be available at:
         ├── docker-compose.yml
         ├── docs/
         └── README.md
+
+
+## FDA NDC Data Import
+
+The PharmaStock.Importer project imports FDA Product and Package datasets.
+
+Full datasets are excluded from source control.
+Sample datasets are included in /data/sample for testing.
+
+To run:
+dotnet run --project PharmaStock.Importer

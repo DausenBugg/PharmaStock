@@ -15,7 +15,35 @@ namespace PharmaStock.Mappings
                 BinLocation = stock.BinLocation,
                 LotNumber = stock.LotNumber,
                 ExpirationDate = stock.ExpirationDate,
-                BeyondUseDate = stock.BeyondUseDate
+                BeyondUseDate = stock.BeyondUseDate,
+
+                //added package level inventory tracking for the response DTO
+                PackageNdc = stock.PackageNdc,
+                PackageDescription = stock.PackageDescription
+                
+            };
+        }
+
+        public static InventoryStockListItemResponse ToInventoryStockListItemResponse(this InventoryStock stock)
+        {
+            return new InventoryStockListItemResponse
+            {
+                InventoryStockId = stock.InventoryStockId,
+                MedicationId = stock.MedicationId,
+                MedicationName = stock.Medication.Name,
+                Form = stock.Medication.Form,
+                Strength = stock.Medication.Strength,
+                NationalDrugCode = stock.Medication.NationalDrugCode,
+                QuantityOnHand = stock.QuantityOnHand,
+                ReorderLevel = stock.ReorderLevel,
+                BinLocation = stock.BinLocation,
+                LotNumber = stock.LotNumber,
+                ExpirationDate = stock.ExpirationDate,
+                BeyondUseDate = stock.BeyondUseDate,
+
+                //added package level inventory tracking for the list item response DTO
+                PackageNdc = stock.PackageNdc,
+                PackageDescription = stock.PackageDescription
             };
         }
     }

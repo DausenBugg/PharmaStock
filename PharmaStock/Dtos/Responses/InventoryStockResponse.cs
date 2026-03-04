@@ -9,4 +9,8 @@ public class InventoryStockResponse
     public string LotNumber { get; set; } = string.Empty;
     public DateTime ExpirationDate { get; set; }
     public DateTime BeyondUseDate { get; set; }
+
+    //added package level inventory tracking for the response DTO
+    public string PackageNdc { get; set; } = string.Empty;
+    public string? PackageDescription { get; set; }
 }
