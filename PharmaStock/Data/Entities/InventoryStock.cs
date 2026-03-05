@@ -22,7 +22,7 @@ namespace PharmaStock.Data.Entities
         public DateTime UpdatedAtUtc { get; set; }
 
         //added package level inventory tracking for the data model
-        public string PackageNdc { get; set; } = string.Empty;
+        public string? PackageNdc { get; set; } = string.Empty;
         public string? PackageDescription { get; set; }
 
         // Navigation property to Medication

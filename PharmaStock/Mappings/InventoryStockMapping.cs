@@ -18,7 +18,7 @@ namespace PharmaStock.Mappings
                 BeyondUseDate = stock.BeyondUseDate,
 
                 //added package level inventory tracking for the response DTO
-                PackageNdc = stock.PackageNdc,
+                PackageNdc = stock.PackageNdc ?? string.Empty,
                 PackageDescription = stock.PackageDescription
                 
             };
@@ -42,7 +42,7 @@ namespace PharmaStock.Mappings
                 BeyondUseDate = stock.BeyondUseDate,
 
                 //added package level inventory tracking for the list item response DTO
-                PackageNdc = stock.PackageNdc,
+                PackageNdc = stock.PackageNdc ?? string.Empty,
                 PackageDescription = stock.PackageDescription
             };
         }
