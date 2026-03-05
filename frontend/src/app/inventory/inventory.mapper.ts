@@ -10,17 +10,27 @@ import { InventoryRow } from './inventory.model';
 export function mapInventoryApiToRow(x: InventoryApiItem): InventoryRow {
   return {
     inventoryStockId: x.inventoryStockId,
+
+    // medication details
+    medicationId: x.medicationId,
+    medicationName: x.medicationName,
+    genericName: x.genericName ?? null,
+    form: x.form,
+    strength: x.strength,
+    nationalDrugCode: x.nationalDrugCode,
+
     lot: x.lotNumber,
     binLocation: x.binLocation,
+
     quantity: x.quantityOnHand,
     reorderPoint: x.reorderLevel,
+
     expiration: x.expirationDate ?? '',
     beyondUseDate: x.beyondUseDate ?? '',
 
-    // placeholders for fields we might still need to implement in the API
-    //brand: '—',
-    //generic: '—',
-    //leadTime: 0,
-    //daysInv: 0
+    // Package level inventory tracking fields
+    packageNdc: x.packageNdc ?? null,
+    packageDescription: x.packageDescription ?? null
+    
   };
 }

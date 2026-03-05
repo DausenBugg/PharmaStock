@@ -32,16 +32,19 @@ import { mapInventoryApiToRow } from './inventory.mapper';
 export class InventoryComponent implements AfterViewInit {
 
   displayedColumns: string[] = [
-    'lot',
-    'binLocation',
-    'expiration',
-    'beyondUseDate',
+    'medicationName',
+    'genericName',
+    'nationalDrugCode',
+    'form',
+    'strength',
+    'packageNdc',
+    'packageDescription',
     'quantity',
-    'reorderPoint'
-    //'brand',  // Uncomment if you still want to show these columns
-    //'generic',
-    //'leadTime',
-    //'daysInv'
+    'reorderPoint',
+    'binLocation',
+    'lot',
+    'expiration',
+    'beyondUseDate'
   ];
 
   dataSource: InventoryRow[] = [];

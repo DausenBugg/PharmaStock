@@ -6,6 +6,13 @@
 export interface InventoryRow {
   inventoryStockId: number;
 
+  medicationId: number;
+  medicationName: string;
+  genericName: string | null;
+  form: string;
+  strength: string;
+  nationalDrugCode: string;
+
   // Fields from API
   lot: string;
   binLocation: string;
@@ -16,9 +23,8 @@ export interface InventoryRow {
   expiration: string;     // display field (ISO string)
   beyondUseDate: string;  // display field (ISO string)
 
-  // placeholder fields we might need to still implement in the API
-  //brand?: string;
-  //generic?: string;
-  //leadTime?: number;
-  //daysInv?: number;
+  // Package level inventory tracking fields
+  packageNdc?: string | null;
+  packageDescription?: string | null;
+
 }
