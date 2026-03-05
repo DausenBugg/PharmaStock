@@ -18,5 +18,7 @@ namespace PharmaStock.Dtos.Requests
 
         [Required, StringLength(100, MinimumLength = 1)]
         public string Manufacturer { get; set; } = string.Empty;
+
+    
     }
 }

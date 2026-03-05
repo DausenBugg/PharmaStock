@@ -28,6 +28,23 @@ public class InventoryStockService : InventoryStockServiceInterface
     }
 
     // --------------------------------------------------------------------------------------
+    // Get all inventory stock records with quantity on hand greater than zero
+     // Orders results by medication name and lot number for easier readability
+     // Uses AsNoTracking for better performance since we are only reading data
+    // Uses the InventoryStockMapping to convert stock entities to response DTOs    
+    // --------------------------------------------------------------------------------------
+    public async Task<List<InventoryStockListItemResponse>> GetInStockListAsync()
+    {
+        var stocks = await _context.InventoryStocks
+            .Take(100) // Limit to 100 records for performance; can be adjusted as needed
+            .Include(s => s.Medication) // Include related medication data for mapping to response DTO
+            .AsNoTracking()
+            .OrderBy(s => s.InventoryStockId)
+            .ToListAsync();
+        return stocks.Select(s => s.ToInventoryStockListItemResponse()).ToList();
+    }
+
+    // --------------------------------------------------------------------------------------
     // Adjust inventory stock quantity by a specified amount (positive or negative)
     // Throw errors if the resulting quantity would be negative or if the stock record is not found
     // Throws ArgumentNullException if the request is null
@@ -86,6 +103,19 @@ public class InventoryStockService : InventoryStockServiceInterface
     public async Task<InventoryStockResponse> CreateInventoryStockAsync( CreateInventoryStockDto request)
 
     {
+
+        // Guards againts for empty PackageNdc which is required for data integrity in the inventory stock record
+        if (string.IsNullOrWhiteSpace(request.PackageNdc))
+            throw new InvalidOperationException("PackageNdc is required.");
+
+        //duplicate check for the package NDC to ensure data integrity in the inventory stock records
+        var duplicatePackageNdc = await _context.InventoryStocks.AnyAsync(s =>
+        s.PackageNdc == request.PackageNdc);
+
+        if (duplicatePackageNdc)
+            throw new InvalidOperationException($"PackageNdc '{request.PackageNdc}' already exists.");
+
+            
         var medication = await _context.Medications
             .FirstOrDefaultAsync(m => m.MedicationId == request.MedicationId);
 
@@ -109,7 +139,11 @@ public class InventoryStockService : InventoryStockServiceInterface
             LotNumber = request.LotNumber,
             ExpirationDate = request.ExpirationDate,
             BeyondUseDate = request.BeyondUseDate,
-            UpdatedAtUtc = DateTime.UtcNow
+            UpdatedAtUtc = DateTime.UtcNow,
+
+            //added package level inventory tracking for the new stock entity
+            PackageNdc = request.PackageNdc.Trim(),
+            PackageDescription = request.PackageDescription?.Trim()
         };
 
         _context.InventoryStocks.Add(newStock);

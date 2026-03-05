@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, AfterViewInit, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -8,35 +8,13 @@ import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { HttpClient } from '@angular/common/http';
 
-export interface InventoryItem {
-  inventoryStockId: number;
-  medicationId: number;
-  medicationName: string;
-  form: string;
-  strength: string;
-  nationalDrugCode: string;
-  lotNumber: string;
-  quantityOnHand: number;
-  expirationDate: string;
-  reorderPoint: number;
-  binLocation: string;
-  beyondUseDate: string;
-}
+// Importing the InventoryItem interface which defines the structure of inventory items used in the component.
+import { InventoryService } from '../services/inventory.service';
+import { InventoryRow } from './inventory.model';
+import { mapInventoryApiToRow } from './inventory.mapper';
 
-interface ApiInventoryItem {
-  inventoryStockId: number;
-  medicationId: number;
-  medicationName: string;
-  form: string;
-  strength: string;
-  nationalDrugCode: string;
-  quantityOnHand: number;
-  reorderLevel: number;
-  binLocation: string;
-  lotNumber: string;
-  expirationDate: string;
-  beyondUseDate: string;
-}
+// Removed the export interface to the model file since we are now using InventoryRow as the main interface 
+// for inventory items, which includes all necessary fields and is mapped from the API data.
 
 @Component({
   selector: 'app-inventory',
@@ -53,106 +31,56 @@ interface ApiInventoryItem {
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.css']
 })
-export class InventoryComponent implements OnInit {
-  private readonly apiUrl = 'http://localhost:5177/api/inventorystocks';
 
-  constructor(private readonly http: HttpClient) {
-  }
-
-  ngOnInit(): void {
-    this.fetchInventoryStocks();
-  }
-
-  searchName = '';
-  searchLot = '';
-  nearExpirationOnly = false;
-  private readonly nearExpirationDays = 7;
+export class InventoryComponent implements AfterViewInit {
 
   displayedColumns: string[] = [
     'medicationName',
+    'genericName',
+    'nationalDrugCode',
     'form',
     'strength',
-    'nationalDrugCode',
-    'lotNumber',
-    'expirationDate',
-    'quantityOnHand',
+    'packageNdc',
+    'packageDescription',
+    'quantity',
     'reorderPoint',
-    'binLocation'
+    'binLocation',
+    'lot',
+    'expiration',
+    'beyondUseDate'
   ];
 
-  allItems: InventoryItem[] = [];
+  dataSource: InventoryRow[] = [];
 
-  dataSource: InventoryItem[] = [...this.allItems];
 
-  private fetchInventoryStocks(): void {
-    this.http.get<ApiInventoryItem[]>(this.apiUrl).subscribe({
-      next: (items) => {
-        this.allItems = items.map((item) => ({
-          inventoryStockId: item.inventoryStockId,
-          medicationId: item.medicationId,
-          medicationName: item.medicationName,
-          form: item.form,
-          strength: item.strength,
-          nationalDrugCode: item.nationalDrugCode,
-          lotNumber: item.lotNumber,
-          quantityOnHand: item.quantityOnHand,
-          reorderPoint: item.reorderLevel,
-          binLocation: item.binLocation,
-          expirationDate: item.expirationDate,
-          beyondUseDate: item.beyondUseDate
-        }));
-        this.applyFilters();
+// The constructor injects the InventoryService for fetching inventory data and the ChangeDetectorRef for manually triggering change detection after data is loaded.
+  constructor(private inventoryService: InventoryService,
+              private cdr: ChangeDetectorRef
+  ) {}
+
+  ngAfterViewInit(): void {
+    console.log('Loading inventory...');
+    this.loadInventory();
+  }
+
+  loadInventory(): void {
+    this.inventoryService.getInventoryStocks().subscribe({
+      next: (data) => {
+        this.dataSource = data.map(mapInventoryApiToRow)
+        console.log('row:', this.dataSource.length, this.dataSource[0]);
+        this.cdr.detectChanges();
       },
-      error: () => {
-        this.allItems = [];
-        this.dataSource = [];
-      }
+      error: (err) => console.error('GET /InventoryStocks failed', err)
     });
   }
 
-  onSearch(): void {
-    this.applyFilters();
-  }
-
-  private applyFilters(): void {
-    const nameQuery = this.searchName.trim().toLowerCase();
-    const lotQuery = this.searchLot.trim().toLowerCase();
-
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-
-    const nearExpirationCutoff = new Date(now);
-    nearExpirationCutoff.setDate(nearExpirationCutoff.getDate() + this.nearExpirationDays);
-
-    this.dataSource = this.allItems.filter((item) => {
-      const medicationName = item.medicationName.toLowerCase();
-      const matchesName = !nameQuery || medicationName.includes(nameQuery);
-      const matchesLot = !lotQuery || item.lotNumber.toLowerCase().includes(lotQuery);
-
-      const expirationDate = new Date(item.expirationDate);
-      expirationDate.setHours(0, 0, 0, 0);
-
-      const matchesNearExpiration = !this.nearExpirationOnly
-        || (expirationDate >= now && expirationDate <= nearExpirationCutoff);
-
-      return matchesName && matchesLot && matchesNearExpiration;
-    });
-  }
-
-  clearFilters(): void {
-    this.searchName = '';
-    this.searchLot = '';
-    this.nearExpirationOnly = false;
-    this.dataSource = [...this.allItems];
-  }
-
-  getReorderClass(item: InventoryItem): string {
+  getReorderClass(item: InventoryRow): string {
     if (item.quantityOnHand < item.reorderPoint) return 'health-critical';
     if (item.quantityOnHand === item.reorderPoint) return 'health-warning';
     return '';
   }
 
-  getExpirationClass(item: InventoryItem): string {
+  getExpirationClass(item: InventoryRow): string {
     const today = new Date();
     const expirationDate = new Date(item.expirationDate);
 
@@ -169,6 +97,15 @@ export class InventoryComponent implements OnInit {
       return 'health-warning';    // expiring soon
     }
 
+    return '';
+  }
+  
+  getDaysInvClass(item: InventoryItem): string {
+
+    const diff = item.daysInv - item.leadTime;
+
+    if (diff < 0) return 'health-critical';
+    if (diff <= 2) return 'health-warning';
     return '';
   }
 }

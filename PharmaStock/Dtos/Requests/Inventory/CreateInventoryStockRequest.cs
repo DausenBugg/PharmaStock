@@ -25,5 +25,9 @@ namespace PharmaStock.Dtos.Requests.Inventory
 
         [Required]
         public DateTime BeyondUseDate { get; set; }
+
+        // packaging NDC inputs for data integrity
+        public string PackageNdc { get; set; } = string.Empty;
+        public string? PackageDescription { get; set; }
     }
 }

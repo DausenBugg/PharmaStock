@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PharmaStock.Data;
 
@@ -11,9 +12,11 @@ using PharmaStock.Data;
 namespace PharmaStock.Migrations
 {
     [DbContext(typeof(PharmaStockDbContext))]
-    partial class PharmaStockDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260305002315_MakePackageNdcNullableAndUniquePerMedication")]
+    partial class MakePackageNdcNullableAndUniquePerMedication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -286,10 +289,6 @@ namespace PharmaStock.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
-
-                    b.Property<string>("GenericName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Manufacturer")
                         .IsRequired()

@@ -32,6 +32,16 @@ namespace PharmaStock.Controllers
         }
 
         // --------------------------------------------------------------------------------------
+        // GET: api/inventorystocks
+        // --------------------------------------------------------------------------------------
+        [HttpGet]
+        public async Task<ActionResult<List<InventoryStockListItemResponse>>> GetAllInventoryStock()
+        {
+            var result = await _inventoryStockService.GetInStockListAsync();
+            return Ok(result);
+        }
+
+        // --------------------------------------------------------------------------------------
         // Patch: api/inventorystocks/{id}/adjust
         // --------------------------------------------------------------------------------------
         [HttpPatch("{id:int}/adjust")]

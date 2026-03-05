@@ -57,6 +57,8 @@ namespace PharmaStock.Data
                 entity.Property(m => m.Name)
                     .IsRequired()
                     .HasMaxLength(200);
+                entity.Property(m => m.GenericName)
+                    .HasMaxLength(200);
                 entity.Property(m => m.NationalDrugCode)
                     .IsRequired()
                     .HasMaxLength(50);
@@ -87,7 +89,14 @@ namespace PharmaStock.Data
                     .IsRequired();
                 entity.Property(i => i.ReorderLevel)
                     .IsRequired();
-                
+                entity.Property(i => i.PackageNdc)
+                    .HasMaxLength(20)
+                    .HasColumnType("varchar(20)"); // Use varchar for NDC to prevent unnecessary padding
+
+                // set PackageNdc as unique to prevent duplicate package entries in inventory
+                entity.HasIndex(i => new { i.MedicationId, i.PackageNdc } ) 
+                    .IsUnique();
+                    
                 // Index on MedicationId for faster lookups
                 entity.HasIndex(i => i.MedicationId);
             }); 

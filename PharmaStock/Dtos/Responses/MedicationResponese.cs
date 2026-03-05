@@ -4,6 +4,7 @@ public class MedicationResponse
 {
     public int MedicationId { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? GenericName { get; set; }
     public string NationalDrugCode { get; set; } = string.Empty;
     public string Form { get; set; } = string.Empty;
     public string Strength { get; set; } = string.Empty;

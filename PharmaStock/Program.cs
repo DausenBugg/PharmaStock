@@ -105,6 +105,7 @@ builder.Services
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService>();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
@@ -131,6 +132,21 @@ builder.Services.AddSwaggerGen(options =>
             Array.Empty<string>()
         }
     });
+});
+
+// CORS policy (allow frontend to access API)
+var corsPolicyName = "FrontendCors";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: corsPolicyName,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:4200") // Angular dev server
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials(); // Allow cookies and auth headers;
+        });
 });
 
 var app = builder.Build();
@@ -215,11 +231,12 @@ app.UseExceptionHandler(errorApp =>
 
 app.UseHttpsRedirection();
 
-app.UseCors("FrontendDev");
+app.UseCors(corsPolicyName);
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();
