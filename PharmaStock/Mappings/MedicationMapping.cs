@@ -13,6 +13,7 @@ namespace PharmaStock.Mappings
             {
                 MedicationId = medication.MedicationId,
                 Name = medication.Name,
+                GenericName = medication.GenericName,
                 NationalDrugCode = medication.NationalDrugCode,
                 Form = medication.Form,
                 Strength = medication.Strength,

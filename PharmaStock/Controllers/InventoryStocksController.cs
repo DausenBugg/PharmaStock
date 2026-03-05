@@ -28,9 +28,9 @@ namespace PharmaStock.Controllers
         // GET: api/inventorystocks
         // --------------------------------------------------------------------------------------
         [HttpGet]
-        public async Task<ActionResult<List<InventoryStockResponse>>> GetAllInventoryStock()
+        public async Task<ActionResult<List<InventoryStockListItemResponse>>> GetAllInventoryStock()
         {
-            var result = await _inventoryStockService.GetAllInventoryStockAsync();
+            var result = await _inventoryStockService.GetInStockListAsync();
             return Ok(result);
         }
 

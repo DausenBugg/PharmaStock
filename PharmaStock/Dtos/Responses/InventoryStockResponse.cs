@@ -11,6 +11,6 @@ public class InventoryStockResponse
     public DateTime BeyondUseDate { get; set; }
 
     //added package level inventory tracking for the response DTO
-    public string PackageNdc { get; set; } = string.Empty;
+    public string? PackageNdc { get; set; } = string.Empty;
     public string? PackageDescription { get; set; }
 }

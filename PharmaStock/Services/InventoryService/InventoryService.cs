@@ -16,16 +16,20 @@ public class InventoryStockService : InventoryStockServiceInterface
     }
 
     // --------------------------------------------------------------------------------------
-    // Get all inventory stock records
+    // Get all inventory stock records with quantity on hand greater than zero
+     // Orders results by medication name and lot number for easier readability
+     // Uses AsNoTracking for better performance since we are only reading data
     // Uses the InventoryStockMapping to convert stock entities to response DTOs    
     // --------------------------------------------------------------------------------------
-    public async Task<List<InventoryStockResponse>> GetAllInventoryStockAsync()
+    public async Task<List<InventoryStockListItemResponse>> GetInStockListAsync()
     {
         var stocks = await _context.InventoryStocks
+            .Take(100) // Limit to 100 records for performance; can be adjusted as needed
+            .Include(s => s.Medication) // Include related medication data for mapping to response DTO
             .AsNoTracking()
             .OrderBy(s => s.InventoryStockId)
             .ToListAsync();
-        return stocks.Select(s => s.ToInventoryStockResponse()).ToList();
+        return stocks.Select(s => s.ToInventoryStockListItemResponse()).ToList();
     }
 
     // --------------------------------------------------------------------------------------

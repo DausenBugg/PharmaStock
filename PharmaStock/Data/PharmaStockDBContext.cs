@@ -57,6 +57,8 @@ namespace PharmaStock.Data
                 entity.Property(m => m.Name)
                     .IsRequired()
                     .HasMaxLength(200);
+                entity.Property(m => m.GenericName)
+                    .HasMaxLength(200);
                 entity.Property(m => m.NationalDrugCode)
                     .IsRequired()
                     .HasMaxLength(50);

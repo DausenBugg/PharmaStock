@@ -18,7 +18,7 @@ namespace PharmaStock.Mappings
                 BeyondUseDate = stock.BeyondUseDate,
 
                 //added package level inventory tracking for the response DTO
-                PackageNdc = stock.PackageNdc ?? string.Empty,
+                PackageNdc = string.IsNullOrWhiteSpace(stock.PackageNdc) ? null : stock.PackageNdc,
                 PackageDescription = stock.PackageDescription
                 
             };
@@ -31,6 +31,7 @@ namespace PharmaStock.Mappings
                 InventoryStockId = stock.InventoryStockId,
                 MedicationId = stock.MedicationId,
                 MedicationName = stock.Medication.Name,
+                GenericName = stock.Medication.GenericName,
                 Form = stock.Medication.Form,
                 Strength = stock.Medication.Strength,
                 NationalDrugCode = stock.Medication.NationalDrugCode,
@@ -42,7 +43,7 @@ namespace PharmaStock.Mappings
                 BeyondUseDate = stock.BeyondUseDate,
 
                 //added package level inventory tracking for the list item response DTO
-                PackageNdc = stock.PackageNdc ?? string.Empty,
+                PackageNdc = string.IsNullOrWhiteSpace(stock.PackageNdc) ? null : stock.PackageNdc,
                 PackageDescription = stock.PackageDescription
             };
         }
