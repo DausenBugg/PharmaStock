@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { of } from 'rxjs';
 
 import { InventoryComponent } from './inventory';
-import { InventoryItem } from './inventory';
+import { InventoryService } from '../services/inventory.service';
+import { InventoryRow } from './inventory.model';
 
-describe('Inventory', () => {
+describe('InventoryComponent', () => {
   let component: InventoryComponent;
   let fixture: ComponentFixture<InventoryComponent>;
-  let httpMock: HttpTestingController;
+  let inventoryServiceSpy: jasmine.SpyObj<InventoryService>;
 
   const formatDate = (date: Date): string => date.toISOString().split('T')[0];
 
-  const createTestData = (): InventoryItem[] => {
+  const createRows = (): InventoryRow[] => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -30,66 +30,67 @@ describe('Inventory', () => {
         inventoryStockId: 1,
         medicationId: 1,
         medicationName: 'Lipitor',
+        genericName: null,
         form: 'Tablet',
         strength: '25mg',
         nationalDrugCode: 'NDC-1',
-        lotNumber: 'A1023',
-        quantityOnHand: 100,
-        expirationDate: formatDate(nearExpiration),
+        lot: 'A1023',
+        quantity: 100,
         reorderPoint: 25,
         binLocation: 'A1',
-        beyondUseDate: formatDate(nearExpiration)
+        expiration: formatDate(nearExpiration),
+        beyondUseDate: formatDate(nearExpiration),
+        packageNdc: null,
+        packageDescription: null
       },
       {
         inventoryStockId: 2,
         medicationId: 2,
         medicationName: 'Glucophage Metformin',
+        genericName: null,
         form: 'Tablet',
         strength: '25mg',
         nationalDrugCode: 'NDC-2',
-        lotNumber: 'D7722',
-        quantityOnHand: 100,
-        expirationDate: formatDate(farExpiration),
+        lot: 'D7722',
+        quantity: 100,
         reorderPoint: 25,
         binLocation: 'B2',
-        beyondUseDate: formatDate(farExpiration)
+        expiration: formatDate(farExpiration),
+        beyondUseDate: formatDate(farExpiration),
+        packageNdc: null,
+        packageDescription: null
       },
       {
         inventoryStockId: 3,
         medicationId: 3,
         medicationName: 'Advil',
+        genericName: null,
         form: 'Tablet',
         strength: '25mg',
         nationalDrugCode: 'NDC-3',
-        lotNumber: 'K9021',
-        quantityOnHand: 100,
-        expirationDate: formatDate(expired),
+        lot: 'K9021',
+        quantity: 100,
         reorderPoint: 25,
         binLocation: 'C3',
-        beyondUseDate: formatDate(expired)
+        expiration: formatDate(expired),
+        beyondUseDate: formatDate(expired),
+        packageNdc: null,
+        packageDescription: null
       }
     ];
   };
 
   beforeEach(async () => {
+    inventoryServiceSpy = jasmine.createSpyObj<InventoryService>('InventoryService', ['getInventoryStocks']);
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of([])); // default
+
     await TestBed.configureTestingModule({
       imports: [InventoryComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting()]
-    })
-    .compileComponents();
+      providers: [{ provide: InventoryService, useValue: inventoryServiceSpy }]
+    }).compileComponents();
 
-    httpMock = TestBed.inject(HttpTestingController);
     fixture = TestBed.createComponent(InventoryComponent);
     component = fixture.componentInstance;
-
-    const request = httpMock.expectOne('http://localhost:5177/api/inventorystocks');
-    request.flush([]);
-
-    await fixture.whenStable();
-  });
-
-  afterEach(() => {
-    httpMock.verify();
   });
 
   it('should create', () => {
@@ -97,9 +98,12 @@ describe('Inventory', () => {
   });
 
   it('filters by partial medication name on submit', () => {
-    component.allItems = createTestData();
-    component.clearFilters();
+    const rows = createRows();
+    // Feed the component by mocking the service response
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    component.loadInventory();
 
+    component.clearFilters();
     component.searchName = 'formin';
     component.onSearch();
 
@@ -108,20 +112,24 @@ describe('Inventory', () => {
   });
 
   it('filters by partial lot number (case-insensitive)', () => {
-    component.allItems = createTestData();
-    component.clearFilters();
+    const rows = createRows();
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    component.loadInventory();
 
+    component.clearFilters();
     component.searchLot = 'd77';
     component.onSearch();
 
     expect(component.dataSource.length).toBe(1);
-    expect(component.dataSource[0].lotNumber).toBe('D7722');
+    expect(component.dataSource[0].lot).toBe('D7722');
   });
 
   it('applies medication name and lot filters together', () => {
-    component.allItems = createTestData();
-    component.clearFilters();
+    const rows = createRows();
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    component.loadInventory();
 
+    component.clearFilters();
     component.searchName = 'lipi';
     component.searchLot = '1023';
     component.onSearch();
@@ -130,10 +138,12 @@ describe('Inventory', () => {
     expect(component.dataSource[0].medicationName).toBe('Lipitor');
   });
 
-  it('filters near-expiration medications within next 7 days and excludes expired', () => {
-    component.allItems = createTestData();
-    component.clearFilters();
+  it('filters near-expiration meds within next 7 days and excludes expired', () => {
+    const rows = createRows();
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    component.loadInventory();
 
+    component.clearFilters();
     component.nearExpirationOnly = true;
     component.onSearch();
 
@@ -142,9 +152,11 @@ describe('Inventory', () => {
   });
 
   it('clears filters and restores full dataset', () => {
-    component.allItems = createTestData();
-    component.clearFilters();
+    const rows = createRows();
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    component.loadInventory();
 
+    component.clearFilters();
     component.searchName = 'lipi';
     component.onSearch();
     expect(component.dataSource.length).toBe(1);

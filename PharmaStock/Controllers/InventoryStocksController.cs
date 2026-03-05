@@ -24,18 +24,24 @@ namespace PharmaStock.Controllers
             _context = context;
         }
 
+
+        // --------------------------------------------------------------------------------------
+        // GET: api/inventorystocks
+        // Full stock detail 
+        // --------------------------------------------------------------------------------------
         [HttpGet]
-        public async Task<ActionResult<List<InventoryStockListItemResponse>>> GetInventoryStocks()
+        public async Task<ActionResult<IEnumerable<InventoryStockResponse>>> GetInventoryStocks()
         {
             var results = await _inventoryStockService.GetInventoryStocksAsync();
             return Ok(results);
         }
 
         // --------------------------------------------------------------------------------------
-        // GET: api/inventorystocks
+        // GET: api/inventorystocks/list
+        // Instock list with key details for inventory management
         // --------------------------------------------------------------------------------------
-        [HttpGet]
-        public async Task<ActionResult<List<InventoryStockListItemResponse>>> GetAllInventoryStock()
+        [HttpGet("list")]
+        public async Task<ActionResult<List<InventoryStockListItemResponse>>> GetInStockList()
         {
             var result = await _inventoryStockService.GetInStockListAsync();
             return Ok(result);

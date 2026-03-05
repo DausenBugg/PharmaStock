@@ -5,6 +5,8 @@ namespace PharmaStock.Services
 {
     public interface InventoryStockServiceInterface
     {
+        
+        Task<IEnumerable<InventoryStockResponse>> GetInventoryStocksAsync();
         Task<List<InventoryStockListItemResponse>> GetInStockListAsync();
         Task<InventoryStockResponse> GetInventoryStockByIdAsync(int inventoryStockId);
         Task<InventoryStockResponse> AdjustInventoryStockAsync(int inventoryStockId, InventoryAdjustQuantityRequest request);

@@ -15,16 +15,14 @@ public class InventoryStockService : InventoryStockServiceInterface
         _context = context;
     }
 
-    public async Task<List<InventoryStockListItemResponse>> GetInventoryStocksAsync()
+    public async Task<IEnumerable<InventoryStockResponse>> GetInventoryStocksAsync()
     {
         var stocks = await _context.InventoryStocks
-            .Include(s => s.Medication)
+            .Include(s => s.Medication) // Include related medication data for mapping to response DTO
             .AsNoTracking()
-            .OrderBy(s => s.Medication.Name)
-            .ThenBy(s => s.LotNumber)
+            .OrderBy(s => s.InventoryStockId)
             .ToListAsync();
-
-        return stocks.Select(s => s.ToInventoryStockListItemResponse()).ToList();
+        return stocks.Select(s => s.ToInventoryStockResponse()).ToList();
     }
 
     // --------------------------------------------------------------------------------------

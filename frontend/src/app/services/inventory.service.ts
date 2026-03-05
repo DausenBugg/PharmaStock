@@ -14,11 +14,11 @@ export class InventoryService {
     constructor(private http: HttpClient) { }
 
     getInventoryStocks(): Observable<InventoryApiItem[]> {
-        return this.http.get<InventoryApiItem[]>(`${this.baseUrl}/InventoryStocks`);
+        return this.http.get<InventoryApiItem[]>(`${this.baseUrl}/InventoryStocks/list`);
     }
 
     adjustQuantity(inventoryStockId: number, adjustment: number): Observable<InventoryApiItem> {
-        return this.http.put<InventoryApiItem>(
+        return this.http.patch<InventoryApiItem>(
             `${this.baseUrl}/InventoryStocks/${inventoryStockId}/adjust`,
              { adjustment }
         );
