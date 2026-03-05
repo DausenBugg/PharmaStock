@@ -15,6 +15,18 @@ public class InventoryStockService : InventoryStockServiceInterface
         _context = context;
     }
 
+    public async Task<List<InventoryStockListItemResponse>> GetInventoryStocksAsync()
+    {
+        var stocks = await _context.InventoryStocks
+            .Include(s => s.Medication)
+            .AsNoTracking()
+            .OrderBy(s => s.Medication.Name)
+            .ThenBy(s => s.LotNumber)
+            .ToListAsync();
+
+        return stocks.Select(s => s.ToInventoryStockListItemResponse()).ToList();
+    }
+
     // --------------------------------------------------------------------------------------
     // Adjust inventory stock quantity by a specified amount (positive or negative)
     // Throw errors if the resulting quantity would be negative or if the stock record is not found

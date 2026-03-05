@@ -24,18 +24,25 @@ namespace PharmaStock.Controllers
             _context = context;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<List<InventoryStockListItemResponse>>> GetInventoryStocks()
+        {
+            var results = await _inventoryStockService.GetInventoryStocksAsync();
+            return Ok(results);
+        }
+
         // --------------------------------------------------------------------------------------
         // Patch: api/inventorystocks/{id}/adjust
         // --------------------------------------------------------------------------------------
         [HttpPatch("{id:int}/adjust")]
         public async Task<ActionResult<InventoryStockResponse>> AdjustInventoryStock(
-            int inventoryStockId,
+            int id,
             [FromBody] InventoryAdjustQuantityRequest request   )
         {
             try
             {
                 var result =
-                    await _inventoryStockService.AdjustInventoryStockAsync(inventoryStockId, request);
+                    await _inventoryStockService.AdjustInventoryStockAsync(id, request);
 
                 return Ok(result);
             }

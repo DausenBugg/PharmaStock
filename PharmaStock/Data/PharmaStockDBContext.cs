@@ -23,7 +23,7 @@ namespace PharmaStock.Data
         // or DBSet<Medication> Medications => Set<Medication>();
 
         // Steps for adding a new entity to the DBContext:
-        // 1. Create the entity class in the Entities folder (e.g., TestMedication.cs)
+        // 1. Create the entity class in the Entities folder (e.g., Medication.cs)
         // 2. Add a DbSet property here in the PharmaStockDbContext class
         // 3. Create and apply a new migration to update the database schema
         // 4. Use the new entity in your application code

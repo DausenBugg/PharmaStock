@@ -1,21 +1,41 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { HttpClient } from '@angular/common/http';
 
 export interface InventoryItem {
-  brand: string;
-  generic: string;
-  dosage: string;
-  lot: string;
-  quantity: number;
-  expiration: string;
-  leadTime: number;
+  inventoryStockId: number;
+  medicationId: number;
+  medicationName: string;
+  form: string;
+  strength: string;
+  nationalDrugCode: string;
+  lotNumber: string;
+  quantityOnHand: number;
+  expirationDate: string;
   reorderPoint: number;
-  daysInv: number;
+  binLocation: string;
+  beyondUseDate: string;
+}
+
+interface ApiInventoryItem {
+  inventoryStockId: number;
+  medicationId: number;
+  medicationName: string;
+  form: string;
+  strength: string;
+  nationalDrugCode: string;
+  quantityOnHand: number;
+  reorderLevel: number;
+  binLocation: string;
+  lotNumber: string;
+  expirationDate: string;
+  beyondUseDate: string;
 }
 
 @Component({
@@ -23,6 +43,7 @@ export interface InventoryItem {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     MatSidenavModule,
     MatListModule,
@@ -32,42 +53,108 @@ export interface InventoryItem {
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.css']
 })
-export class InventoryComponent {
+export class InventoryComponent implements OnInit {
+  private readonly apiUrl = 'http://localhost:5177/api/inventorystocks';
+
+  constructor(private readonly http: HttpClient) {
+  }
+
+  ngOnInit(): void {
+    this.fetchInventoryStocks();
+  }
+
+  searchName = '';
+  searchLot = '';
+  nearExpirationOnly = false;
+  private readonly nearExpirationDays = 7;
 
   displayedColumns: string[] = [
-    'brand',
-    'generic',
-    'dosage',
-    'lot',
-    'expiration',  
-    'quantity',
+    'medicationName',
+    'form',
+    'strength',
+    'nationalDrugCode',
+    'lotNumber',
+    'expirationDate',
+    'quantityOnHand',
     'reorderPoint',
-    'leadTime',   
-    'daysInv'
+    'binLocation'
   ];
 
-  dataSource: InventoryItem[] = [
-    { brand: 'Lipitor', generic: 'Atorvastatin', dosage: "25mg", lot: 'A1023', quantity: 150, expiration: '2026-04-12', leadTime: 14, reorderPoint: 75, daysInv: 14 },
-    { brand: 'Zoloft', generic: 'Sertraline', dosage: "25mg", lot: 'B8831', quantity: 75, expiration: '2025-11-02', leadTime: 10, reorderPoint: 100, daysInv: 7 },
-    { brand: 'Amoxil', generic: 'Amoxicillin', dosage: "25mg", lot: 'C4490', quantity: 220, expiration: '2026-01-18', leadTime: 7, reorderPoint: 75, daysInv: 20 },
-    { brand: 'Glucophage', generic: 'Metformin', dosage: "25mg", lot: 'D7722', quantity: 300, expiration: '2027-03-30', leadTime: 21, reorderPoint: 50, daysInv: 126 },
-    { brand: 'Synthroid', generic: 'Levothyroxine', dosage: "25mg", lot: 'E9910', quantity: 180, expiration: '2026-03-18', leadTime: 12, reorderPoint: 180, daysInv: 12 },
-    { brand: 'Ventolin', generic: 'Albuterol', dosage: "25mg", lot: 'F6611', quantity: 90, expiration: '2026-07-20', leadTime: 8, reorderPoint: 25, daysInv: 14 },
-    { brand: 'Plavix', generic: 'Clopidogrel', dosage: "25mg", lot: 'G3344', quantity: 140, expiration: '2026-12-05', leadTime: 16, reorderPoint: 40, daysInv: 28 },
-    { brand: 'Nexium', generic: 'Esomeprazole', dosage: "25mg", lot: 'H5509', quantity: 110, expiration: '2025-08-22', leadTime: 9, reorderPoint: 150, daysInv: 6 },
-    { brand: 'Lantus', generic: 'Insulin Glargine', dosage: "25mg", lot: 'J7812', quantity: 60, expiration: '2026-05-14', leadTime: 5, reorderPoint: 60, daysInv: 5 },
-    { brand: 'Advil', generic: 'Ibuprofen', dosage: "25mg", lot: 'K9021', quantity: 400, expiration: '2027-02-10', leadTime: 6, reorderPoint: 15, daysInv: 160 }
-  ];
+  allItems: InventoryItem[] = [];
+
+  dataSource: InventoryItem[] = [...this.allItems];
+
+  private fetchInventoryStocks(): void {
+    this.http.get<ApiInventoryItem[]>(this.apiUrl).subscribe({
+      next: (items) => {
+        this.allItems = items.map((item) => ({
+          inventoryStockId: item.inventoryStockId,
+          medicationId: item.medicationId,
+          medicationName: item.medicationName,
+          form: item.form,
+          strength: item.strength,
+          nationalDrugCode: item.nationalDrugCode,
+          lotNumber: item.lotNumber,
+          quantityOnHand: item.quantityOnHand,
+          reorderPoint: item.reorderLevel,
+          binLocation: item.binLocation,
+          expirationDate: item.expirationDate,
+          beyondUseDate: item.beyondUseDate
+        }));
+        this.applyFilters();
+      },
+      error: () => {
+        this.allItems = [];
+        this.dataSource = [];
+      }
+    });
+  }
+
+  onSearch(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    const nameQuery = this.searchName.trim().toLowerCase();
+    const lotQuery = this.searchLot.trim().toLowerCase();
+
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const nearExpirationCutoff = new Date(now);
+    nearExpirationCutoff.setDate(nearExpirationCutoff.getDate() + this.nearExpirationDays);
+
+    this.dataSource = this.allItems.filter((item) => {
+      const medicationName = item.medicationName.toLowerCase();
+      const matchesName = !nameQuery || medicationName.includes(nameQuery);
+      const matchesLot = !lotQuery || item.lotNumber.toLowerCase().includes(lotQuery);
+
+      const expirationDate = new Date(item.expirationDate);
+      expirationDate.setHours(0, 0, 0, 0);
+
+      const matchesNearExpiration = !this.nearExpirationOnly
+        || (expirationDate >= now && expirationDate <= nearExpirationCutoff);
+
+      return matchesName && matchesLot && matchesNearExpiration;
+    });
+  }
+
+  clearFilters(): void {
+    this.searchName = '';
+    this.searchLot = '';
+    this.nearExpirationOnly = false;
+    this.dataSource = [...this.allItems];
+  }
 
   getReorderClass(item: InventoryItem): string {
-    if (item.quantity < item.reorderPoint) return 'health-critical';
-    if (item.quantity === item.reorderPoint) return 'health-warning';
+    if (item.quantityOnHand < item.reorderPoint) return 'health-critical';
+    if (item.quantityOnHand === item.reorderPoint) return 'health-warning';
     return '';
   }
 
   getExpirationClass(item: InventoryItem): string {
     const today = new Date();
-    const expirationDate = new Date(item.expiration);
+    const expirationDate = new Date(item.expirationDate);
 
     today.setHours(0, 0, 0, 0);
 
@@ -82,15 +169,6 @@ export class InventoryComponent {
       return 'health-warning';    // expiring soon
     }
 
-    return '';
-  }
-  
-  getDaysInvClass(item: InventoryItem): string {
-
-    const diff = item.daysInv - item.leadTime;
-
-    if (diff < 0) return 'health-critical';
-    if (diff <= 2) return 'health-warning';
     return '';
   }
 }
