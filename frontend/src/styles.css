@@ -29,6 +29,8 @@ body.light-theme {
 
   --table-bg: #ffffff;
   --table-text: #1f4e79;
+
+  --accent-color: #c4d9f0;
 }
 
 /* ================= DARK THEME ================= */
@@ -48,7 +50,9 @@ body.dark-theme {
   --card-text: #6dbe45;
 
   --table-bg: #c4d9f0;
-  --table-text: #1f4e79
+  --table-text: #1f4e79;
+
+  --accent-color: #1f4e79;
 }
 
 /* ================= LOGO SWITCHING ================= */

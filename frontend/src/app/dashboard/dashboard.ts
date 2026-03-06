@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
+import { REPORT_DATA, Medication } from "../reports/reports";
 
 
 @Component({
@@ -34,6 +35,62 @@ export class DashboardComponent implements OnInit {
 
   constructor(private router: Router){}
 
+  calculateInventoryStats() {
+
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  this.totalMeds = REPORT_DATA.length;
+
+  this.expired = REPORT_DATA.filter((med: Medication) =>
+    new Date(med.expiration) < today
+  ).length;
+
+  this.expiringSoon = REPORT_DATA.filter((med: Medication) => {
+
+    const exp = new Date(med.expiration);
+    const diff =
+      (exp.getTime() - today.getTime()) / (1000*60*60*24);
+
+    return diff >= 0 && diff <= 30;
+
+  }).length;
+
+  this.stockedOut = REPORT_DATA.filter((med: Medication) =>
+    med.quantity === 0
+  ).length;
+
+  this.lowInventory = REPORT_DATA.filter((med: Medication) =>
+    med.quantity < med.reorderPoint
+  ).length;
+
+
+  /* ===== INVENTORY HEALTH CALCULATION ===== */
+
+  const problemLines = REPORT_DATA.filter((med: Medication) => {
+
+    const expirationDate = new Date(med.expiration);
+    const diff =
+      (expirationDate.getTime() - today.getTime()) / (1000*60*60*24);
+
+    const expired = expirationDate < today;
+    const expiringSoon = diff >= 0 && diff <= 30;
+
+    const lowInventory = med.quantity < med.reorderPoint;
+
+    const daysInvIssue = med.daysInv < med.leadTime;
+
+    return expired || expiringSoon || lowInventory || daysInvIssue;
+
+  }).length;
+
+  this.inventoryHealth =
+    Math.round(
+      ((this.totalMeds - problemLines) / this.totalMeds) * 100
+    );
+
+}
+
   get inventoryHealthClass(): string {
     if (this.inventoryHealth > 95) {
       return 'health-good';
@@ -47,6 +104,9 @@ export class DashboardComponent implements OnInit {
   isDarkMode = false;
 
   ngOnInit() {
+
+    this.calculateInventoryStats();   // ← ADD THIS
+
     this.updateThemeState();
 
     const observer = new MutationObserver(() => {
@@ -57,6 +117,7 @@ export class DashboardComponent implements OnInit {
       attributes: true,
       attributeFilter: ['class']
     });
+
   }
 
   updateThemeState() {
@@ -71,8 +132,10 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/orders']);
   }
 
-  goToReports():void{
-    this.router.navigate(['reports']);
+  goToReports(filter?: string): void {
+    this.router.navigate(['/reports'], {
+      queryParams: filter ? { filter } : {}
+    });
   }
 
   goToSettings():void{
