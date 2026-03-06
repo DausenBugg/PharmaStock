@@ -41,7 +41,7 @@ Thumbs.db
 # Full DataSets Imports
 ##############################################################################
 # full raw datasets are too large to track in git and should be imported directly into the database instead
-data/Full/
+# data/Full/
 
 
 # Ignore the temporary files created by the application for processing imports, these are not needed in source control and can be safely ignored
