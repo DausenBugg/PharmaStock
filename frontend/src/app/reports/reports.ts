@@ -21,6 +21,8 @@ export interface Medication {
   daysInv: number;
 }
 
+/* ===== SAMPLE DATA ===== */
+
 export const REPORT_DATA: Medication[] = [
   { brand: 'Lipitor', generic: 'Atorvastatin', dosage: "25mg", lot: 'A1023', quantity: 150, expiration: '2026-04-12', leadTime: 14, reorderPoint: 75, daysInv: 14 },
   { brand: 'Zoloft', generic: 'Sertraline', dosage: "25mg", lot: 'B8831', quantity: 75, expiration: '2025-11-02', leadTime: 10, reorderPoint: 100, daysInv: 7 },
@@ -52,6 +54,8 @@ export const REPORT_DATA: Medication[] = [
 })
 export class Reports implements OnInit {
 
+  constructor(private route: ActivatedRoute) {}
+
   displayedColumns: string[] = [
     'brand',
     'generic',
@@ -64,77 +68,105 @@ export class Reports implements OnInit {
     'daysInv'
   ];
 
-  dataSource = new MatTableDataSource<Medication>([]);
+  dataSource = new MatTableDataSource<Medication>(REPORT_DATA);
 
   searchValue: string = '';
 
-  constructor(private route: ActivatedRoute) {}
+  /* ===== FILTER CHECKBOXES ===== */
 
-  ngOnInit() {
+  filterExpired = false;
+  filterExpiringSoon = false;
+  filterStockedOut = false;
+  filterLowInventory = false;
 
-    this.route.queryParams.subscribe(params => {
+  ngOnInit(): void {
 
-      const filter = params['filter'];
+    const filter = this.route.snapshot.queryParamMap.get('filter');
 
-      if (!filter) return;
+    if (filter === 'expired') this.filterExpired = true;
+    if (filter === 'expiringSoon') this.filterExpiringSoon = true;
+    if (filter === 'stockedOut') this.filterStockedOut = true;
+    if (filter === 'lowInventory') this.filterLowInventory = true;
 
-      switch (filter) {
+    this.applyFilters();
 
-        case 'expired':
-          this.dataSource.data = REPORT_DATA.filter(med =>
-            new Date(med.expiration) < new Date()
-          );
-          break;
-
-        case 'expiringSoon':
-          const today = new Date();
-
-          this.dataSource.data = REPORT_DATA.filter(med => {
-            const exp = new Date(med.expiration);
-            const diff =
-              (exp.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-
-            return diff <= 30 && diff >= 0;
-          });
-          break;
-
-        case 'stockedOut':
-          this.dataSource.data = REPORT_DATA.filter(med =>
-            med.quantity === 0
-          );
-          break;
-
-        case 'lowInventory':
-          this.dataSource.data = REPORT_DATA.filter(med =>
-            med.quantity <= med.reorderPoint
-          );
-          break;
-      }
-
-    });
   }
 
   onSearch(): void {
-
-    const value = this.searchValue.trim().toLowerCase();
-
-    if (!value) {
-      this.dataSource.data = [];
-      return;
-    }
-
-    const filteredData = REPORT_DATA.filter(med =>
-      med.brand.toLowerCase().includes(value) ||
-      med.generic.toLowerCase().includes(value)
-    );
-
-    this.dataSource.data = filteredData;
+    this.applyFilters();
   }
 
+  applyFilters(): void {
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const search = this.searchValue.trim().toLowerCase();
+
+    let filtered = REPORT_DATA;
+
+    /* SEARCH FILTER */
+
+    if (search) {
+
+      filtered = filtered.filter(item =>
+        item.brand.toLowerCase().includes(search) ||
+        item.generic.toLowerCase().includes(search)
+      );
+
+    }
+
+    /* CHECKBOX FILTERS */
+
+    filtered = filtered.filter(item => {
+
+      const expirationDate = new Date(item.expiration);
+      expirationDate.setHours(0,0,0,0);
+
+      const diffDays =
+        (expirationDate.getTime() - today.getTime()) /
+        (1000 * 60 * 60 * 24);
+
+      const isExpired = diffDays < 0;
+      const isExpiringSoon = diffDays >= 0 && diffDays <= 30;
+      const isStockedOut = item.quantity === 0;
+      const isLowInventory = item.quantity < item.reorderPoint;
+
+      if (this.filterExpired && !isExpired) return false;
+      if (this.filterExpiringSoon && !isExpiringSoon) return false;
+      if (this.filterStockedOut && !isStockedOut) return false;
+      if (this.filterLowInventory && !isLowInventory) return false;
+
+      return true;
+
+    });
+
+    this.dataSource.data = filtered;
+
+  }
+
+  clearFilters(): void {
+
+    this.searchValue = '';
+
+    this.filterExpired = false;
+    this.filterExpiringSoon = false;
+    this.filterStockedOut = false;
+    this.filterLowInventory = false;
+
+    this.dataSource.data = REPORT_DATA;
+
+  }
+
+  /* ===== TABLE COLOR LOGIC ===== */
+
   getReorderClass(item: Medication): string {
+
     if (item.quantity < item.reorderPoint) return 'health-critical';
     if (item.quantity === item.reorderPoint) return 'health-warning';
+
     return '';
+
   }
 
   getExpirationClass(item: Medication): string {
@@ -142,20 +174,17 @@ export class Reports implements OnInit {
     const today = new Date();
     const expirationDate = new Date(item.expiration);
 
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0,0,0,0);
 
     const diffInDays =
-      (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+      (expirationDate.getTime() - today.getTime()) /
+      (1000 * 60 * 60 * 24);
 
-    if (diffInDays < 0) {
-      return 'health-critical';
-    }
-
-    if (diffInDays <= 30) {
-      return 'health-warning';
-    }
+    if (diffInDays < 0) return 'health-critical';
+    if (diffInDays <= 30) return 'health-warning';
 
     return '';
+
   }
 
   getDaysInvClass(item: Medication): string {
@@ -164,7 +193,9 @@ export class Reports implements OnInit {
 
     if (diff < 0) return 'health-critical';
     if (diff <= 2) return 'health-warning';
+
     return '';
+
   }
 
 }

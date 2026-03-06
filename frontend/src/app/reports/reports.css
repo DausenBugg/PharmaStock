@@ -227,6 +227,12 @@ td {
   margin-bottom: 32px;
 }
 
+.search-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
 .app-input {
   width: 100%;
   max-width: 350px;
