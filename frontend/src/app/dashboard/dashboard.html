@@ -115,7 +115,7 @@
         <!-- Expired -->
         <mat-card
           class="dashboard-card small-card clickable-card"
-          (click) = "goToReports()"
+          (click) = "goToReports('expired')"
           [class.health-good]="expired === 0"
           [class.health-critical]="expired > 0">
 
@@ -126,7 +126,7 @@
         <!-- About to Expire -->
         <mat-card
           class="dashboard-card small-card clickable-card"
-          (click) = "goToReports()"
+          (click) = "goToReports('expiringSoon')"
           [class.health-good]="expiringSoon === 0"
           [class.health-warning]="expiringSoon > 0">
 
@@ -137,7 +137,7 @@
         <!-- Stocked Out -->
         <mat-card
           class="dashboard-card small-card clickable-card"
-          (click) = "goToReports()"
+          (click) = "goToReports('stockedOut')"
           [class.health-good]="stockedOut === 0"
           [class.health-critical]="stockedOut > 0">
 
@@ -148,7 +148,7 @@
         <!-- Low Inventory -->
         <mat-card
           class="dashboard-card small-card clickable-card"
-          (click) = "goToReports()"
+          (click) = "goToReports('lowInventory')"
           [class.health-good]="lowInventory === 0"
           [class.health-warning]="lowInventory > 0">
 
