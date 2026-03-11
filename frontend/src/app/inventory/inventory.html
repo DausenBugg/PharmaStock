@@ -162,6 +162,13 @@
       [ngClass]="getReorderClass(element)"> {{ element.reorderPoint }} </td>
     </ng-container>
 
+    <!-- AI Expiration Risk Score -->
+    <ng-container matColumnDef="aiRiskScore">
+      <th mat-header-cell *matHeaderCellDef> AI Risk </th>
+      <td mat-cell *matCellDef="let element"
+      [ngClass]="getRiskBadgeClass(element)"> {{ getRiskScore(element) }} </td>
+    </ng-container>
+
     <!-- Bin location -->
     <ng-container matColumnDef="binLocation">
       <th mat-header-cell *matHeaderCellDef> Bin Location </th>
@@ -183,6 +190,16 @@
     <div class="legend-item">
       <span class="legend-box health-warning"></span>
       <span class="legend-text">Warning (Near Threshold)</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="legend-box" style="background-color: #d32f2f; border-color: #d32f2f;"></span>
+      <span class="legend-text">AI: Critical Expiration Risk (≥75%)</span>
+    </div>
+
+    <div class="legend-item">
+      <span class="legend-box" style="background-color: #ed6c02; border-color: #ed6c02;"></span>
+      <span class="legend-text">AI: Medium Expiration Risk (≥50%)</span>
     </div>
 
 </div>

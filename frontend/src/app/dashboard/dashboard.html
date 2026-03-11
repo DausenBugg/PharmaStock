@@ -175,6 +175,59 @@
 
       </div>
 
+      <!-- ===== AI PREDICTIONS ROW ===== -->
+      <div class="ai-section">
+
+        <!-- AI Reorder Alerts -->
+        <mat-card class="dashboard-card ai-card">
+          <h3>AI Reorder Alerts</h3>
+          <div *ngIf="reorderLoading" class="ai-empty">
+            Loading AI reorder alerts...
+          </div>
+          <div *ngIf="!reorderLoading && reorderAlerts.length === 0 && !reorderError" class="ai-empty">
+            All medications are above AI-recommended thresholds.
+          </div>
+          <div *ngIf="!reorderLoading && reorderError" class="ai-empty ai-error-text">
+            AI service unavailable
+          </div>
+          <div *ngFor="let alert of reorderAlerts" class="ai-alert-row">
+            <span class="ai-alert-badge"
+                  [class.badge-popular]="alert.isPopular"
+                  [class.badge-slow]="!alert.isPopular">
+              {{ alert.isPopular ? 'POPULAR' : 'SLOW' }}
+            </span>
+            <span class="ai-alert-text">
+              Med #{{ alert.medicationId }} — Reorder at <strong>{{ alert.recommendedReorderLevel }}</strong>
+            </span>
+            <span class="ai-confidence">{{ (alert.confidence * 100).toFixed(0) }}%</span>
+          </div>
+        </mat-card>
+
+        <!-- AI Expiration Risk -->
+        <mat-card class="dashboard-card ai-card">
+          <h3>Expiration Risk</h3>
+          <div *ngIf="expirationLoading" class="ai-empty">
+            Loading expiration risk predictions...
+          </div>
+          <div *ngIf="!expirationLoading && expirationRisks.length === 0 && !expirationError" class="ai-empty">
+            No high-risk lots detected.
+          </div>
+          <div *ngIf="!expirationLoading && expirationError" class="ai-empty ai-error-text">
+            AI service unavailable
+          </div>
+          <div *ngFor="let risk of expirationRisks" class="ai-alert-row">
+            <span class="ai-risk-badge" [ngClass]="getRiskClass(risk.riskScore)">
+              {{ risk.riskLabel }}
+            </span>
+            <span class="ai-alert-text">
+              Lot #{{ risk.inventoryStockId }} — {{ risk.daysToExpiry }}d to expiry
+            </span>
+            <span class="ai-risk-score">{{ (risk.riskScore * 100).toFixed(0) }}%</span>
+          </div>
+        </mat-card>
+
+      </div>
+
     </div>
 
   </mat-sidenav-content>

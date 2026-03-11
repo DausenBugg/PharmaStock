@@ -1,0 +1,31 @@
+{
+  "model": "RandomForestRegressor",
+  "n_estimators": 200,
+  "train_samples": 736,
+  "test_samples": 184,
+  "metrics": {
+    "MAE": 0.12,
+    "RMSE": 0.28,
+    "R2": 0.9999
+  },
+  "feature_importances": {
+    "avg_daily_usage_90d": 0.2764,
+    "usage_variance_30d": 0.266,
+    "avg_daily_usage_30d": 0.2397,
+    "total_quantity_on_hand": 0.2042,
+    "avg_daily_usage_7d": 0.0122,
+    "usage_trend": 0.0014,
+    "days_to_nearest_expiry": 0.0,
+    "day_of_week": 0.0,
+    "month": 0.0,
+    "restock_frequency_30d": 0.0,
+    "form_capsule": 0.0,
+    "form_tablet": 0.0,
+    "days_since_last_dispense": 0.0,
+    "form_topical_gel": 0.0,
+    "form_oral_solution": 0.0,
+    "form_inhaler": 0.0,
+    "num_active_lots": 0.0,
+    "form_other": 0.0
+  }
+}

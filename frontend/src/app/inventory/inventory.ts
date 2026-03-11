@@ -7,6 +7,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { HttpClient } from '@angular/common/http';
+import { PredictionService, ExpirationRisk } from '../services/prediction.service';
 
 export interface InventoryItem {
   inventoryStockId: number;
@@ -56,7 +57,7 @@ interface ApiInventoryItem {
 export class InventoryComponent implements OnInit {
   private readonly apiUrl = 'http://localhost:5177/api/inventorystocks';
 
-  constructor(private readonly http: HttpClient) {
+  constructor(private readonly http: HttpClient, private readonly predictionService: PredictionService) {
   }
 
   ngOnInit(): void {
@@ -77,12 +78,16 @@ export class InventoryComponent implements OnInit {
     'expirationDate',
     'quantityOnHand',
     'reorderPoint',
+    'aiRiskScore',
     'binLocation'
   ];
 
   allItems: InventoryItem[] = [];
 
   dataSource: InventoryItem[] = [...this.allItems];
+
+  // AI risk scores keyed by inventoryStockId
+  riskScores: Map<number, ExpirationRisk> = new Map();
 
   private fetchInventoryStocks(): void {
     this.http.get<ApiInventoryItem[]>(this.apiUrl).subscribe({
@@ -102,12 +107,36 @@ export class InventoryComponent implements OnInit {
           beyondUseDate: item.beyondUseDate
         }));
         this.applyFilters();
+        this.loadRiskScores();
       },
       error: () => {
         this.allItems = [];
         this.dataSource = [];
       }
     });
+  }
+
+  private loadRiskScores(): void {
+    this.predictionService.getExpirationRisks().subscribe({
+      next: (risks) => {
+        this.riskScores = new Map(risks.map(r => [r.inventoryStockId, r]));
+      },
+      error: () => { /* AI unavailable — table still works */ }
+    });
+  }
+
+  getRiskScore(item: InventoryItem): string {
+    const risk = this.riskScores.get(item.inventoryStockId);
+    if (!risk) return '—';
+    return `${(risk.riskScore * 100).toFixed(0)}%`;
+  }
+
+  getRiskBadgeClass(item: InventoryItem): string {
+    const risk = this.riskScores.get(item.inventoryStockId);
+    if (!risk) return '';
+    if (risk.riskScore >= 0.75) return 'health-critical';
+    if (risk.riskScore >= 0.5) return 'health-warning';
+    return '';
   }
 
   onSearch(): void {

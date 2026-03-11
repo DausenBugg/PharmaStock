@@ -56,6 +56,17 @@ public class InventoryStockService : InventoryStockServiceInterface
         stock.QuantityOnHand = newQuantity;
         stock.UpdatedAtUtc = DateTime.UtcNow;
 
+        // Log usage history for AI model training
+        var changeType = request.Adjustment < 0 ? "Dispensed" : "Restocked";
+        _context.UsageHistories.Add(new Data.Entities.UsageHistory
+        {
+            InventoryStockId = stock.InventoryStockId,
+            MedicationId = stock.MedicationId,
+            QuantityChanged = Math.Abs(request.Adjustment),
+            ChangeType = changeType,
+            OccurredAtUtc = DateTime.UtcNow
+        });
+
         await _context.SaveChangesAsync();
 
         return stock.ToInventoryStockResponse();
