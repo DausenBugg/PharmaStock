@@ -6,37 +6,12 @@ import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { HttpClient } from '@angular/common/http';
+import { PredictionService, ExpirationRisk } from '../services/prediction.service';
 
-export interface InventoryItem {
-  inventoryStockId: number;
-  medicationId: number;
-  medicationName: string;
-  form: string;
-  strength: string;
-  nationalDrugCode: string;
-  lotNumber: string;
-  quantityOnHand: number;
-  expirationDate: string;
-  reorderPoint: number;
-  binLocation: string;
-  beyondUseDate: string;
-}
-
-interface ApiInventoryItem {
-  inventoryStockId: number;
-  medicationId: number;
-  medicationName: string;
-  form: string;
-  strength: string;
-  nationalDrugCode: string;
-  quantityOnHand: number;
-  reorderLevel: number;
-  binLocation: string;
-  lotNumber: string;
-  expirationDate: string;
-  beyondUseDate: string;
-}
+// Service + model + mapper (jcDev)
+import { InventoryService } from '../services/inventory.service';
+import { InventoryRow } from './inventory.model';
+import { mapInventoryApiToRow } from './inventory.mapper';
 
 @Component({
   selector: 'app-inventory',
@@ -53,19 +28,12 @@ interface ApiInventoryItem {
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.css']
 })
-export class InventoryComponent implements OnInit {
-  private readonly apiUrl = 'http://localhost:5177/api/inventorystocks';
+export class InventoryComponent implements AfterViewInit {
 
-  constructor(private readonly http: HttpClient) {
-  }
-
-  ngOnInit(): void {
-    this.fetchInventoryStocks();
-  }
-
-  searchName = '';
-  searchLot = '';
-  nearExpirationOnly = false;
+  // --- SEARCH/FILTER STATE ---
+  searchName: string = '';
+  searchLot: string = '';
+  nearExpirationOnly: boolean = false;
   private readonly nearExpirationDays = 7;
 
   // --- TABLE ---
@@ -79,33 +47,41 @@ export class InventoryComponent implements OnInit {
     'packageDescription',
     'quantity',
     'reorderPoint',
-    'binLocation'
+    'aiRiskScore',
+    'binLocation',
+    'lot',
+    'expiration',
+    'beyondUseDate'
   ];
 
-  allItems: InventoryItem[] = [];
+  // Keep a master list and a filtered list
+  private allItems: InventoryRow[] = [];
+  dataSource: InventoryRow[] = [];
 
-  dataSource: InventoryItem[] = [...this.allItems];
+  // AI risk scores keyed by inventoryStockId
+  riskScores: Map<number, ExpirationRisk> = new Map();
 
-  private fetchInventoryStocks(): void {
-    this.http.get<ApiInventoryItem[]>(this.apiUrl).subscribe({
-      next: (items) => {
-        this.allItems = items.map((item) => ({
-          inventoryStockId: item.inventoryStockId,
-          medicationId: item.medicationId,
-          medicationName: item.medicationName,
-          form: item.form,
-          strength: item.strength,
-          nationalDrugCode: item.nationalDrugCode,
-          lotNumber: item.lotNumber,
-          quantityOnHand: item.quantityOnHand,
-          reorderPoint: item.reorderLevel,
-          binLocation: item.binLocation,
-          expirationDate: item.expirationDate,
-          beyondUseDate: item.beyondUseDate
-        }));
+  constructor(
+    private inventoryService: InventoryService,
+    private cdr: ChangeDetectorRef,
+    private predictionService: PredictionService
+  ) {}
+
+  ngAfterViewInit(): void {
+    this.loadInventory();
+  }
+
+  // --- FETCH ---
+  private loadInventory(): void {
+    this.inventoryService.getInventoryStocks().subscribe({
+      next: (data) => {
+        this.allItems = data.map(mapInventoryApiToRow);
         this.applyFilters();
+        this.loadRiskScores();
+        this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
+        console.error('GET /InventoryStocks failed', err);
         this.allItems = [];
         this.dataSource = [];
         this.cdr.detectChanges();
@@ -116,19 +92,21 @@ export class InventoryComponent implements OnInit {
   private loadRiskScores(): void {
     this.predictionService.getExpirationRisks().subscribe({
       next: (risks) => {
-        this.riskScores = new Map(risks.map(r => [r.inventoryStockId, r]));
+        this.riskScores = new Map(risks.map((r) => [r.inventoryStockId, r]));
       },
-      error: () => { /* AI unavailable — table still works */ }
+      error: () => {
+        // AI service can be temporarily unavailable; inventory still renders.
+      }
     });
   }
 
-  getRiskScore(item: InventoryItem): string {
+  getRiskScore(item: InventoryRow): string {
     const risk = this.riskScores.get(item.inventoryStockId);
-    if (!risk) return '—';
+    if (!risk) return '-';
     return `${(risk.riskScore * 100).toFixed(0)}%`;
   }
 
-  getRiskBadgeClass(item: InventoryItem): string {
+  getRiskBadgeClass(item: InventoryRow): string {
     const risk = this.riskScores.get(item.inventoryStockId);
     if (!risk) return '';
     if (risk.riskScore >= 0.75) return 'health-critical';
@@ -136,7 +114,6 @@ export class InventoryComponent implements OnInit {
     return '';
   }
 
-  // Called by (ngSubmit)="onSearch()"
   onSearch(): void {
     this.applyFilters();
   }
