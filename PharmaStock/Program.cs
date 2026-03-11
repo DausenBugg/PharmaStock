@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PharmaStock.Data;
+using PharmaStock.Data.Infrastucture;
 using PharmaStock.Services;
 
 
@@ -34,8 +35,17 @@ var connectionString = builder.Configuration.GetConnectionString("PharmaStockDb"
 builder.Services.AddDbContext<PharmaStockDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
+builder.Services.AddScoped<SyntheticUsageHistoryImporter>();
+
 builder.Services.AddScoped<MedicationServiceInterface, MedicationService>();
 builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService>();
+
+// AI Prediction Service — HttpClient for the Python ML microservice
+builder.Services.AddHttpClient<IAIPredictionService, AIPredictionService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["AIPrediction:BaseUrl"] ?? "http://localhost:8000");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 builder.Services.AddCors(options =>
 {
@@ -150,6 +160,20 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+if (args.Contains("import-synthetic-usage", StringComparer.OrdinalIgnoreCase))
+{
+    using var scope = app.Services.CreateScope();
+    var importer = scope.ServiceProvider.GetRequiredService<SyntheticUsageHistoryImporter>();
+    var replaceExisting = args.Contains("--replace", StringComparer.OrdinalIgnoreCase);
+    var csvPath = args
+        .FirstOrDefault(argument => argument.StartsWith("--csv=", StringComparison.OrdinalIgnoreCase))?
+        .Split('=', 2)[1];
+
+    var imported = await importer.ImportAsync(csvPath, replaceExisting);
+    Console.WriteLine($"Imported {imported} synthetic UsageHistories rows.");
+    return;
+}
 
 // --------------------------
 // Seed Roles and Initial Admin User

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
@@ -7,7 +7,9 @@ import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
-import { REPORT_DATA, Medication } from "../reports/reports";
+import { REPORT_DATA, Medication } from '../reports/reports';
+import { PredictionService, ReorderAlert, ExpirationRisk } from '../services/prediction.service';
+import { catchError, finalize, of, timeout } from 'rxjs';
 
 
 @Component({
@@ -33,7 +35,20 @@ export class DashboardComponent implements OnInit {
   stockedOut = 6;
   lowInventory = 10;
 
-  constructor(private router: Router){}
+  // AI Predictions
+  reorderAlerts: ReorderAlert[] = [];
+  expirationRisks: ExpirationRisk[] = [];
+  reorderLoading = true;
+  expirationLoading = true;
+  reorderError = false;
+  expirationError = false;
+
+  constructor(
+    private router: Router,
+    private predictionService: PredictionService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ){}
 
   calculateInventoryStats() {
 
@@ -118,6 +133,49 @@ export class DashboardComponent implements OnInit {
       attributeFilter: ['class']
     });
 
+    this.loadAIPredictions();
+  }
+
+  loadAIPredictions() {
+    this.reorderLoading = true;
+    this.expirationLoading = true;
+    this.reorderError = false;
+    this.expirationError = false;
+
+    this.predictionService.getReorderAlerts().pipe(
+      timeout(10000),
+      catchError(() => {
+        this.reorderError = true;
+        return of([] as ReorderAlert[]);
+      }),
+      finalize(() => {
+        this.reorderLoading = false;
+        this.ngZone.run(() => this.cdr.detectChanges());
+      })
+    ).subscribe((alerts) => {
+      this.reorderAlerts = Array.isArray(alerts) ? alerts : [];
+    });
+
+    this.predictionService.getExpirationRisks().pipe(
+      timeout(10000),
+      catchError(() => {
+        this.expirationError = true;
+        return of([] as ExpirationRisk[]);
+      }),
+      finalize(() => {
+        this.expirationLoading = false;
+        this.ngZone.run(() => this.cdr.detectChanges());
+      })
+    ).subscribe((risks) => {
+      const safeRisks = Array.isArray(risks) ? risks : [];
+      this.expirationRisks = safeRisks.filter(r => r.riskScore > 0.25).slice(0, 5);
+    });
+  }
+
+  getRiskClass(score: number): string {
+    if (score >= 0.75) return 'health-critical';
+    if (score >= 0.5) return 'health-warning';
+    return '';
   }
 
   updateThemeState() {

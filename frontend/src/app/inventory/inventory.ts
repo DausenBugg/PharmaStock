@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { PredictionService, ExpirationRisk } from '../services/prediction.service';
 
 // Service + model + mapper (jcDev)
 import { InventoryService } from '../services/inventory.service';
@@ -46,6 +47,7 @@ export class InventoryComponent implements AfterViewInit {
     'packageDescription',
     'quantity',
     'reorderPoint',
+    'aiRiskScore',
     'binLocation',
     'lot',
     'expiration',
@@ -56,9 +58,13 @@ export class InventoryComponent implements AfterViewInit {
   private allItems: InventoryRow[] = [];
   dataSource: InventoryRow[] = [];
 
+  // AI risk scores keyed by inventoryStockId
+  riskScores: Map<number, ExpirationRisk> = new Map();
+
   constructor(
     private inventoryService: InventoryService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private predictionService: PredictionService
   ) {}
 
   ngAfterViewInit(): void {
@@ -66,12 +72,13 @@ export class InventoryComponent implements AfterViewInit {
   }
 
   // --- FETCH ---
-  loadInventory(): void {
+  private loadInventory(): void {
     this.inventoryService.getInventoryStocks().subscribe({
       next: (data) => {
         this.allItems = data.map(mapInventoryApiToRow);
-        this.applyFilters();          // show filtered results (or all if no filters)
-        this.cdr.detectChanges();     // helps if the table renders before data arrives
+        this.applyFilters();
+        this.loadRiskScores();
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('GET /InventoryStocks failed', err);
@@ -82,7 +89,31 @@ export class InventoryComponent implements AfterViewInit {
     });
   }
 
-  // Called by (ngSubmit)="onSearch()"
+  private loadRiskScores(): void {
+    this.predictionService.getExpirationRisks().subscribe({
+      next: (risks) => {
+        this.riskScores = new Map(risks.map((r) => [r.inventoryStockId, r]));
+      },
+      error: () => {
+        // AI service can be temporarily unavailable; inventory still renders.
+      }
+    });
+  }
+
+  getRiskScore(item: InventoryRow): string {
+    const risk = this.riskScores.get(item.inventoryStockId);
+    if (!risk) return '-';
+    return `${(risk.riskScore * 100).toFixed(0)}%`;
+  }
+
+  getRiskBadgeClass(item: InventoryRow): string {
+    const risk = this.riskScores.get(item.inventoryStockId);
+    if (!risk) return '';
+    if (risk.riskScore >= 0.75) return 'health-critical';
+    if (risk.riskScore >= 0.5) return 'health-warning';
+    return '';
+  }
+
   onSearch(): void {
     this.applyFilters();
   }

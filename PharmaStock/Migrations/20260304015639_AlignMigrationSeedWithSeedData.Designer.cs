@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PharmaStock.Data;
 
@@ -11,9 +12,11 @@ using PharmaStock.Data;
 namespace PharmaStock.Migrations
 {
     [DbContext(typeof(PharmaStockDbContext))]
-    partial class PharmaStockDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260304015639_AlignMigrationSeedWithSeedData")]
+    partial class AlignMigrationSeedWithSeedData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,13 +248,6 @@ namespace PharmaStock.Migrations
                     b.Property<int>("MedicationId")
                         .HasColumnType("int");
 
-                    b.Property<string>("PackageDescription")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PackageNdc")
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
                     b.Property<int>("QuantityOnHand")
                         .HasColumnType("int");
 
@@ -264,9 +260,6 @@ namespace PharmaStock.Migrations
                     b.HasKey("InventoryStockId");
 
                     b.HasIndex("MedicationId");
-
-                    b.HasIndex("MedicationId", "PackageNdc")
-                        .IsUnique();
 
                     b.ToTable("InventoryStocks");
                 });
@@ -286,10 +279,6 @@ namespace PharmaStock.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
-
-                    b.Property<string>("GenericName")
-                        .HasMaxLength(200)
-                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("Manufacturer")
                         .IsRequired()
@@ -320,43 +309,6 @@ namespace PharmaStock.Migrations
                         .IsUnique();
 
                     b.ToTable("Medications");
-                });
-
-            modelBuilder.Entity("PharmaStock.Data.Entities.UsageHistory", b =>
-                {
-                    b.Property<int>("UsageHistoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UsageHistoryId"));
-
-                    b.Property<string>("ChangeType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("InventoryStockId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MedicationId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("OccurredAtUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("QuantityChanged")
-                        .HasColumnType("int");
-
-                    b.HasKey("UsageHistoryId");
-
-                    b.HasIndex("InventoryStockId");
-
-                    b.HasIndex("MedicationId", "OccurredAtUtc");
-
-                    b.ToTable("UsageHistories");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -417,25 +369,6 @@ namespace PharmaStock.Migrations
                         .HasForeignKey("MedicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Medication");
-                });
-
-            modelBuilder.Entity("PharmaStock.Data.Entities.UsageHistory", b =>
-                {
-                    b.HasOne("PharmaStock.Data.Entities.InventoryStock", "InventoryStock")
-                        .WithMany()
-                        .HasForeignKey("InventoryStockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("PharmaStock.Data.Entities.Medication", "Medication")
-                        .WithMany()
-                        .HasForeignKey("MedicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("InventoryStock");
 
                     b.Navigation("Medication");
                 });

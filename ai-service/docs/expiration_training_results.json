@@ -1,0 +1,31 @@
+{
+  "model": "GradientBoostingClassifier",
+  "n_estimators": 200,
+  "train_samples": 809,
+  "test_samples": 203,
+  "class_distribution": {
+    "low_risk": 980,
+    "high_risk": 32
+  },
+  "metrics": {
+    "AUC_ROC": 1.0,
+    "Precision": 1.0,
+    "Recall": 1.0,
+    "F1": 1.0
+  },
+  "confusion_matrix": {
+    "TN": 197,
+    "FP": 0,
+    "FN": 0,
+    "TP": 6
+  },
+  "feature_importances": {
+    "will_expire_before_depleted": 1.0,
+    "days_to_expiry": 0.0,
+    "avg_daily_usage_30d": 0.0,
+    "quantity_on_hand": 0.0,
+    "days_to_deplete": 0.0,
+    "medication_unit_value": 0.0,
+    "num_lots_same_med": 0.0
+  }
+}
