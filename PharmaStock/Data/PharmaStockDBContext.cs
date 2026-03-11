@@ -39,6 +39,7 @@ namespace PharmaStock.Data
         // removes the last migration without applying it to the database
         public DbSet<Medication> Medications { get; set; } = null!;
         public DbSet<InventoryStock> InventoryStocks { get; set; } = null!;
+        public DbSet<UsageHistory> UsageHistories { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -100,6 +101,33 @@ namespace PharmaStock.Data
                 // Index on MedicationId for faster lookups
                 entity.HasIndex(i => i.MedicationId);
             }); 
+
+            // UsageHistory configuration
+            modelBuilder.Entity<UsageHistory>(entity =>
+            {
+                entity.HasOne(u => u.InventoryStock)
+                    .WithMany()
+                    .HasForeignKey(u => u.InventoryStockId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(u => u.Medication)
+                    .WithMany()
+                    .HasForeignKey(u => u.MedicationId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(u => u.ChangeType)
+                    .IsRequired()
+                    .HasMaxLength(50);
+
+                entity.Property(u => u.QuantityChanged)
+                    .IsRequired();
+
+                entity.Property(u => u.OccurredAtUtc)
+                    .IsRequired();
+
+                // Composite index for ML queries: filter by medication, order by time
+                entity.HasIndex(u => new { u.MedicationId, u.OccurredAtUtc });
+            });
         }
 
         // Override SaveChanges for synchronous calls
@@ -139,6 +167,14 @@ namespace PharmaStock.Data
                     if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
                     {
                         stock.UpdatedAtUtc = utcNow;
+                    }
+                }
+
+                if (entry.Entity is UsageHistory usage)
+                {
+                    if (entry.State == EntityState.Added)
+                    {
+                        usage.CreatedAtUtc = utcNow;
                     }
                 }
             }

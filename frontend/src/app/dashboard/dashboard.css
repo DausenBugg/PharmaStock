@@ -207,3 +207,86 @@ mat-sidenav-content {
   cursor: pointer;
 }
 
+/* ===== AI PREDICTIONS ===== */
+
+.ai-section {
+  display: flex;
+  max-width: 800px;
+  justify-content: space-evenly;
+  gap: 24px;
+  margin: 0 auto 32px auto;
+}
+
+.ai-card {
+  flex: 1;
+  min-width: 340px;
+  padding: 20px;
+  border: 2px solid var(--light-accent);
+  background-color: var(--bg-color);
+  color: var(--card-text);
+}
+
+.ai-card h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ai-alert-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.ai-alert-row:last-child {
+  border-bottom: none;
+}
+
+.ai-alert-badge,
+.ai-risk-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.badge-popular { background-color: #d32f2f; color: white; }
+.badge-slow    { background-color: #888;    color: white; }
+
+.ai-risk-badge.health-critical { background-color: #d32f2f; color: white; }
+.ai-risk-badge.health-warning  { background-color: #ed6c02; color: white; }
+
+.ai-alert-text {
+  flex: 1;
+  font-size: 14px;
+}
+
+.ai-confidence,
+.ai-risk-score {
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 36px;
+  text-align: right;
+}
+
+.ai-empty {
+  font-size: 14px;
+  color: var(--card-text);
+  opacity: 0.7;
+  padding: 8px 0;
+}
+
+.ai-error-text {
+  color: #d32f2f;
+  opacity: 1;
+}
+
+.ai-loading-card {
+  text-align: center;
+  opacity: 0.6;
+}
+

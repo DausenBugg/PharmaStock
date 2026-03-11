@@ -6,11 +6,37 @@ import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { HttpClient } from '@angular/common/http';
 
-// Service + model + mapper (jcDev)
-import { InventoryService } from '../services/inventory.service';
-import { InventoryRow } from './inventory.model';
-import { mapInventoryApiToRow } from './inventory.mapper';
+export interface InventoryItem {
+  inventoryStockId: number;
+  medicationId: number;
+  medicationName: string;
+  form: string;
+  strength: string;
+  nationalDrugCode: string;
+  lotNumber: string;
+  quantityOnHand: number;
+  expirationDate: string;
+  reorderPoint: number;
+  binLocation: string;
+  beyondUseDate: string;
+}
+
+interface ApiInventoryItem {
+  inventoryStockId: number;
+  medicationId: number;
+  medicationName: string;
+  form: string;
+  strength: string;
+  nationalDrugCode: string;
+  quantityOnHand: number;
+  reorderLevel: number;
+  binLocation: string;
+  lotNumber: string;
+  expirationDate: string;
+  beyondUseDate: string;
+}
 
 @Component({
   selector: 'app-inventory',
@@ -27,12 +53,19 @@ import { mapInventoryApiToRow } from './inventory.mapper';
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.css']
 })
-export class InventoryComponent implements AfterViewInit {
+export class InventoryComponent implements OnInit {
+  private readonly apiUrl = 'http://localhost:5177/api/inventorystocks';
 
-  // --- SEARCH/FILTER STATE ---
-  searchName: string = '';
-  searchLot: string = '';
-  nearExpirationOnly: boolean = false;
+  constructor(private readonly http: HttpClient) {
+  }
+
+  ngOnInit(): void {
+    this.fetchInventoryStocks();
+  }
+
+  searchName = '';
+  searchLot = '';
+  nearExpirationOnly = false;
   private readonly nearExpirationDays = 7;
 
   // --- TABLE ---
@@ -46,40 +79,61 @@ export class InventoryComponent implements AfterViewInit {
     'packageDescription',
     'quantity',
     'reorderPoint',
-    'binLocation',
-    'lot',
-    'expiration',
-    'beyondUseDate'
+    'binLocation'
   ];
 
-  // Keep a master list and a filtered list
-  private allItems: InventoryRow[] = [];
-  dataSource: InventoryRow[] = [];
+  allItems: InventoryItem[] = [];
 
-  constructor(
-    private inventoryService: InventoryService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  dataSource: InventoryItem[] = [...this.allItems];
 
-  ngAfterViewInit(): void {
-    this.loadInventory();
-  }
-
-  // --- FETCH ---
-  loadInventory(): void {
-    this.inventoryService.getInventoryStocks().subscribe({
-      next: (data) => {
-        this.allItems = data.map(mapInventoryApiToRow);
-        this.applyFilters();          // show filtered results (or all if no filters)
-        this.cdr.detectChanges();     // helps if the table renders before data arrives
+  private fetchInventoryStocks(): void {
+    this.http.get<ApiInventoryItem[]>(this.apiUrl).subscribe({
+      next: (items) => {
+        this.allItems = items.map((item) => ({
+          inventoryStockId: item.inventoryStockId,
+          medicationId: item.medicationId,
+          medicationName: item.medicationName,
+          form: item.form,
+          strength: item.strength,
+          nationalDrugCode: item.nationalDrugCode,
+          lotNumber: item.lotNumber,
+          quantityOnHand: item.quantityOnHand,
+          reorderPoint: item.reorderLevel,
+          binLocation: item.binLocation,
+          expirationDate: item.expirationDate,
+          beyondUseDate: item.beyondUseDate
+        }));
+        this.applyFilters();
       },
-      error: (err) => {
-        console.error('GET /InventoryStocks failed', err);
+      error: () => {
         this.allItems = [];
         this.dataSource = [];
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private loadRiskScores(): void {
+    this.predictionService.getExpirationRisks().subscribe({
+      next: (risks) => {
+        this.riskScores = new Map(risks.map(r => [r.inventoryStockId, r]));
+      },
+      error: () => { /* AI unavailable — table still works */ }
+    });
+  }
+
+  getRiskScore(item: InventoryItem): string {
+    const risk = this.riskScores.get(item.inventoryStockId);
+    if (!risk) return '—';
+    return `${(risk.riskScore * 100).toFixed(0)}%`;
+  }
+
+  getRiskBadgeClass(item: InventoryItem): string {
+    const risk = this.riskScores.get(item.inventoryStockId);
+    if (!risk) return '';
+    if (risk.riskScore >= 0.75) return 'health-critical';
+    if (risk.riskScore >= 0.5) return 'health-warning';
+    return '';
   }
 
   // Called by (ngSubmit)="onSearch()"
