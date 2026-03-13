@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-logon-screen',
@@ -10,17 +11,39 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./logon-screen.css'],
 })
 export class LogonScreen {
-
-  username: string = '';
+  email: string = '';
   password: string = '';
+  errorMessage: string = '';
+  isLoading: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   onSubmit(): void {
-    console.log('Login attempted', this.username, this.password);
+    if (!this.email || !this.password) {
+      this.errorMessage = 'Email and password are required.';
+      return;
+    }
 
-    // Temporary navigation (replace with auth later)
-    this.router.navigate(['/dashboard']);
+    this.errorMessage = '';
+    this.isLoading = true;
+
+    this.authService.login({
+      email: this.email,
+      password: this.password
+    }).subscribe({
+      next: (response) => {
+        console.log('Login successful', response);
+        this.isLoading = false;
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        console.error('Login failed', error);
+        this.isLoading = false;
+        this.errorMessage = 'Login failed. Check your email or password.';
+      }
+    });
   }
-
 }

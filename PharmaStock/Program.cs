@@ -47,16 +47,6 @@ builder.Services.AddHttpClient<IAIPredictionService, AIPredictionService>(client
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("FrontendDev", policy =>
-    {
-        policy
-            .WithOrigins("http://localhost:4200")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
 
 // --------------------------
 // ASP.NET Core Identity

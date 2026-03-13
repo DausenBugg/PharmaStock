@@ -1,40 +1,43 @@
 <div class="login-container">
 
-  <!-- Light Theme Logo -->
   <img
     src="assets/pharmastock-logo-transparent-light.png"
     class="login-logo logo-light"
     alt="PharmaStock Logo" />
 
-  <!-- Dark Theme Logo -->
   <img
     src="assets/pharmastock-logo-transparent-dark.png"
     class="login-logo logo-dark"
     alt="PharmaStock Logo" />
 
   <div class="login-card">
-
     <h2>Login</h2>
 
     <input
-      id="username"
-      type="text"
-      placeholder="Username"
-      [(ngModel)]="username" />
+      id="email"
+      type="email"
+      placeholder="Email"
+      [(ngModel)]="email"
+      name="email" />
 
     <input
       id="password"
       type="password"
       placeholder="Password"
-      [(ngModel)]="password" />
+      [(ngModel)]="password"
+      name="password" />
 
     <button
       id="login-btn"
       class="primary-button"
-      (click)="onSubmit()">
-      Log In
+      (click)="onSubmit()"
+      [disabled]="isLoading">
+      {{ isLoading ? 'Logging in...' : 'Log In' }}
     </button>
 
+    <p *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </p>
   </div>
 
 </div>
