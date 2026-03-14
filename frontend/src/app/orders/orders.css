@@ -288,7 +288,7 @@ td {
 }
 
 .modal-box {
-  background: #6dbe45;
+  background: var(--modal-box);
   padding: 32px;
   border-radius: 8px;
   width: 100%;
