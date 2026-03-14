@@ -23,4 +23,15 @@ export class InventoryService {
              { adjustment }
         );
     }
+
+    createInventoryStocks(Item: InventoryApiItem ): Observable<InventoryApiItem> {
+        return this.http.post<InventoryApiItem>(
+            `${this.baseUrl}/InventoryStocks`,
+            Item
+
+        );
+    }
+
+    
+
 }

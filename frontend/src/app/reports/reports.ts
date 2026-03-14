@@ -197,5 +197,4 @@ export class Reports implements OnInit {
     return '';
 
   }
-
 }
