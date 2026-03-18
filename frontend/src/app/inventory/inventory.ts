@@ -6,12 +6,14 @@ import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+
 import { PredictionService, ExpirationRisk } from '../services/prediction.service';
 
 // Service + model + mapper
 import { InventoryService } from '../services/inventory.service';
 import { InventoryRow } from './inventory.model';
 import { mapInventoryApiToRow } from './inventory.mapper';
+import { InventoryApiItem } from '../services/inventory-api.model';
 
 @Component({
   selector: 'app-inventory',
@@ -30,14 +32,13 @@ import { mapInventoryApiToRow } from './inventory.mapper';
 })
 export class InventoryComponent implements AfterViewInit {
 
-  // --- SEARCH/FILTER STATE ---
-  searchName: string = '';
-  searchLot: string = '';
-  nearExpirationOnly: boolean = false;
-  private readonly nearExpirationDays = 7;
+  // SEARCH
+  searchName = '';
+  searchLot = '';
 
-  // --- TABLE ---
+  // TABLE
   displayedColumns: string[] = [
+    'edit',
     'medicationName',
     'genericName',
     'nationalDrugCode',
@@ -54,137 +55,330 @@ export class InventoryComponent implements AfterViewInit {
     'beyondUseDate'
   ];
 
-  // Keep a master list and a filtered list
+  // DATA
   private allItems: InventoryRow[] = [];
   dataSource: InventoryRow[] = [];
 
-  // AI risk scores keyed by inventoryStockId
+  // AI risk scores
   riskScores: Map<number, ExpirationRisk> = new Map();
+
+  // ROW SELECTION
+  selectedItem: InventoryRow | null = null;
+
+  // MODALS
+  showInventoryModal = false;
+  showPasswordModal = false;
+
+  // FORM STATE
+  editingItem: InventoryRow | null = null;
+  formItem: InventoryApiItem = {} as InventoryApiItem;
+  rowItem: InventoryRow = {} as InventoryRow;
+
+  originalQuantity = 0;
+
+  passwordInput = '';
 
   constructor(
     private inventoryService: InventoryService,
-    private cdr: ChangeDetectorRef,
-    private predictionService: PredictionService
+    private predictionService: PredictionService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngAfterViewInit(): void {
     this.loadInventory();
   }
 
-  // --- FETCH ---
+  // -----------------------------
+  // LOAD INVENTORY
+  // -----------------------------
   private loadInventory(): void {
+
     this.inventoryService.getInventoryStocks().subscribe({
       next: (data) => {
+
         this.allItems = data.map(mapInventoryApiToRow);
-        this.applyFilters();
+        this.dataSource = [...this.allItems];
+
         this.loadRiskScores();
+
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('GET /InventoryStocks failed', err);
-        this.allItems = [];
-        this.dataSource = [];
-        this.cdr.detectChanges();
+        console.error('Inventory load failed:', err);
       }
     });
+
   }
 
+  // -----------------------------
+  // LOAD AI RISK
+  // -----------------------------
   private loadRiskScores(): void {
+
     this.predictionService.getExpirationRisks().subscribe({
       next: (risks) => {
-        this.riskScores = new Map(risks.map((r) => [r.inventoryStockId, r]));
-      },
-      error: () => {
-        // AI service can be temporarily unavailable; inventory still renders.
+        this.riskScores = new Map(risks.map(r => [r.inventoryStockId, r]));
       }
     });
+
   }
 
   getRiskScore(item: InventoryRow): string {
+
     const risk = this.riskScores.get(item.inventoryStockId);
+
     if (!risk) return '-';
+
     return `${(risk.riskScore * 100).toFixed(0)}%`;
+
   }
 
   getRiskBadgeClass(item: InventoryRow): string {
+
     const risk = this.riskScores.get(item.inventoryStockId);
+
     if (!risk) return '';
+
     if (risk.riskScore >= 0.75) return 'health-critical';
     if (risk.riskScore >= 0.5) return 'health-warning';
+
     return '';
+
   }
 
+  // -----------------------------
+  // SEARCH
+  // -----------------------------
   onSearch(): void {
-    this.applyFilters();
+
+    const nameQuery = this.searchName.toLowerCase();
+    const lotQuery = this.searchLot.toLowerCase();
+
+    this.dataSource = this.allItems.filter(item =>
+      (!nameQuery || item.medicationName.toLowerCase().includes(nameQuery) ||
+        (item.genericName ?? '').toLowerCase().includes(nameQuery)) &&
+      (!lotQuery || item.lot.toLowerCase().includes(lotQuery))
+    );
+
   }
 
   clearFilters(): void {
+
     this.searchName = '';
     this.searchLot = '';
-    this.nearExpirationOnly = false;
+
     this.dataSource = [...this.allItems];
+
   }
 
-  // --- FILTER LOGIC ---
-  private applyFilters(): void {
-    const nameQuery = this.searchName.trim().toLowerCase();
-    const lotQuery = this.searchLot.trim().toLowerCase();
+  // -----------------------------
+  // ROW SELECT
+  // -----------------------------
+  onSelectRow(item: InventoryRow, event: any): void {
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    if (event.target.checked) {
+      this.selectedItem = item;
+    } else {
+      this.selectedItem = null;
+    }
 
-    const nearExpirationCutoff = new Date(today);
-    nearExpirationCutoff.setDate(nearExpirationCutoff.getDate() + this.nearExpirationDays);
+  }
 
-    this.dataSource = this.allItems.filter((row) => {
-      const medName = (row.medicationName ?? '').toLowerCase();
-      const lot = (row.lot ?? '').toLowerCase();
+  // -----------------------------
+  // OPEN FORM
+  // -----------------------------
+  openInventoryForm(): void {
 
-      const matchesName = !nameQuery || medName.includes(nameQuery);
-      const matchesLot = !lotQuery || lot.includes(lotQuery);
+    console.log("OPEN INVENTORY MODAL");
+    this.showInventoryModal = true;
 
-      // Support either `expiration` or `expirationDate` depending on your model/mapper
-      const expValue = (row as any).expiration ?? (row as any).expirationDate;
-      const expDate = expValue ? new Date(expValue) : null;
+    if (this.selectedItem) {
 
-      let matchesNearExpiration = true;
-      if (this.nearExpirationOnly) {
-        if (!expDate || isNaN(expDate.getTime())) {
-          matchesNearExpiration = false;
-        } else {
-          expDate.setHours(0, 0, 0, 0);
-          matchesNearExpiration = expDate >= today && expDate <= nearExpirationCutoff;
-        }
+        this.editingItem = this.selectedItem;
+
+        this.formItem = {
+          inventoryStockId: this.selectedItem.inventoryStockId,
+          medicationId: this.selectedItem.medicationId,
+
+          medicationName: this.selectedItem.medicationName,
+          genericName: this.selectedItem.genericName,
+
+          nationalDrugCode: this.selectedItem.nationalDrugCode,
+          form: this.selectedItem.form,
+          strength: this.selectedItem.strength,
+
+          quantityOnHand: this.selectedItem.quantity,
+          reorderLevel: this.selectedItem.reorderPoint,
+
+          binLocation: this.selectedItem.binLocation,
+          lotNumber: this.selectedItem.lot,
+
+          expirationDate: this.selectedItem.expiration,
+          beyondUseDate: this.selectedItem.beyondUseDate,
+
+          packageNdc: this.selectedItem.packageNdc,
+          packageDescription: this.selectedItem.packageDescription
+        };
+
+        this.originalQuantity = Number(this.selectedItem.quantity);
+
+      } else {
+
+        this.editingItem = null;
+
+        this.formItem = {
+          inventoryStockId: 0,
+          medicationId: 0,
+
+          medicationName: '',
+          genericName: null,
+
+          nationalDrugCode: '',
+          form: '',
+          strength: '',
+
+          quantityOnHand: null,
+          reorderLevel: null,
+
+          binLocation: '',
+          lotNumber: '',
+
+          expirationDate: null,
+          beyondUseDate: null,
+
+          packageNdc: null,
+          packageDescription: null
+        };
+
       }
 
-      return matchesName && matchesLot && matchesNearExpiration;
-    });
+    this.showInventoryModal = true;
   }
 
-  // --- UI CLASSES ---
+  cancelInventoryEdit(): void {
+
+    this.showInventoryModal = false;
+
+  }
+
+  // -----------------------------
+  // SAVE CLICK
+  // -----------------------------
+  saveInventory(): void {
+    this.showInventoryModal = false;
+    this.showPasswordModal = true;
+  }
+
+  cancelPassword(): void {
+
+    this.passwordInput = '';
+    this.showPasswordModal = false;
+
+  }
+
+  // -----------------------------
+  // CONFIRM PASSWORD
+  // -----------------------------
+  confirmPassword(): void {
+
+    console.log('confirmPassword called');
+    console.log('passwordInput:', this.passwordInput);
+    console.log('editingItem:', this.editingItem);
+    console.log('formItem:', this.formItem);
+
+    if (!this.passwordInput || this.passwordInput.trim() === '') {
+      console.log('Password blank, stopping');
+      return;
+    }
+
+    if (!this.editingItem) {
+      console.log('Creating new item');
+
+      this.inventoryService
+        .createInventoryStocks(this.formItem)
+        .subscribe({
+          next: (res) => {
+            console.log('Create success:', res);
+            this.finishSave();
+          },
+          error: (err) => {
+            console.error('Create failed:', err);
+          }
+        });
+
+      return;
+    }
+
+    const newQuantity = Number(this.formItem.quantityOnHand);
+    const oldQuantity = Number(this.originalQuantity);
+    const adjustment = newQuantity - oldQuantity;
+
+    console.log('Old quantity:', oldQuantity);
+    console.log('New quantity:', newQuantity);
+    console.log('Adjustment:', adjustment);
+
+    if (adjustment !== 0) {
+      this.inventoryService
+        .adjustQuantity(this.editingItem.inventoryStockId, adjustment)
+        .subscribe({
+          next: (res) => {
+            console.log('Adjust success:', res);
+            this.finishSave();
+          },
+          error: (err) => {
+            console.error('Adjust failed:', err);
+          }
+        });
+    } else {
+      console.log('No quantity change detected.');
+      this.finishSave();
+    }
+  }
+
+  // -----------------------------
+  // COMPLETE SAVE
+  // -----------------------------
+  finishSave(): void {
+
+    this.passwordInput = '';
+
+    this.showPasswordModal = false;
+    this.showInventoryModal = false;
+
+    this.selectedItem = null;
+
+    //this.inventoryService.clearCache();
+
+    this.loadInventory();
+
+  }
+
+  // -----------------------------
+  // UI COLORS
+  // -----------------------------
   getReorderClass(item: InventoryRow): string {
+
     if (item.quantity < item.reorderPoint) return 'health-critical';
     if (item.quantity === item.reorderPoint) return 'health-warning';
+
     return '';
+
   }
 
   getExpirationClass(item: InventoryRow): string {
+
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const expValue = (item as any).expiration ?? (item as any).expirationDate;
-    if (!expValue) return '';
-
-    const expirationDate = new Date(expValue);
-    if (isNaN(expirationDate.getTime())) return '';
-
-    expirationDate.setHours(0, 0, 0, 0);
+    const expirationDate = new Date(item.expiration);
 
     const diffInDays =
-      (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+      (expirationDate.getTime() - today.getTime()) /
+      (1000 * 60 * 60 * 24);
 
-    if (diffInDays < 0) return 'health-critical';   // expired
-    if (diffInDays <= 30) return 'health-warning';  // expiring soon
+    if (diffInDays < 0) return 'health-critical';
+    if (diffInDays <= 30) return 'health-warning';
+
     return '';
+
   }
+
 }

@@ -12,8 +12,8 @@ export interface InventoryApiItem {
     strength: string;
     nationalDrugCode: string;
 
-    quantityOnHand: number;
-    reorderLevel: number;
+    quantityOnHand: number | null;
+    reorderLevel: number | null;
 
     binLocation: string;
     lotNumber: string;

@@ -24,4 +24,14 @@ export class InventoryService {
         );
     }
 
+    createInventoryStocks(Item: InventoryApiItem ): Observable<InventoryApiItem> {
+        return this.http.post<InventoryApiItem>(
+            `${this.baseUrl}/InventoryStocks`,
+            Item
+
+        );
+    }
+
+    
+
 }
