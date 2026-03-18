@@ -8,7 +8,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { PredictionService, ExpirationRisk } from '../services/prediction.service';
 
-// Service + model + mapper (jcDev)
+// Service + model + mapper
 import { InventoryService } from '../services/inventory.service';
 import { InventoryRow } from './inventory.model';
 import { mapInventoryApiToRow } from './inventory.mapper';

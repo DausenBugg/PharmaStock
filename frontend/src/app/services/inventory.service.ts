@@ -23,4 +23,5 @@ export class InventoryService {
              { adjustment }
         );
     }
+
 }
