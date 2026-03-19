@@ -82,7 +82,17 @@ public class InventoryStockService : InventoryStockServiceInterface
             OccurredAtUtc = DateTime.UtcNow
         });
 
-        await _context.SaveChangesAsync();
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateException ex)
+        {
+            // Handle potential database update exceptions, such as concurrency issues
+            throw new InvalidOperationException("Save Failed: Failed to Save Usage History to Table", ex);
+        }
+    
 
         return stock.ToInventoryStockResponse();
     }

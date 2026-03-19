@@ -43,6 +43,14 @@ Thumbs.db
 # full raw datasets are too large to track in git and should be imported directly into the database instead
 # data/Full/
 
+###############################################################################
+# python virtual environment
+###############################################################################
+ai-service/.venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
 
 # Ignore the temporary files created by the application for processing imports, these are not needed in source control and can be safely ignored
 *.tmp.csv
