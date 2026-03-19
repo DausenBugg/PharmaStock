@@ -27,6 +27,10 @@ public class AIPredictionService : IAIPredictionService
         var medications = await _context.Medications
             .Include(m => m.InventoryStocks)
             .AsNoTracking()
+            //added Take(10) to limit the number of medications being sent to the AI prediction service for better performance and to
+            //avoid overwhelming the service with too much data in a single batch request. This can be
+            //adjusted as needed based on the expected volume of inventory and the capacity of the AI service.
+            .Take(10)
             .ToListAsync();
 
         var now = DateTime.UtcNow;
@@ -37,6 +41,10 @@ public class AIPredictionService : IAIPredictionService
             .Where(u => u.OccurredAtUtc >= ninetyDaysAgo)
             .AsNoTracking()
             .ToListAsync();
+
+            // Added console line to log the number of medications and usage records being sent to the AI prediction service for better visibility into the batch request size
+            Console.WriteLine($"Reorder meds count: {medications.Count}");
+            Console.WriteLine($"Reorder usage history count: {usageHistory.Count}");
 
         var batchRequest = new
         {
@@ -70,29 +78,57 @@ public class AIPredictionService : IAIPredictionService
             }).ToList()
         };
 
-        var response = await _httpClient.PostAsJsonAsync("/predict/batch-reorder", batchRequest, JsonOptions);
-        response.EnsureSuccessStatusCode();
-
-        var result = await response.Content.ReadFromJsonAsync<BatchReorderResult>(JsonOptions);
-
-        // Filter to only medications where current stock is at or below the recommended level
-        var alerts = new List<ReorderPredictionResponse>();
-        foreach (var pred in result?.Predictions ?? [])
+        try
         {
-            var med = medications.FirstOrDefault(m => m.MedicationId == pred.MedicationId);
-            if (med == null) continue;
+            Console.WriteLine("Calling AI reorder endpoint...");
 
-            var totalStock = med.InventoryStocks
-                .Where(s => s.ExpirationDate > now)
-                .Sum(s => s.QuantityOnHand);
+            var response = await _httpClient.PostAsJsonAsync("/predict/batch-reorder", batchRequest, JsonOptions);
 
-            if (totalStock <= pred.RecommendedReorderLevel)
+            var raw = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"AI Status: {(int)response.StatusCode}");
+            Console.WriteLine($"AI Response: {raw}");
+
+            response.EnsureSuccessStatusCode();
+
+            var result = JsonSerializer.Deserialize<BatchReorderResult>(raw, new JsonSerializerOptions
             {
-                alerts.Add(pred);
-            }
-        }
+                PropertyNameCaseInsensitive = true
+            });
 
-        return alerts.OrderBy(a => a.Confidence).ToList();
+            // Filter to only medications where current stock is at or below the recommended level
+            var alerts = new List<ReorderPredictionResponse>();
+            foreach (var pred in result?.Predictions ?? [])
+            {
+                var med = medications.FirstOrDefault(m => m.MedicationId == pred.MedicationId);
+                if (med == null) continue;
+
+                var totalStock = med.InventoryStocks
+                    .Where(s => s.ExpirationDate > now)
+                    .Sum(s => s.QuantityOnHand);
+
+                if (totalStock <= pred.RecommendedReorderLevel)
+                {
+                    alerts.Add(pred);
+                }
+            }
+
+            return alerts.OrderBy(a => a.Confidence).ToList();
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"Timeout calling AI reorder endpoint: {ex}");
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"HTTP error calling AI reorder endpoint: {ex}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error in GetReorderAlertsAsync: {ex}");
+            throw;
+        }
     }
 
     public async Task<List<ExpirationRiskResponse>> GetExpirationRisksAsync()
@@ -104,6 +140,10 @@ public class AIPredictionService : IAIPredictionService
         var stocks = await _context.InventoryStocks
             .Include(s => s.Medication)
             .AsNoTracking()
+            //added Take(10) to limit the number of inventory lots being sent to the AI prediction service for better performance and to
+            //avoid overwhelming the service with too much data in a single batch request. This can be adjusted as needed based on the 
+            // expected volume of inventory and the capacity of the AI service.
+            .Take(10)
             .ToListAsync();
 
         // Get daily usage averages per medication
@@ -111,13 +151,17 @@ public class AIPredictionService : IAIPredictionService
             .Where(u => u.OccurredAtUtc >= thirtyDaysAgo && u.ChangeType == "Dispensed")
             .GroupBy(u => u.MedicationId)
             .Select(g => new { MedicationId = g.Key, TotalUsed = g.Sum(u => u.QuantityChanged) })
-            .AsNoTracking()
             .ToListAsync();
 
         var avgUsageLookup = usageByMed.ToDictionary(
             u => u.MedicationId,
             u => u.TotalUsed / 30.0
         );
+
+        // Added console lines to log the number of inventory lots and usage records being sent to the AI prediction service for better visibility into the batch request size
+        Console.WriteLine($"Expiration stocks count: {stocks.Count}");
+        Console.WriteLine($"Expiration usage groups count: {usageByMed.Count}");
+
 
         var batchRequest = new
         {
@@ -129,19 +173,47 @@ public class AIPredictionService : IAIPredictionService
                 expiration_date = s.ExpirationDate.ToString("o"),
                 avg_daily_usage_30d = avgUsageLookup.GetValueOrDefault(s.MedicationId, 0.0),
                 medication_unit_value = 1.0,
-                // FastAPI schema requires num_lots_same_med >= 1
-                num_lots_same_med = Math.Max(1, stocks.Count(x => x.MedicationId == s.MedicationId && x.ExpirationDate > now))
+                num_lots_same_med = Math.Max(1,
+                    stocks.Count(x => x.MedicationId == s.MedicationId && x.ExpirationDate > now))
             }).ToList()
         };
 
-        var response = await _httpClient.PostAsJsonAsync("/predict/batch-expiration", batchRequest, JsonOptions);
-        response.EnsureSuccessStatusCode();
+        try
+        {
+            Console.WriteLine("Calling AI expiration endpoint...");
 
-        var result = await response.Content.ReadFromJsonAsync<BatchExpirationResult>(JsonOptions);
+            var response = await _httpClient.PostAsJsonAsync("/predict/batch-expiration", batchRequest, JsonOptions);
 
-        return (result?.RiskScores ?? [])
-            .OrderByDescending(r => r.RiskScore)
-            .ToList();
+            var raw = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"AI Status: {(int)response.StatusCode}");
+            Console.WriteLine($"AI Response: {raw}");
+
+            response.EnsureSuccessStatusCode();
+
+            var result = JsonSerializer.Deserialize<BatchExpirationResult>(raw, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return (result?.RiskScores ?? [])
+                .OrderByDescending(r => r.RiskScore)
+                .ToList();
+        }
+        catch (TaskCanceledException ex)
+        {
+            Console.WriteLine($"Timeout calling AI expiration endpoint: {ex}");
+            throw;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"HTTP error calling AI expiration endpoint: {ex}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error in GetExpirationRisksAsync: {ex}");
+            throw;
+        }
     }
 
     // Internal DTOs for deserializing Python API responses
