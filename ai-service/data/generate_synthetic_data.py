@@ -266,6 +266,12 @@ def compute_reorder_features(usage_df: pd.DataFrame, ref_date: datetime) -> pd.D
         form_val = med["form"] if med["form"] in form_categories else "Other"
         form_encoded = {f"form_{f.lower().replace(' ', '_')}": int(form_val == f) for f in form_categories}
 
+        # Derived features
+        std_30 = float(np.sqrt(var_30)) if var_30 > 0 else 0.0
+        usage_cv = std_30 / max(avg_30, 0.01)
+        usage_7d_vs_30d_ratio = avg_7 / max(avg_30, 0.01)
+        days_of_stock_remaining = total_qty / max(avg_30, 0.01)
+
         row = {
             "medication_id": mid,
             "avg_daily_usage_7d": round(avg_7, 3),
@@ -273,10 +279,13 @@ def compute_reorder_features(usage_df: pd.DataFrame, ref_date: datetime) -> pd.D
             "avg_daily_usage_90d": round(avg_90, 3),
             "usage_variance_30d": round(var_30, 3),
             "usage_trend": round(trend, 5),
+            "usage_coefficient_of_variation": round(usage_cv, 4),
+            "usage_7d_vs_30d_ratio": round(usage_7d_vs_30d_ratio, 4),
             "days_since_last_dispense": days_since,
             "total_quantity_on_hand": total_qty,
             "num_active_lots": num_active,
             "days_to_nearest_expiry": days_to_nearest_expiry,
+            "days_of_stock_remaining": round(days_of_stock_remaining, 2),
             "restock_frequency_30d": restock_freq,
             "day_of_week": ref_date.weekday(),
             "month": ref_date.month,
@@ -288,7 +297,7 @@ def compute_reorder_features(usage_df: pd.DataFrame, ref_date: datetime) -> pd.D
 
 
 def compute_reorder_labels(features_df: pd.DataFrame) -> pd.DataFrame:
-    """Generate target labels for the reorder model."""
+    """Generate target labels for the reorder model with realistic noise."""
     labels = []
     lead_time_days = 7
     base_safety = 1.5
@@ -306,6 +315,10 @@ def compute_reorder_labels(features_df: pd.DataFrame) -> pd.DataFrame:
 
         if trend > 0:
             reorder_level *= 1.1
+
+        # Add Gaussian noise (~12% relative) to prevent deterministic labels
+        noise_std = max(reorder_level * 0.12, 1.0)
+        reorder_level += np.random.normal(0, noise_std)
 
         reorder_level = int(np.clip(reorder_level, 5, 100))
 
@@ -330,7 +343,11 @@ def compute_expiration_features(usage_df: pd.DataFrame, ref_date: datetime) -> p
 
         qty = lot["initial_qty"]  # synthetic approximation
         days_to_deplete = qty / max(avg_usage, 0.01)
-        will_expire_before = 1 if days_to_expiry < days_to_deplete else 0
+
+        # Derived features (no leaky binary flag)
+        expiry_buffer_days = days_to_expiry - days_to_deplete
+        usage_to_quantity_ratio = avg_usage / max(qty, 1)
+        waste_risk_score = (qty * MEDICATION_VALUES.get(mid, 1.0)) / max(days_to_expiry, 1)
 
         med_lots_count = sum(1 for l in INVENTORY_LOTS if l["medication_id"] == mid and l["expiration_date"] > ref_date)
 
@@ -341,7 +358,9 @@ def compute_expiration_features(usage_df: pd.DataFrame, ref_date: datetime) -> p
             "quantity_on_hand": qty,
             "avg_daily_usage_30d": round(avg_usage, 3),
             "days_to_deplete": round(days_to_deplete, 2),
-            "will_expire_before_depleted": will_expire_before,
+            "expiry_buffer_days": round(expiry_buffer_days, 2),
+            "usage_to_quantity_ratio": round(usage_to_quantity_ratio, 5),
+            "waste_risk_score": round(waste_risk_score, 4),
             "medication_unit_value": MEDICATION_VALUES.get(mid, 1.0),
             "num_lots_same_med": med_lots_count,
         })
@@ -350,7 +369,7 @@ def compute_expiration_features(usage_df: pd.DataFrame, ref_date: datetime) -> p
 
 
 def compute_expiration_labels(features_df: pd.DataFrame) -> pd.DataFrame:
-    """Generate binary labels for the expiration risk classifier."""
+    """Generate binary labels for the expiration risk classifier with realistic noise."""
     labels = []
 
     for _, row in features_df.iterrows():
@@ -366,6 +385,13 @@ def compute_expiration_labels(features_df: pd.DataFrame) -> pd.DataFrame:
             high_risk = 1
         elif dte < 30 and qty > avg_usage * 30:
             high_risk = 1
+
+        # Add label noise for borderline cases to prevent deterministic mapping
+        buffer_ratio = abs(dte - dtd) / max(dtd, 1)
+        if buffer_ratio < 0.3:  # borderline case
+            flip_prob = 0.15 * (1 - buffer_ratio / 0.3)
+            if np.random.random() < flip_prob:
+                high_risk = 1 - high_risk
 
         labels.append({
             "inventory_stock_id": row["inventory_stock_id"],

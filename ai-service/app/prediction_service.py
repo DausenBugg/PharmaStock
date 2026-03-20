@@ -51,12 +51,18 @@ def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionRespo
     prediction = _reorder_model.predict(features)[0]
     recommended = int(np.clip(round(prediction), 5, 100))
 
-    # Estimate confidence from tree variance
-    rf_model = _reorder_model.named_steps["model"]
-    tree_preds = np.array([tree.predict(_reorder_model.named_steps["scaler"].transform(features))[0]
-                           for tree in rf_model.estimators_])
-    std = float(tree_preds.std())
-    confidence = max(0.0, min(1.0, 1.0 - (std / max(prediction, 1.0))))
+    # Estimate confidence from model internals (algorithm-aware)
+    model_obj = _reorder_model.named_steps["model"]
+    scaled_features = _reorder_model.named_steps["scaler"].transform(features)
+
+    if hasattr(model_obj, "estimators_") and hasattr(model_obj.estimators_[0], "predict"):
+        # RandomForest: variance across individual tree predictions
+        tree_preds = np.array([t.predict(scaled_features)[0] for t in model_obj.estimators_])
+        std = float(tree_preds.std())
+        confidence = max(0.0, min(1.0, 1.0 - (std / max(prediction, 1.0))))
+    else:
+        # HistGradientBoosting, GradientBoosting, Ridge, etc.: default high confidence
+        confidence = 0.85
 
     is_popular = recommended >= 40
 
