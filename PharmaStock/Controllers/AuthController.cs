@@ -113,7 +113,6 @@ namespace PharmaStock.Controllers
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            // Add role claims to the JWT token
             var roles = await _userManager.GetRolesAsync(user);
             foreach (var role in roles)
             {
@@ -139,9 +138,6 @@ namespace PharmaStock.Controllers
             return int.TryParse(duration, out var minutes) && minutes > 0 ? minutes : 60;
         }
 
-        /// <summary>
-        /// Assigns a role to a user. Admin only.
-        /// </summary>
         [HttpPost("assign-role")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AssignRole([FromBody] AssignRoleRequest request)
@@ -157,13 +153,11 @@ namespace PharmaStock.Controllers
                 return NotFound(new { message = "User not found." });
             }
 
-            // Validate that the role exists
             if (!await _roleManager.RoleExistsAsync(request.Role))
             {
                 return BadRequest(new { message = $"Role '{request.Role}' does not exist." });
             }
 
-            // Check if user already has the role
             if (await _userManager.IsInRoleAsync(user, request.Role))
             {
                 return BadRequest(new { message = $"User already has the role '{request.Role}'." });
@@ -182,9 +176,6 @@ namespace PharmaStock.Controllers
             return Ok(new { message = $"Role '{request.Role}' assigned to user '{request.Email}'." });
         }
 
-        /// <summary>
-        /// Removes a role from a user. Admin only.
-        /// </summary>
         [HttpPost("remove-role")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveRole([FromBody] AssignRoleRequest request)
@@ -200,7 +191,6 @@ namespace PharmaStock.Controllers
                 return NotFound(new { message = "User not found." });
             }
 
-            // Check if user has the role
             if (!await _userManager.IsInRoleAsync(user, request.Role))
             {
                 return BadRequest(new { message = $"User does not have the role '{request.Role}'." });
@@ -219,9 +209,6 @@ namespace PharmaStock.Controllers
             return Ok(new { message = $"Role '{request.Role}' removed from user '{request.Email}'." });
         }
 
-        /// <summary>
-        /// Gets all available roles. Admin only.
-        /// </summary>
         [HttpGet("roles")]
         [Authorize(Roles = "Admin")]
         public IActionResult GetRoles()
@@ -230,9 +217,6 @@ namespace PharmaStock.Controllers
             return Ok(roles);
         }
 
-        /// <summary>
-        /// Gets the roles for a specific user. Admin only.
-        /// </summary>
         [HttpGet("user-roles/{email}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUserRoles(string email)

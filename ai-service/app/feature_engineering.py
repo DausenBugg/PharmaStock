@@ -1,7 +1,3 @@
-"""
-Feature engineering — transforms raw request data into model-ready feature vectors.
-"""
-
 import numpy as np
 from datetime import datetime, timedelta
 from typing import List
@@ -46,7 +42,6 @@ def build_reorder_features(
     avg_90 = float(daily_90.mean())
     var_30 = float(daily_30.var()) if len(daily_30) > 1 else 0.0
 
-    # Usage trend (slope)
     if len(daily_30) > 1:
         x = np.arange(len(daily_30))
         coeffs = np.polyfit(x, daily_30, 1)
@@ -54,15 +49,12 @@ def build_reorder_features(
     else:
         trend = 0.0
 
-    # Days since last dispense
     dispensed_dates = [r.occurred_at_utc for r in usage_history if r.change_type == "Dispensed" and r.occurred_at_utc < ref_date]
     days_since = (ref_date - max(dispensed_dates)).days if dispensed_dates else 999
 
-    # Restock frequency in last 30 days
     start_30 = ref_date - timedelta(days=30)
     restock_freq = sum(1 for r in usage_history if r.change_type == "Restocked" and start_30 <= r.occurred_at_utc < ref_date)
 
-    # One-hot encode form
     form_val = medication_form if medication_form in FORM_CATEGORIES else "Other"
     form_encoded = [1.0 if f == form_val else 0.0 for f in FORM_CATEGORIES]
 

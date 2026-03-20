@@ -165,52 +165,6 @@ if (args.Contains("import-synthetic-usage", StringComparer.OrdinalIgnoreCase))
     return;
 }
 
-// --------------------------
-// Seed Roles and Initial Admin User
-// --------------------------
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
-    
-    // Seed roles
-    string[] roles = { "Admin", "Staff" };
-    
-    foreach (var role in roles)
-    {
-        if (!await roleManager.RoleExistsAsync(role))
-        {
-            await roleManager.CreateAsync(new IdentityRole(role));
-        }
-    }
-    
-    // Seed initial admin user
-    var adminEmail = "admin@pharmastock.com";
-    var adminUser = await userManager.FindByEmailAsync(adminEmail);
-    
-    if (adminUser == null)
-    {
-        adminUser = new IdentityUser
-        {
-            UserName = adminEmail,
-            Email = adminEmail,
-            EmailConfirmed = true
-        };
-        
-        // Default password - CHANGE IN PRODUCTION
-        var result = await userManager.CreateAsync(adminUser, "Admin@123!");
-        
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(adminUser, "Admin");
-        }
-    }
-    else if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
-    {
-        await userManager.AddToRoleAsync(adminUser, "Admin");
-    }
-}
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

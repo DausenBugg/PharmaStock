@@ -1,23 +1,15 @@
-"""
-Pydantic schemas for FastAPI request/response validation.
-"""
-
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
 
 
-# ─── Reorder Prediction ─────────────────────────────────────────────────────
-
 class UsageRecord(BaseModel):
-    """A single usage history entry."""
     quantity_changed: int = Field(ge=0)
     change_type: str  # Dispensed, Restocked, Adjustment, Expired_Disposal
     occurred_at_utc: datetime
 
 
 class ReorderPredictionRequest(BaseModel):
-    """Input for a single medication reorder prediction."""
     medication_id: int
     medication_form: str = "Tablet"
     usage_history: List[UsageRecord]
@@ -41,10 +33,7 @@ class BatchReorderResponse(BaseModel):
     predictions: List[ReorderPredictionResponse]
 
 
-# ─── Expiration Risk ─────────────────────────────────────────────────────────
-
 class ExpirationRiskRequest(BaseModel):
-    """Input for a single lot expiration risk assessment."""
     inventory_stock_id: int
     medication_id: int
     quantity_on_hand: int = Field(ge=0)
@@ -70,7 +59,6 @@ class BatchExpirationResponse(BaseModel):
     risk_scores: List[ExpirationRiskResponse]
 
 
-# ─── Health Check ────────────────────────────────────────────────────────────
 
 class HealthResponse(BaseModel):
     status: str

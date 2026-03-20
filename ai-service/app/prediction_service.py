@@ -1,7 +1,3 @@
-"""
-Prediction service — loads models and exposes predict methods.
-"""
-
 import os
 import joblib
 import numpy as np
@@ -15,13 +11,11 @@ from .models import (
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "models")
 
-# Global model references
 _reorder_model = None
 _expiration_model = None
 
 
 def load_models():
-    """Load serialized models into memory."""
     global _reorder_model, _expiration_model
 
     reorder_path = os.path.join(MODEL_DIR, "reorder_model.joblib")
@@ -43,7 +37,6 @@ def models_loaded() -> tuple[bool, bool]:
 
 
 def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionResponse:
-    """Predict the recommended reorder level for a medication."""
     if _reorder_model is None:
         raise RuntimeError("Reorder model not loaded")
 
@@ -65,7 +58,6 @@ def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionRespo
     std = float(tree_preds.std())
     confidence = max(0.0, min(1.0, 1.0 - (std / max(prediction, 1.0))))
 
-    # Popular if reorder level ≥ 40
     is_popular = recommended >= 40
 
     return ReorderPredictionResponse(
@@ -77,7 +69,6 @@ def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionRespo
 
 
 def predict_expiration_risk(request: ExpirationRiskRequest) -> ExpirationRiskResponse:
-    """Predict the expiration risk score for an inventory lot."""
     if _expiration_model is None:
         raise RuntimeError("Expiration model not loaded")
 
@@ -95,7 +86,6 @@ def predict_expiration_risk(request: ExpirationRiskRequest) -> ExpirationRiskRes
     risk_prob = _expiration_model.predict_proba(features)[0][1]
     risk_score = round(float(risk_prob), 4)
 
-    # Assign label
     if risk_score >= 0.75:
         risk_label = "Critical"
     elif risk_score >= 0.5:
