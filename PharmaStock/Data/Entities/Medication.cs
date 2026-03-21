@@ -9,10 +9,12 @@ namespace PharmaStock.Data.Entities
         public int MedicationId { get; set; }
 
         public string Name { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
         public string? GenericName { get; set; }
 
         public string NationalDrugCode { get; set; } = string.Empty;
+        
 
         public string Form { get; set; } = string.Empty;
 

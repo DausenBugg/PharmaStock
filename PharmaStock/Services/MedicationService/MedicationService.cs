@@ -158,9 +158,18 @@ namespace PharmaStock.Services
             if (medication == null)            
                 return (false, $"Medication with ID {id} not found.", null);
 
+
+            if (request.Description != null)
+            {
+                medication.Description = request.Description.Trim();
+            }
+
             if (request.NationalDrugCode != null)
             {
                 var NationalDrugCode = request.NationalDrugCode.Trim();
+
+                if (string.IsNullOrWhiteSpace(NationalDrugCode))
+                    return (false, "Medication National Drug Code cannot be empty.", null);
 
                 var existingMedication = await _context.Medications
                     .AsNoTracking()
@@ -173,16 +182,54 @@ namespace PharmaStock.Services
             }
 
             if (request.Name != null)
-                medication.Name = request.Name.Trim();
+            {
+                var name = request.Name.Trim();
+
+                if (string.IsNullOrWhiteSpace(name))
+                    return (false, "Medication name cannot be empty.", null);
+
+                medication.Name = name;
+            }
+
+            if (request.GenericName != null)
+            {
+                var genericName = request.GenericName.Trim();
+
+                if (string.IsNullOrWhiteSpace(genericName))
+                    return (false, "Medication generic name cannot be empty.", null);
+
+                medication.GenericName = genericName;       
+            }
 
             if (request.Form != null)
-                medication.Form = request.Form.Trim();
+            {
+                var form = request.Form.Trim();
+
+                if (string.IsNullOrWhiteSpace(form))
+                    return (false, "Medication form cannot be empty.", null);
+
+                medication.Form = form; 
+            }
 
             if (request.Strength != null)
-                medication.Strength = request.Strength.Trim();
+            {
+                var strength = request.Strength.Trim();
+
+                if (string.IsNullOrWhiteSpace(strength))
+                    return (false, "Medication strength cannot be empty.", null);
+
+                medication.Strength = strength;
+            }
 
             if (request.Manufacturer != null)
-                medication.Manufacturer = request.Manufacturer.Trim();
+            {
+                var manufacturer = request.Manufacturer.Trim();
+
+                if (string.IsNullOrWhiteSpace(manufacturer))
+                    return (false, "Medication manufacturer cannot be empty.", null);
+
+                medication.Manufacturer = manufacturer;
+            }
 
             medication.UpdatedAtUtc = DateTime.UtcNow;
 

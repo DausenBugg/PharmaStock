@@ -97,6 +97,146 @@ public class InventoryStockService : InventoryStockServiceInterface
         return stock.ToInventoryStockResponse();
     }
 
+    //---------------------------------------------------------------------------------------
+    // Patch the expiration date of an inventory stock record
+    // Throws KeyNotFoundException if the stock record is not found
+    // Throws InvalidOperationException if the new expiration date is in the past
+    // Uses the InventoryStockMapping to convert the updated stock entity to a response DTO
+    //---------------------------------------------------------------------------------------
+    public async Task<InventoryStockResponse> UpdateExpirationDateAsync(int inventoryStockId, UpdatePatchExpirationDateRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        if (!request.ExpirationDate.HasValue)
+            throw new ArgumentException("ExpirationDate is required.", nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var expirationDate = request.ExpirationDate.Value.Date;
+
+        if (expirationDate < DateTime.UtcNow.Date)
+            throw new InvalidOperationException("Expiration date cannot be in the past.");
+    
+        if (stock.ExpirationDate.Date == expirationDate)
+            throw new InvalidOperationException("New expiration date is the same as the current expiration date.");
+
+        if (expirationDate < stock.BeyondUseDate.Date)
+            throw new InvalidOperationException("Expiration date cannot be before the current beyond use date.");
+        
+        stock.ExpirationDate = request.ExpirationDate.Value;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }
+
+    //---------------------------------------------------------------------------------------
+    // Patch the beyond use date of an inventory stock record
+    // Throws KeyNotFoundException if the stock record is not found
+    // Throws InvalidOperationException if the new beyond use date is in the past
+    // Uses the InventoryStockMapping to convert the updated stock entity to a response DTO
+    //---------------------------------------------------------------------------------------
+    public async Task<InventoryStockResponse> UpdateBeyondUseDateAsync(int inventoryStockId,
+        UpdatePatchBUDRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        if (!request.BeyondUseDate.HasValue)
+            throw new ArgumentException("BeyondUseDate is required.", nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var beyondUseDate = request.BeyondUseDate.Value.Date;
+
+        if (beyondUseDate < DateTime.UtcNow.Date)
+            throw new InvalidOperationException("Beyond use date cannot be in the past.");
+    
+        if (stock.BeyondUseDate.Date == beyondUseDate)
+            throw new InvalidOperationException("New beyond use date is the same as the current beyond use date.");
+
+        if (beyondUseDate > stock.ExpirationDate.Date)
+            throw new InvalidOperationException("Beyond use date cannot be after the current expiration date.");
+        
+        
+        stock.BeyondUseDate = request.BeyondUseDate.Value;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }
+
+    //---------------------------------------------------------------------------------------
+    // Patch the package NDC of an inventory stock record
+    // Throws KeyNotFoundException if the stock record is not found
+    // Throws InvalidOperationException if the new package NDC is empty or already exists in another stock record
+    // Uses the InventoryStockMapping to convert the updated stock entity to a response DTO
+    //---------------------------------------------------------------------------------------
+    public async Task<InventoryStockResponse> UpdatePackageNdcAsync(int inventoryStockId, UpdatePackageNdcRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        if (string.IsNullOrWhiteSpace(request.PackageNdc))
+            throw new ArgumentException("PackageNdc is required.", nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var newPackageNdc = request.PackageNdc.Trim();
+
+        if (stock.PackageNdc == newPackageNdc)
+            throw new InvalidOperationException("New Package NDC is the same as the current Package NDC.");
+        
+        var duplicatePackageNdc = await _context.InventoryStocks.AnyAsync(s =>
+            s.PackageNdc == newPackageNdc && s.InventoryStockId != inventoryStockId);
+
+        if (duplicatePackageNdc)
+            throw new InvalidOperationException($"Package NDC '{newPackageNdc}' already exists in another stock record.");
+        
+        stock.PackageNdc = newPackageNdc;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }
+
+    //---------------------------------------------------------------------------------------
+    // Patch the package description of an inventory stock record
+    // Throws KeyNotFoundException if the stock record is not found
+    // Uses the InventoryStockMapping to convert the updated stock entity to a response DTO
+    //---------------------------------------------------------------------------------------
+     public async Task<InventoryStockResponse> UpdatePackageDescriptionAsync(int inventoryStockId, UpdatePackageDescriptionRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var newDescription = request.PackageDescription?.Trim() ?? string.Empty;
+
+        if (stock.PackageDescription == newDescription)
+            throw new InvalidOperationException("New package description is the same as the current package description.");
+        
+        stock.PackageDescription = newDescription;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }
+
     // --------------------------------------------------------------------------------------
     // Get inventory stock details by ID
     // Throws KeyNotFoundException if the stock record is not found
