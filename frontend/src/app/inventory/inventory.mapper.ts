@@ -22,8 +22,8 @@ export function mapInventoryApiToRow(x: InventoryApiItem): InventoryRow {
     lot: x.lotNumber,
     binLocation: x.binLocation,
 
-    quantity: x.quantityOnHand,
-    reorderPoint: x.reorderLevel,
+    quantity: x.quantityOnHand ?? 0,
+    reorderPoint: x.reorderLevel ?? 0,
 
     expiration: x.expirationDate ?? '',
     beyondUseDate: x.beyondUseDate ?? '',

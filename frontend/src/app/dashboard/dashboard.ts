@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, NgZone } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
 import { REPORT_DATA, Medication } from '../reports/reports';
 import { PredictionService, ReorderAlert, ExpirationRisk } from '../services/prediction.service';
-import { catchError, finalize, of, timeout } from 'rxjs';
+import { catchError, finalize, interval, of, Subject, takeUntil, timeout } from 'rxjs';
 
 
 @Component({
@@ -26,7 +26,13 @@ import { catchError, finalize, of, timeout } from 'rxjs';
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
+
+  // Added private var for dashboard destroy for auto-refresh
+  private destroyDashboard$ = new Subject<void>();
+
+  // Adding a mutation observer to detect theme changes and update the dashboard accordingly
+  private themeObserver?: MutationObserver;
 
   inventoryHealth = 70;   // Change this to test colors
   totalMeds = 551;
@@ -118,23 +124,49 @@ export class DashboardComponent implements OnInit {
 
   isDarkMode = false;
 
-  ngOnInit() {
+  // -----------------------------
+  // New ngOnInIt for refreshing inventory after edits/refreshing
+  // -----------------------------
 
-    this.calculateInventoryStats();   // ← ADD THIS
+  ngOnInit(): void {
+    this.refreshDashboard();
 
     this.updateThemeState();
 
-    const observer = new MutationObserver(() => {
+    this.themeObserver = new MutationObserver(() => {
       this.updateThemeState();
     });
 
-    observer.observe(document.body, {
+    this.themeObserver.observe(document.body, {
       attributes: true,
       attributeFilter: ['class']
     });
 
+    interval(60000).pipe(takeUntil(this.destroyDashboard$)).subscribe(() => {
+      this.refreshDashboard();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroyDashboard$.next();
+    this.destroyDashboard$.complete();
+    this.themeObserver?.disconnect();
+  }
+
+  refreshDashboard(): void {
+    console.log('Refreshing dashboard data at:', new Date().toLocaleTimeString()); // used for testing auto-refresh functionality
+    this.calculateInventoryStats();
     this.loadAIPredictions();
   }
+
+  manualRefresh(): void {
+    this.refreshDashboard();
+  }
+
+  // -----------------------------
+  // end of new ngOnInit for refreshing inventory after edits/refreshing
+  // -----------------------------
+
 
   loadAIPredictions() {
     this.reorderLoading = true;
