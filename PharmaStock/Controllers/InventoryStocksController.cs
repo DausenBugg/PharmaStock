@@ -71,6 +71,209 @@ namespace PharmaStock.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        
+        // --------------------------------------------------------------------------------------
+        // Patch: api/inventorystocks/{id}/update-expiration-date
+        // --------------------------------------------------------------------------------------
+        [HttpPatch("{id:int}/update-expiration-date")]
+        public async Task<ActionResult<InventoryStockResponse>> UpdateExpirationDate(
+            int id,
+            [FromBody] UpdatePatchExpirationDateRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdateExpirationDateAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // --------------------------------------------------------------------------------------
+        // Patch: api/inventorystocks/{id}/update-beyond-use-date
+        // --------------------------------------------------------------------------------------
+        [HttpPatch("{id:int}/update-beyond-use-date")]
+        public async Task<ActionResult<InventoryStockResponse>> UpdateBeyondUseDate(
+            int id,
+            [FromBody] UpdatePatchBUDRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdateBeyondUseDateAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+         // --------------------------------------------------------------------------------------  
+        // Patch: api/inventorystocks/{id}/update-package-ndc
+        // --------------------------------------------------------------------------------------
+        [HttpPatch("{id:int}/update-package-ndc")]
+        public async Task<ActionResult<InventoryStockResponse>> UpdatePackageNdc(
+            int id,
+            [FromBody] UpdatePackageNdcRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdatePackageNdcAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        // --------------------------------------------------------------------------------------  
+        // Patch: api/inventorystocks/{id}/update-package-description
+        // --------------------------------------------------------------------------------------
+        [HttpPatch("{id:int}/update-package-description")]
+        public async Task<ActionResult<InventoryStockResponse>> UpdatePackageDescription(
+            int id,
+            [FromBody] UpdatePackageDescriptionRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdatePackageDescriptionAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+             }
+         }
+
+        /// <summary>
+        /// Adding patch endpoints for the override fields for editing at the row level in the UI for Medication
+        ///  details that are stored on the InventoryStock entity to allow for flexibility in managing inventory 
+        /// without affecting the core Medication data model. This allows users to make adjustments to medication
+        ///  details specific to an inventory stock item without impacting the overall medication information used 
+        /// across the system.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+    
+        [HttpPatch("{id:int}/update-medication-name-override")]
+        public async Task<ActionResult<InventoryStockResponse>> UpdateMedicationNameOverride(
+            int id,
+            [FromBody] UpdateMedicationNameOverrideRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdateMedicationNameOverrideAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPatch("{id:int}/update-generic-name-override")]
+        public async Task<ActionResult<InventoryStockResponse>> UpdateGenericNameOverride(
+            int id,
+            [FromBody] UpdateGenericNameOverrideRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdateGenericNameOverrideAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPatch("{id:int}/update-ndc-override")]    
+        public async Task<ActionResult<InventoryStockResponse>> UpdateNationalDrugCodeOverride(
+            int id,
+            [FromBody] UpdateNationalDrugCodeOverrideRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdateNationalDrugCodeOverrideAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPatch("{id:int}/update-strength-override")]
+        public async Task<ActionResult<InventoryStockResponse>> UpdateStrengthOverride(
+            int id,
+            [FromBody] UpdateStrengthOverrideRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdateStrengthOverrideAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPatch("{id:int}/update-dosage-form-override")]
+        public async Task<ActionResult<InventoryStockResponse>> UpdateDosageFormOverride(
+            int id,
+            [FromBody] UpdateDosageFormOverrideRequest request)
+        {
+            try
+            {
+                var result = await _inventoryStockService.UpdateDosageFormOverrideAsync(id, request);
+                return Ok(result);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
         // --------------------------------------------------------------------------------------
         // GET: api/inventorystocks/{id}
