@@ -15,7 +15,6 @@ namespace PharmaStock.Data.Entities
 
         public string NationalDrugCode { get; set; } = string.Empty;
         
-
         public string Form { get; set; } = string.Empty;
 
         public string Strength { get; set; } = string.Empty;

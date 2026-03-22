@@ -311,4 +311,120 @@ public class InventoryStockService : InventoryStockServiceInterface
         return newStock.ToInventoryStockResponse();
     }
 
+    // --------------------------------------------------------------------------------------
+    // Implementation of additional update methods for editing override fields at the row level in the UI for Medication
+    // Each method follows a similar pattern of validating the request, checking for the existence of the stock record, updating the specific override field, and saving changes to the database
+    // Uses the InventoryStockMapping to convert the updated stock entity to a response DTO
+    // --------------------------------------------------------------------------------------
+
+    public async Task<InventoryStockResponse> UpdateMedicationNameOverrideAsync(int inventoryStockId, UpdateMedicationNameOverrideRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var newMedicationNameOverride = request.MedicationNameOverride?.Trim() ?? string.Empty;
+
+        if (stock.MedicationNameOverride == newMedicationNameOverride)
+            throw new InvalidOperationException("New medication name override is the same as the current medication name override.");
+        
+        stock.MedicationNameOverride = newMedicationNameOverride;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }
+
+    public async Task<InventoryStockResponse> UpdateGenericNameOverrideAsync(int inventoryStockId, UpdateGenericNameOverrideRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var newGenericNameOverride = request.GenericNameOverride?.Trim() ?? string.Empty;
+
+        if (stock.GenericNameOverride == newGenericNameOverride)
+            throw new InvalidOperationException("New generic name override is the same as the current generic name override.");
+        
+        stock.GenericNameOverride = newGenericNameOverride;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }
+
+    public async Task<InventoryStockResponse> UpdateNationalDrugCodeOverrideAsync(int inventoryStockId, UpdateNationalDrugCodeOverrideRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var newNdcOverride = request.NationalDrugCodeOverride?.Trim() ?? string.Empty;
+
+        if (stock.NationalDrugCodeOverride == newNdcOverride)
+            throw new InvalidOperationException("New national drug code override is the same as the current national drug code override.");
+        
+        stock.NationalDrugCodeOverride = newNdcOverride;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }
+
+    public async Task<InventoryStockResponse> UpdateStrengthOverrideAsync(int inventoryStockId, UpdateStrengthOverrideRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var newStrengthOverride = request.StrengthOverride?.Trim() ?? string.Empty;
+
+        if (stock.StrengthOverride == newStrengthOverride)
+            throw new InvalidOperationException("New strength override is the same as the current strength override.");
+        
+        stock.StrengthOverride = newStrengthOverride;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }
+
+    public async Task<InventoryStockResponse> UpdateDosageFormOverrideAsync(int inventoryStockId, UpdateDosageFormOverrideRequest request)
+    {
+        if (request == null)
+            throw new ArgumentNullException(nameof(request));
+        
+        var stock = await _context.InventoryStocks
+            .FirstOrDefaultAsync(x => x.InventoryStockId == inventoryStockId);
+        
+        if (stock == null)
+            throw new KeyNotFoundException("Inventory stock not found.");
+        
+        var newDosageFormOverride = request.DosageFormOverride?.Trim() ?? string.Empty;
+
+        if (stock.DosageFormOverride == newDosageFormOverride)
+            throw new InvalidOperationException("New dosage form override is the same as the current dosage form override.");
+        
+        stock.DosageFormOverride = newDosageFormOverride;
+        stock.UpdatedAtUtc = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return stock.ToInventoryStockResponse();   
+    }   
+
 }
