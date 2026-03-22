@@ -73,7 +73,7 @@ import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPat
         // New method to patch medication name override
         patchMedicationNameOverride(inventoryStockId: number, medicationNameOverride: string | null) {
             return this.http.patch(
-                `${this.baseUrl}/InventoryStocks/${inventoryStockId}/update-name-override`,
+                `${this.baseUrl}/InventoryStocks/${inventoryStockId}/update-medication-name-override`,
                 { medicationNameOverride }
             );
         }
@@ -89,7 +89,7 @@ import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPat
         // New method to patch medication form override
         patchDosageFormOverride(inventoryStockId: number, dosageFormOverride: string | null) {
             return this.http.patch(
-                `${this.baseUrl}/InventoryStocks/${inventoryStockId}/update-form-override`,
+                `${this.baseUrl}/InventoryStocks/${inventoryStockId}/update-dosage-form-override`,
                 { dosageFormOverride }
             );
         }   
