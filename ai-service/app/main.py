@@ -65,25 +65,42 @@ def predict_reorder(request: ReorderPredictionRequest):
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
 
-
+# Added some error handling and logging to the batch reorder endpoint to help diagnose any issues that may arise when processing multiple medications in a single request.
+#  This will allow us to better understand if there are specific medications or data points that are causing problems with the prediction service, 
+# and to ensure that we return appropriate error responses to the client if something goes wrong during batch processing.
 @app.post("/predict/batch-reorder", response_model=BatchReorderResponse)
 def predict_batch_reorder(request: BatchReorderRequest):
+    print("batch reorder hit")
+    print(f"medications count: {len(request.medications)}")
     try:
         predictions = [prediction_service.predict_reorder(med) for med in request.medications]
+        print("batch reorder finished")
         return BatchReorderResponse(predictions=predictions)
     except RuntimeError as e:
+        print(f"runtime error: {e}")
         raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        print(f"unexpected error: {e}")
+        raise
 
 
 # ─── Expiration Risk Predictions ─────────────────────────────────────────────
-
-@app.post("/predict/expiration-risk", response_model=ExpirationRiskResponse)
-def predict_expiration_risk(request: ExpirationRiskRequest):
+# Added error handling and logging to the batch expiration endpoint to help diagnose any issues that may arise when processing multiple inventory items 
+#  in a single request.
+@app.post("/predict/batch-expiration", response_model=BatchExpirationResponse)
+def predict_batch_expiration(request: BatchExpirationRequest):
+    print("batch expiration hit")
+    print(f"inventory items count: {len(request.inventory_items)}")
     try:
-        return prediction_service.predict_expiration_risk(request)
+        scores = [prediction_service.predict_expiration_risk(item) for item in request.inventory_items]
+        print("batch expiration finished")
+        return BatchExpirationResponse(risk_scores=scores)
     except RuntimeError as e:
+        print(f"runtime error: {e}")
         raise HTTPException(status_code=503, detail=str(e))
-
+    except Exception as e:
+        print(f"unexpected error: {e}")
+        raise
 
 @app.post("/predict/batch-expiration", response_model=BatchExpirationResponse)
 def predict_batch_expiration(request: BatchExpirationRequest):
