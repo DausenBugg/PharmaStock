@@ -325,3 +325,10 @@ td {
   max-width: 200px;
   text-align: center;
 }
+
+.search-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center; /* or flex-start if you prefer left */
+}
+

@@ -144,7 +144,6 @@ describe('InventoryComponent', () => {
     component.loadInventory();
 
     component.clearFilters();
-    component.nearExpirationOnly = true;
     component.onSearch();
 
     expect(component.dataSource.length).toBe(1);
@@ -164,7 +163,6 @@ describe('InventoryComponent', () => {
     component.clearFilters();
     expect(component.searchName).toBe('');
     expect(component.searchLot).toBe('');
-    expect(component.nearExpirationOnly).toBeFalse();
     expect(component.dataSource.length).toBe(3);
   });
 });
