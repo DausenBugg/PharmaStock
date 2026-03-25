@@ -43,7 +43,7 @@ builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService
 // AI Prediction Service — HttpClient for the Python ML microservice
 builder.Services.AddHttpClient<IAIPredictionService, AIPredictionService>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["AIPrediction:BaseUrl"] ?? "http://localhost:8000");
+    client.BaseAddress = new Uri(builder.Configuration["AIPrediction:BaseUrl"] ?? "http://127.0.0.1:8000");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 

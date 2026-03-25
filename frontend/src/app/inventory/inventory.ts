@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { PredictionService, ExpirationRisk } from '../services/prediction.service';
 
@@ -14,6 +15,16 @@ import { InventoryService } from '../services/inventory.service';
 import { InventoryRow } from './inventory.model';
 import { mapInventoryApiToRow } from './inventory.mapper';
 import { InventoryApiItem } from '../services/inventory-api.model';
+
+// Updated for Patch Requests
+import { UpdateInventoryStockPatchRequest } from '../services/inventory-api.model';
+import { UpdateMedicationPatchRequest } from '../services/inventory-api.model';
+
+// Save service
+import { InventorySaveService } from '../services/inventory-save.service';
+import { MedicationSaveService } from '../services/medication-save.service';
+import { Observable, of } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-inventory',
@@ -59,6 +70,9 @@ export class InventoryComponent implements AfterViewInit {
   private allItems: InventoryRow[] = [];
   dataSource: InventoryRow[] = [];
 
+  
+  nearExpirationOnly = false;
+
   // AI risk scores
   riskScores: Map<number, ExpirationRisk> = new Map();
 
@@ -81,7 +95,9 @@ export class InventoryComponent implements AfterViewInit {
   constructor(
     private inventoryService: InventoryService,
     private predictionService: PredictionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private inventorySaveService: InventorySaveService,
+    private medicationSaveService: MedicationSaveService
   ) {}
 
   ngAfterViewInit(): void {
@@ -91,7 +107,11 @@ export class InventoryComponent implements AfterViewInit {
   // -----------------------------
   // LOAD INVENTORY
   // -----------------------------
+<<<<<<< HEAD
   loadInventory(): void {
+=======
+   loadInventory(): void {
+>>>>>>> development
 
     this.inventoryService.getInventoryStocks().subscribe({
       next: (data) => {
@@ -190,11 +210,19 @@ export class InventoryComponent implements AfterViewInit {
   openInventoryForm(): void {
 
     console.log("OPEN INVENTORY MODAL");
-    this.showInventoryModal = true;
+    console.log('selectedItem at open:', this.selectedItem)
+
+    if(!this.selectedItem) {
+      console.warn('No row selected for editing.');
+      return;
+    }
 
     if (this.selectedItem) {
 
         this.editingItem = this.selectedItem;
+
+        console.log('EDIT MODE');
+        console.log('editingItem set to:', this.editingItem);
 
         this.formItem = {
           inventoryStockId: this.selectedItem.inventoryStockId,
@@ -224,6 +252,7 @@ export class InventoryComponent implements AfterViewInit {
 
       } else {
 
+        console.log('CREATE MODE- selectedItem is null');
         this.editingItem = null;
 
         this.formItem = {
@@ -278,9 +307,14 @@ export class InventoryComponent implements AfterViewInit {
 
   // -----------------------------
   // CONFIRM PASSWORD
+  //calls the save function in the inventory save service and medication save service 
+  // based on what fields were changed in the form. It constructs the necessary patch requests and chains them  
+  // together, ensuring that all changes are saved before reloading the inventory list.
+  // it detects changes by comparing the form values to the original item values, and only makes API calls foer the fields that were actually changed.
+  // This approach optimizes the save process by minimizing unnecessary API calls and ensuring data integrity.
+  // specifically, it checks for changes in medication details (name, generic name, NDC, form, strength) and inventory details (expiration date, beyond use date, package NDC, package description, quantity). and calls the corresponding save functions in the services based on what was changed. After the save operations complete, it calls finishSave to reset the form and reload the inventory list.
   // -----------------------------
-  confirmPassword(): void {
-
+ confirmPassword(): void {
     console.log('confirmPassword called');
     console.log('passwordInput:', this.passwordInput);
     console.log('editingItem:', this.editingItem);
@@ -291,6 +325,9 @@ export class InventoryComponent implements AfterViewInit {
       return;
     }
 
+    // -----------------------------
+    // CREATE NEW ITEM
+    // -----------------------------
     if (!this.editingItem) {
       console.log('Creating new item');
 
@@ -309,37 +346,134 @@ export class InventoryComponent implements AfterViewInit {
       return;
     }
 
-    const newQuantity = Number(this.formItem.quantityOnHand);
-    const oldQuantity = Number(this.originalQuantity);
-    const adjustment = newQuantity - oldQuantity;
+    const item = this.editingItem!;
 
-    console.log('Old quantity:', oldQuantity);
-    console.log('New quantity:', newQuantity);
-    console.log('Adjustment:', adjustment);
 
-    if (adjustment !== 0) {
-      this.inventoryService
-        .adjustQuantity(this.editingItem.inventoryStockId, adjustment)
-        .subscribe({
-          next: (res) => {
-            console.log('Adjust success:', res);
-            this.finishSave();
-          },
-          error: (err) => {
-            console.error('Adjust failed:', err);
-          }
-        });
-    } else {
-      console.log('No quantity change detected.');
+    // -----------------------------
+    // CHANGE DETECTION
+    // -----------------------------
+    const overrideFieldsChanged =
+      (this.formItem.medicationName ?? '') !== (item.medicationName ?? '') ||
+      (this.formItem.genericName ?? '') !== (item.genericName ?? '') ||
+      (this.formItem.nationalDrugCode ?? '') !== (item.nationalDrugCode ?? '') ||
+      (this.formItem.form ?? '') !== (item.form ?? '') ||
+      (this.formItem.strength ?? '') !== (item.strength ?? '');
+
+    const inventoryChanged =
+      (this.formItem.expirationDate ?? '') !== (item.expiration ?? '') ||
+      (this.formItem.beyondUseDate ?? '') !== (item.beyondUseDate ?? '') ||
+      (this.formItem.packageNdc ?? '') !== (item.packageNdc ?? '') ||
+      (this.formItem.packageDescription ?? '') !== (item.packageDescription ?? '') ||
+      Number(this.formItem.quantityOnHand ?? 0) !== Number(this.originalQuantity ?? 0);
+
+    if (!overrideFieldsChanged && !inventoryChanged) {
+      console.log('No changes detected.');
       this.finishSave();
+      return;
     }
+
+    // -----------------------------
+    // OVERRIDE SAVE (ROW LEVEL)
+    // -----------------------------
+    const runOverrideSave = () => {
+      if (!overrideFieldsChanged) return of(void 0);
+
+      const calls: Array<() => any> = [];
+      
+
+      if ((this.formItem.medicationName ?? '') !== (item.medicationName ?? '')) {
+        calls.push(() =>
+          this.inventoryService.patchMedicationNameOverride(
+            item.inventoryStockId,
+            this.formItem.medicationName
+          )
+        );
+      }
+
+      if ((this.formItem.genericName ?? '') !== (item.genericName ?? '')) {
+        calls.push(() =>
+          this.inventoryService.patchGenericNameOverride(
+            item.inventoryStockId,
+            this.formItem.genericName
+          )
+        );
+      }
+
+      if ((this.formItem.nationalDrugCode ?? '') !== (item.nationalDrugCode ?? '')) {
+        calls.push(() =>
+          this.inventoryService.patchNationalDrugCodeOverride(
+            item.inventoryStockId,
+            this.formItem.nationalDrugCode
+          )
+        );
+      }
+
+      if ((this.formItem.form ?? '') !== (item.form ?? '')) {
+        calls.push(() =>
+          this.inventoryService.patchDosageFormOverride(
+            item.inventoryStockId,
+            this.formItem.form
+          )
+        );
+      }
+
+      if ((this.formItem.strength ?? '') !== (item.strength ?? '')) {
+        calls.push(() =>
+          this.inventoryService.patchStrengthOverride(
+            item.inventoryStockId,
+            this.formItem.strength
+          )
+        );
+      }
+
+      if (calls.length === 0) return of(void 0);
+
+      let chain = calls[0]();
+
+      for (let i = 1; i < calls.length; i++) {
+        chain = chain.pipe(concatMap(() => calls[i]()));
+      }
+
+      return chain;
+    };
+
+    // -----------------------------
+    // INVENTORY SAVE
+    // -----------------------------
+    const runInventorySave = () => {
+      if (!inventoryChanged) return of(void 0);
+
+      return this.inventorySaveService.saveEditedInventoryItem(
+        item,
+        this.formItem,
+        this.originalQuantity
+      );
+    };
+
+    // -----------------------------
+    // EXECUTE SAVE FLOW
+    // -----------------------------
+    runOverrideSave()
+      .pipe(concatMap(() => runInventorySave()))
+      .subscribe({
+        next: () => {
+          console.log('Edit save success');
+          this.finishSave();
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Edit save failed:', err);
+        }
+      });
   }
 
   // -----------------------------
   // COMPLETE SAVE
   // -----------------------------
   finishSave(): void {
-
+    //Added a timeout to ensure the backend has processed the changes before we reload the inventory list. 
+    // This helps prevent the common issue where the list reloads before the changes are saved,
+    //  causing the user to not see their updates reflected immediately.
+    setTimeout(() => {
     this.passwordInput = '';
 
     this.showPasswordModal = false;
@@ -350,7 +484,9 @@ export class InventoryComponent implements AfterViewInit {
     //this.inventoryService.clearCache();
 
     this.loadInventory();
+    }, 0);
 
+    this.cdr.detectChanges();
   }
 
   // -----------------------------

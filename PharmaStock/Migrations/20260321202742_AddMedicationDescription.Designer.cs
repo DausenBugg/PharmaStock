@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PharmaStock.Data;
 
@@ -11,9 +12,11 @@ using PharmaStock.Data;
 namespace PharmaStock.Migrations
 {
     [DbContext(typeof(PharmaStockDbContext))]
-    partial class PharmaStockDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260321202742_AddMedicationDescription")]
+    partial class AddMedicationDescription
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,14 +237,8 @@ namespace PharmaStock.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("DosageFormOverride")
-                        .HasColumnType("longtext");
-
                     b.Property<DateTime>("ExpirationDate")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("GenericNameOverride")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("LotNumber")
                         .IsRequired()
@@ -250,12 +247,6 @@ namespace PharmaStock.Migrations
 
                     b.Property<int>("MedicationId")
                         .HasColumnType("int");
-
-                    b.Property<string>("MedicationNameOverride")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("NationalDrugCodeOverride")
-                        .HasColumnType("longtext");
 
                     b.Property<string>("PackageDescription")
                         .HasColumnType("longtext");
@@ -269,9 +260,6 @@ namespace PharmaStock.Migrations
 
                     b.Property<int>("ReorderLevel")
                         .HasColumnType("int");
-
-                    b.Property<string>("StrengthOverride")
-                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");

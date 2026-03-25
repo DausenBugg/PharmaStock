@@ -28,6 +28,12 @@ namespace PharmaStock.Data.Entities
         // Navigation property to Medication
         public Medication Medication { get; set; } = null!;
 
+        // adding override fields for editing at the row level in the UI for Medication
+        public string? MedicationNameOverride { get; set; }
+        public string? GenericNameOverride { get; set; }
+        public string? NationalDrugCodeOverride { get; set; }
+         public string? StrengthOverride { get; set; }
+         public string? DosageFormOverride { get; set; }
     }
 }
 
