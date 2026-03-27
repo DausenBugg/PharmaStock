@@ -176,11 +176,19 @@
       </div>
 
       <!-- ===== AI PREDICTIONS ROW ===== -->
+      <div class="ai-section-header">
+        <span class="ai-section-icon">&#9889;</span>
+        <span class="ai-section-label">AI-Powered Insights</span>
+      </div>
       <div class="ai-section">
 
         <!-- AI Reorder Alerts -->
         <mat-card class="dashboard-card ai-card">
-          <h3>AI Reorder Alerts</h3>
+          <div class="ai-card-header">
+            <h3>AI Reorder Alerts</h3>
+            <span class="ai-badge">AI</span>
+          </div>
+          <p class="ai-card-subtitle">ML-predicted reorder levels based on usage patterns</p>
           <div *ngIf="reorderLoading" class="ai-empty">
             Loading AI reorder alerts...
           </div>
@@ -205,7 +213,11 @@
 
         <!-- AI Expiration Risk -->
         <mat-card class="dashboard-card ai-card">
-          <h3>Expiration Risk</h3>
+          <div class="ai-card-header">
+            <h3>Expiration Risk</h3>
+            <span class="ai-badge">AI</span>
+          </div>
+          <p class="ai-card-subtitle">ML-predicted risk of expiring before use</p>
           <div *ngIf="expirationLoading" class="ai-empty">
             Loading expiration risk predictions...
           </div>
