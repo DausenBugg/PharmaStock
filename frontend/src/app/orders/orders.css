@@ -332,3 +332,21 @@ td {
   justify-content: center; /* or flex-start if you prefer left */
 }
 
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+mat-nav-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.logout-link {
+  margin-top: auto;
+  color: #c62828;
+}
+
+

@@ -299,3 +299,20 @@ td {
   transition: opacity 0.2s ease;
 }
 
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+mat-nav-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.logout-link {
+  margin-top: auto;
+  color: #c62828;
+}
+

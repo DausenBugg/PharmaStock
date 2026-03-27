@@ -13,10 +13,8 @@ import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPat
 
         constructor(private http: HttpClient) { }
 
-        getInventoryStocks(page: number = 1, pageSize: number = 150) {
-            return this.http.get<InventoryApiItem[]>(
-                `${this.baseUrl}?page=${page}&pageSize=${pageSize}`
-            );
+        getInventoryStocks(): Observable<InventoryApiItem[]> {
+            return this.http.get<InventoryApiItem[]>(`${this.baseUrl}/InventoryStocks/list`);
         }
 
         adjustQuantity(inventoryStockId: number, adjustment: number): Observable<InventoryApiItem> {

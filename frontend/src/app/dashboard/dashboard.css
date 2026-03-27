@@ -290,3 +290,20 @@ mat-sidenav-content {
   opacity: 0.6;
 }
 
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+mat-nav-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.logout-link {
+  margin-top: auto;
+  color: #c62828;
+}
+

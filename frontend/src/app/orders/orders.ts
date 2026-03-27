@@ -192,4 +192,10 @@ export class Orders implements AfterViewInit {
     this.confirmLotInput = '';
     this.showConfirmModal = false;
   }
+
+  logout() {
+    localStorage.clear(); // or remove specific token
+    sessionStorage.clear();
+    window.location.href = '/login'; // or your login route
+  }
 }

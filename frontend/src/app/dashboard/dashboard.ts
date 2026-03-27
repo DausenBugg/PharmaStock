@@ -256,5 +256,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['administration']);
   }
 
+  logout() {
+    localStorage.clear(); // or remove specific token
+    sessionStorage.clear();
+    window.location.href = '/login'; // or your login route
+  }
+
 
 }

@@ -200,4 +200,10 @@ export class Reports implements OnInit, AfterViewInit {
 
     return '';
   }
+
+  logout() {
+    localStorage.clear(); // or remove specific token
+    sessionStorage.clear();
+    window.location.href = '/login'; // or your login route
+  }
 }

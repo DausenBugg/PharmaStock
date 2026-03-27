@@ -103,4 +103,10 @@ export class Settings {
       body.classList.remove('compact-density');
     }
   }
+
+  logout() {
+    localStorage.clear(); // or remove specific token
+    sessionStorage.clear();
+    window.location.href = '/login'; // or your login route
+  }
 }

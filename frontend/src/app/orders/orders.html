@@ -40,6 +40,13 @@
       <a mat-list-item routerLink="/administration" routerLinkActive="active" class="nav-item">
         Administration
       </a>
+
+      <a mat-list-item
+        (click)="logout()"
+        class="nav-item logout-link">
+        Sign Out
+      </a>
+      
     </mat-nav-list>
 
   </mat-sidenav>

@@ -250,3 +250,21 @@ td {
   border-color: var(--button-bg);
   box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.15); /* subtle glow */
 }
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+mat-nav-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.logout-link {
+  margin-top: auto;
+  color: #c62828;
+}
+

@@ -149,4 +149,10 @@ export class Administration {
 
   }
 
+  logout() {
+    localStorage.clear(); // or remove specific token
+    sessionStorage.clear();
+    window.location.href = '/login'; // or your login route
+  }
+
 }

@@ -380,3 +380,20 @@ td {
   gap: 12px;
   width: 100%;
 }
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+mat-nav-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.logout-link {
+  margin-top: auto;
+  color: #c62828;
+}
