@@ -107,11 +107,8 @@ export class InventoryComponent implements AfterViewInit {
   // -----------------------------
   // LOAD INVENTORY
   // -----------------------------
-<<<<<<< HEAD
-  loadInventory(): void {
-=======
+  
    loadInventory(): void {
->>>>>>> development
 
     this.inventoryService.getInventoryStocks().subscribe({
       next: (data) => {
