@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,33 +8,15 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 
-export interface Medication {
-  brand: string;
-  generic: string;
-  dosage: string;
-  lot: string;
-  quantity: number;
-  expiration: string;
-  leadTime: number;
-  reorderPoint: number;
-  daysInv: number;
-}
+// Service + model + mapper
+import { InventoryService } from '../services/inventory.service';
+import { InventoryRow } from '../inventory/inventory.model';
+import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
+import { InventoryApiItem } from '../services/inventory-api.model';
 
-/* ===== SAMPLE DATA ===== */
-
-export const REPORT_DATA: Medication[] = [
-  { brand: 'Lipitor', generic: 'Atorvastatin', dosage: "25mg", lot: 'A1023', quantity: 150, expiration: '2026-04-12', leadTime: 14, reorderPoint: 75, daysInv: 14 },
-  { brand: 'Zoloft', generic: 'Sertraline', dosage: "25mg", lot: 'B8831', quantity: 75, expiration: '2025-11-02', leadTime: 10, reorderPoint: 100, daysInv: 7 },
-  { brand: 'Amoxil', generic: 'Amoxicillin', dosage: "25mg", lot: 'C4490', quantity: 220, expiration: '2026-01-18', leadTime: 7, reorderPoint: 75, daysInv: 20 },
-  { brand: 'Glucophage', generic: 'Metformin', dosage: "25mg", lot: 'D7722', quantity: 300, expiration: '2027-03-30', leadTime: 21, reorderPoint: 50, daysInv: 126 },
-  { brand: 'Synthroid', generic: 'Levothyroxine', dosage: "25mg", lot: 'E9910', quantity: 180, expiration: '2026-03-18', leadTime: 12, reorderPoint: 180, daysInv: 12 },
-  { brand: 'Ventolin', generic: 'Albuterol', dosage: "25mg", lot: 'F6611', quantity: 90, expiration: '2026-07-20', leadTime: 8, reorderPoint: 25, daysInv: 14 },
-  { brand: 'Plavix', generic: 'Clopidogrel', dosage: "25mg", lot: 'G3344', quantity: 140, expiration: '2026-12-05', leadTime: 16, reorderPoint: 40, daysInv: 28 },
-  { brand: 'Nexium', generic: 'Esomeprazole', dosage: "25mg", lot: 'H5509', quantity: 110, expiration: '2025-08-22', leadTime: 9, reorderPoint: 150, daysInv: 6 },
-  { brand: 'Lantus', generic: 'Insulin Glargine', dosage: "25mg", lot: 'J7812', quantity: 60, expiration: '2026-05-14', leadTime: 5, reorderPoint: 60, daysInv: 5 },
-  { brand: 'Advil', generic: 'Ibuprofen', dosage: "25mg", lot: 'K9021', quantity: 400, expiration: '2027-02-10', leadTime: 6, reorderPoint: 15, daysInv: 160 }
-];
+type Medication = InventoryRow;
 
 @Component({
   selector: 'app-reports',
@@ -47,32 +29,41 @@ export const REPORT_DATA: Medication[] = [
     MatSidenavModule,
     MatListModule,
     MatToolbarModule,
-    MatButtonModule
+    MatButtonModule,
+    MatPaginatorModule
   ],
   templateUrl: './reports.html',
   styleUrl: './reports.css',
 })
-export class Reports implements OnInit {
+export class Reports implements OnInit, AfterViewInit {
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private inventoryService: InventoryService
+  ) {}
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   displayedColumns: string[] = [
-    'brand',
-    'generic',
-    'dosage',
-    'lot',
+    'medicationName',
+    'genericName',
+    'nationalDrugCode',
+    'form',
+    'strength',
+    'packageNdc',
+    'packageDescription',
     'quantity',
-    'leadTime',
-    'expiration',
     'reorderPoint',
-    'daysInv'
+    'binLocation',
+    'lot',
+    'expiration',
+    'beyondUseDate'
   ];
 
-  dataSource = new MatTableDataSource<Medication>(REPORT_DATA);
+  dataSource = new MatTableDataSource<Medication>([]);
+  private allItems: Medication[] = [];
 
   searchValue: string = '';
-
-  /* ===== FILTER CHECKBOXES ===== */
 
   filterExpired = false;
   filterExpiringSoon = false;
@@ -81,14 +72,34 @@ export class Reports implements OnInit {
 
   ngOnInit(): void {
 
-    const filter = this.route.snapshot.queryParamMap.get('filter');
+    const filterParam = this.route.snapshot.queryParamMap.get('filter');
 
-    if (filter === 'expired') this.filterExpired = true;
-    if (filter === 'expiringSoon') this.filterExpiringSoon = true;
-    if (filter === 'stockedOut') this.filterStockedOut = true;
-    if (filter === 'lowInventory') this.filterLowInventory = true;
+    if (filterParam === 'expired') this.filterExpired = true;
+    if (filterParam === 'expiringSoon') this.filterExpiringSoon = true;
+    if (filterParam === 'stockedOut') this.filterStockedOut = true;
+    if (filterParam === 'lowInventory') this.filterLowInventory = true;
 
-    this.applyFilters();
+    this.loadInventory();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+  }
+
+  loadInventory(): void {
+
+    this.inventoryService.getInventoryStocks().subscribe({
+      next: (data: InventoryApiItem[]) => {
+
+        this.allItems = data.map(mapInventoryApiToRow);
+
+        this.applyFilters();
+
+      },
+      error: (err) => {
+        console.error('Failed to load inventory:', err);
+      }
+    });
 
   }
 
@@ -103,22 +114,20 @@ export class Reports implements OnInit {
 
     const search = this.searchValue.trim().toLowerCase();
 
-    let filtered = REPORT_DATA;
+    let filtered = this.allItems;
 
-    /* SEARCH FILTER */
-
+    // SEARCH
     if (search) {
-
       filtered = filtered.filter(item =>
-        item.brand.toLowerCase().includes(search) ||
-        item.generic.toLowerCase().includes(search)
+        (item.medicationName ?? '').toLowerCase().includes(search) ||
+        (item.genericName ?? '').toLowerCase().includes(search)
       );
-
     }
 
-    /* CHECKBOX FILTERS */
-
+    // CHECKBOX FILTERS
     filtered = filtered.filter(item => {
+
+      if (!item.expiration) return true;
 
       const expirationDate = new Date(item.expiration);
       expirationDate.setHours(0,0,0,0);
@@ -138,11 +147,15 @@ export class Reports implements OnInit {
       if (this.filterLowInventory && !isLowInventory) return false;
 
       return true;
-
     });
 
     this.dataSource.data = filtered;
+    this.dataSource.paginator = this.paginator;
 
+    // reattach paginator after data change
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
   }
 
   clearFilters(): void {
@@ -154,11 +167,12 @@ export class Reports implements OnInit {
     this.filterStockedOut = false;
     this.filterLowInventory = false;
 
-    this.dataSource.data = REPORT_DATA;
+    this.dataSource.data = this.allItems;
 
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
   }
-
-  /* ===== TABLE COLOR LOGIC ===== */
 
   getReorderClass(item: Medication): string {
 
@@ -166,10 +180,11 @@ export class Reports implements OnInit {
     if (item.quantity === item.reorderPoint) return 'health-warning';
 
     return '';
-
   }
 
   getExpirationClass(item: Medication): string {
+
+    if (!item.expiration) return '';
 
     const today = new Date();
     const expirationDate = new Date(item.expiration);
@@ -184,17 +199,5 @@ export class Reports implements OnInit {
     if (diffInDays <= 30) return 'health-warning';
 
     return '';
-
-  }
-
-  getDaysInvClass(item: Medication): string {
-
-    const diff = item.daysInv - item.leadTime;
-
-    if (diff < 0) return 'health-critical';
-    if (diff <= 2) return 'health-warning';
-
-    return '';
-
   }
 }

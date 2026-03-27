@@ -107,8 +107,8 @@ describe('InventoryComponent', () => {
     component.searchName = 'formin';
     component.onSearch();
 
-    expect(component.dataSource.length).toBe(1);
-    expect(component.dataSource[0].medicationName).toContain('Metformin');
+    expect(component.dataSource.data.length).toBe(1);
+    expect(component.dataSource.data[0].medicationName).toContain('Metformin');
   });
 
   it('filters by partial lot number (case-insensitive)', () => {
@@ -120,8 +120,8 @@ describe('InventoryComponent', () => {
     component.searchLot = 'd77';
     component.onSearch();
 
-    expect(component.dataSource.length).toBe(1);
-    expect(component.dataSource[0].lot).toBe('D7722');
+    expect(component.dataSource.data.length).toBe(1);
+    expect(component.dataSource.data[0].lot).toBe('D7722');
   });
 
   it('applies medication name and lot filters together', () => {
@@ -134,8 +134,8 @@ describe('InventoryComponent', () => {
     component.searchLot = '1023';
     component.onSearch();
 
-    expect(component.dataSource.length).toBe(1);
-    expect(component.dataSource[0].medicationName).toBe('Lipitor');
+    expect(component.dataSource.data.length).toBe(1);
+    expect(component.dataSource.data[0].medicationName).toBe('Lipitor');
   });
 
   it('filters near-expiration meds within next 7 days and excludes expired', () => {
@@ -146,8 +146,8 @@ describe('InventoryComponent', () => {
     component.clearFilters();
     component.onSearch();
 
-    expect(component.dataSource.length).toBe(1);
-    expect(component.dataSource[0].medicationName).toBe('Lipitor');
+    expect(component.dataSource.data.length).toBe(1);
+    expect(component.dataSource.data[0].medicationName).toBe('Lipitor');
   });
 
   it('clears filters and restores full dataset', () => {
@@ -158,11 +158,11 @@ describe('InventoryComponent', () => {
     component.clearFilters();
     component.searchName = 'lipi';
     component.onSearch();
-    expect(component.dataSource.length).toBe(1);
+    expect(component.dataSource.data.length).toBe(1);
 
     component.clearFilters();
     expect(component.searchName).toBe('');
     expect(component.searchLot).toBe('');
-    expect(component.dataSource.length).toBe(3);
+    expect(component.dataSource.data.length).toBe(3);
   });
 });

@@ -7,9 +7,13 @@ import { RouterModule } from '@angular/router';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { OnInit } from '@angular/core';
-import { REPORT_DATA, Medication } from '../reports/reports';
 import { PredictionService, ReorderAlert, ExpirationRisk } from '../services/prediction.service';
 import { catchError, finalize, interval, of, Subject, takeUntil, timeout } from 'rxjs';
+
+import { InventoryService } from '../services/inventory.service';
+import { InventoryApiItem } from '../services/inventory-api.model';
+import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
+import { InventoryRow } from '../inventory/inventory.model';
 
 
 @Component({
@@ -53,64 +57,64 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private router: Router,
     private predictionService: PredictionService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private inventoryService: InventoryService
   ){}
 
   calculateInventoryStats() {
 
-  const today = new Date();
-  today.setHours(0,0,0,0);
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
-  this.totalMeds = REPORT_DATA.length;
+    const data = this.inventoryItems;
 
-  this.expired = REPORT_DATA.filter((med: Medication) =>
-    new Date(med.expiration) < today
-  ).length;
+    this.totalMeds = data.length;
 
-  this.expiringSoon = REPORT_DATA.filter((med: Medication) => {
+    this.expired = data.filter(item =>
+      item.expiration && new Date(item.expiration) < today
+    ).length;
 
-    const exp = new Date(med.expiration);
-    const diff =
-      (exp.getTime() - today.getTime()) / (1000*60*60*24);
+    this.expiringSoon = data.filter(item => {
+      if (!item.expiration) return false;
 
-    return diff >= 0 && diff <= 30;
+      const exp = new Date(item.expiration);
+      const diff =
+        (exp.getTime() - today.getTime()) / (1000*60*60*24);
 
-  }).length;
+      return diff >= 0 && diff <= 30;
+    }).length;
 
-  this.stockedOut = REPORT_DATA.filter((med: Medication) =>
-    med.quantity === 0
-  ).length;
+    this.stockedOut = data.filter(item =>
+      item.quantity === 0
+    ).length;
 
-  this.lowInventory = REPORT_DATA.filter((med: Medication) =>
-    med.quantity < med.reorderPoint
-  ).length;
+    this.lowInventory = data.filter(item =>
+      item.quantity < item.reorderPoint
+    ).length;
 
+    /* ===== INVENTORY HEALTH ===== */
 
-  /* ===== INVENTORY HEALTH CALCULATION ===== */
+    const problemLines = data.filter(item => {
 
-  const problemLines = REPORT_DATA.filter((med: Medication) => {
+      if (!item.expiration) return false;
 
-    const expirationDate = new Date(med.expiration);
-    const diff =
-      (expirationDate.getTime() - today.getTime()) / (1000*60*60*24);
+      const expirationDate = new Date(item.expiration);
+      const diff =
+        (expirationDate.getTime() - today.getTime()) / (1000*60*60*24);
 
-    const expired = expirationDate < today;
-    const expiringSoon = diff >= 0 && diff <= 30;
+      const expired = expirationDate < today;
+      const expiringSoon = diff >= 0 && diff <= 30;
+      const lowInventory = item.quantity < item.reorderPoint;
 
-    const lowInventory = med.quantity < med.reorderPoint;
+      return expired || expiringSoon || lowInventory;
 
-    const daysInvIssue = med.daysInv < med.leadTime;
+    }).length;
 
-    return expired || expiringSoon || lowInventory || daysInvIssue;
+    this.inventoryHealth =
+      this.totalMeds === 0 ? 0 :
+      Math.round(((this.totalMeds - problemLines) / this.totalMeds) * 100);
 
-  }).length;
-
-  this.inventoryHealth =
-    Math.round(
-      ((this.totalMeds - problemLines) / this.totalMeds) * 100
-    );
-
-}
+  }
 
   get inventoryHealthClass(): string {
     if (this.inventoryHealth > 95) {
@@ -123,6 +127,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   isDarkMode = false;
+  private inventoryItems: InventoryRow[] = [];
 
   // -----------------------------
   // New ngOnInIt for refreshing inventory after edits/refreshing
@@ -154,9 +159,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   refreshDashboard(): void {
-    console.log('Refreshing dashboard data at:', new Date().toLocaleTimeString()); // used for testing auto-refresh functionality
-    this.calculateInventoryStats();
-    this.loadAIPredictions();
+
+    console.log('Refreshing dashboard data at:', new Date().toLocaleTimeString());
+
+    this.inventoryService.getInventoryStocks().subscribe({
+      next: (data: InventoryApiItem[]) => {
+
+        this.inventoryItems = data.map(mapInventoryApiToRow);
+
+        this.calculateInventoryStats();
+        this.loadAIPredictions();
+
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Dashboard inventory load failed:', err);
+      }
+    });
+
   }
 
   manualRefresh(): void {

@@ -1,12 +1,14 @@
 import { Component, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { RouterModule } from '@angular/router';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { HttpErrorResponse } from '@angular/common/http';
+import { MatPaginatorModule, MatPaginator } from "@angular/material/paginator";
+import { ViewChild } from "@angular/core";
 
 import { PredictionService, ExpirationRisk } from '../services/prediction.service';
 
@@ -36,7 +38,8 @@ import { concatMap } from 'rxjs/operators';
     MatSidenavModule,
     MatListModule,
     MatToolbarModule,
-    MatTableModule
+    MatTableModule, 
+    MatPaginatorModule
   ],
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.css']
@@ -68,7 +71,8 @@ export class InventoryComponent implements AfterViewInit {
 
   // DATA
   private allItems: InventoryRow[] = [];
-  dataSource: InventoryRow[] = [];
+  dataSource = new MatTableDataSource<InventoryRow>([]);
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   
   nearExpirationOnly = false;
@@ -102,6 +106,10 @@ export class InventoryComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.loadInventory();
+
+    if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
   }
 
   // -----------------------------
@@ -114,7 +122,12 @@ export class InventoryComponent implements AfterViewInit {
       next: (data) => {
 
         this.allItems = data.map(mapInventoryApiToRow);
-        this.dataSource = [...this.allItems];
+        this.dataSource.data = this.allItems;
+
+        // attach paginator
+        if (this.paginator) {
+          this.dataSource.paginator = this.paginator;
+        }
 
         this.loadRiskScores();
 
@@ -171,7 +184,7 @@ export class InventoryComponent implements AfterViewInit {
     const nameQuery = this.searchName.toLowerCase();
     const lotQuery = this.searchLot.toLowerCase();
 
-    this.dataSource = this.allItems.filter(item =>
+    this.dataSource.data = this.allItems.filter(item =>
       (!nameQuery || item.medicationName.toLowerCase().includes(nameQuery) ||
         (item.genericName ?? '').toLowerCase().includes(nameQuery)) &&
       (!lotQuery || item.lot.toLowerCase().includes(lotQuery))
@@ -184,7 +197,7 @@ export class InventoryComponent implements AfterViewInit {
     this.searchName = '';
     this.searchLot = '';
 
-    this.dataSource = [...this.allItems];
+    this.dataSource.data = [...this.allItems];
 
   }
 
