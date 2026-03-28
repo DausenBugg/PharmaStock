@@ -41,9 +41,10 @@ namespace PharmaStock.Controllers
         // Instock list with key details for inventory management
         // --------------------------------------------------------------------------------------
         [HttpGet("list")]
-        public async Task<ActionResult<List<InventoryStockListItemResponse>>> GetInStockList()
+        public async Task<ActionResult<PagedResponse<InventoryStockListItemResponse>>> GetInStockList(
+            [FromQuery] PaginationRequestDto request)
         {
-            var result = await _inventoryStockService.GetInStockListAsync();
+            var result = await _inventoryStockService.GetInStockListAsync(request);
             return Ok(result);
         }
 
