@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPatchRequest } from './inventory-api.model';
-
+import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
 
 
 @Injectable({
@@ -13,8 +13,17 @@ import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPat
 
         constructor(private http: HttpClient) { }
 
-        getInventoryStocks(): Observable<InventoryApiItem[]> {
-            return this.http.get<InventoryApiItem[]>(`${this.baseUrl}/InventoryStocks/list`);
+
+        getInventoryStocks(params: PaginationRequest): Observable<PagedResponse<InventoryApiItem>> {
+            return this.http.get<PagedResponse<InventoryApiItem>>
+                (`${this.baseUrl}/InventoryStocks/list`,
+                {
+                    params: {
+                        pageNumber: params.pageNumber,
+                        pageSize: params.pageSize
+                    }
+                }
+            );
         }
 
         adjustQuantity(inventoryStockId: number, adjustment: number): Observable<InventoryApiItem> {

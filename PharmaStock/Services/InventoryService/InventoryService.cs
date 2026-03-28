@@ -3,6 +3,7 @@ using PharmaStock.Data;
 using PharmaStock.Dtos.Requests.Inventory;
 using PharmaStock.Dtos.Responses;
 using PharmaStock.Mappings;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace PharmaStock.Services;
 
@@ -31,15 +32,36 @@ public class InventoryStockService : InventoryStockServiceInterface
      // Uses AsNoTracking for better performance since we are only reading data
     // Uses the InventoryStockMapping to convert stock entities to response DTOs    
     // --------------------------------------------------------------------------------------
-    public async Task<List<InventoryStockListItemResponse>> GetInStockListAsync()
+    public async Task<PagedResponse<InventoryStockListItemResponse>> GetInStockListAsync(PaginationRequestDto request)
     {
-        var stocks = await _context.InventoryStocks
-            .Take(100) // Limit to 100 records for performance; can be adjusted as needed
+        // pagination vars
+        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+        var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
+
+        var query = _context.InventoryStocks
             .Include(s => s.Medication) // Include related medication data for mapping to response DTO
             .AsNoTracking()
-            .OrderBy(s => s.InventoryStockId)
+            .OrderBy(s => s.InventoryStockId);
+
+        var totalItemCount = await query.CountAsync();
+
+        var stocks = await query
+            .Skip ((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
-        return stocks.Select(s => s.ToInventoryStockListItemResponse()).ToList();
+        
+        var items = stocks
+            .Select(s => s.ToInventoryStockListItemResponse())
+            .ToList();
+
+        return new PagedResponse<InventoryStockListItemResponse>
+        {
+            Items = items, 
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalItemCount = totalItemCount,
+            TotalPages = (int)Math.Ceiling(totalItemCount / (double)pageSize)
+        };
     }
 
     // --------------------------------------------------------------------------------------
