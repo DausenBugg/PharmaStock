@@ -28,8 +28,11 @@ REQUIRED_COLS_USAGE = [
 
 REQUIRED_COLS_REORDER_FEAT = [
     "medication_id", "avg_daily_usage_7d", "avg_daily_usage_30d", "avg_daily_usage_90d",
-    "usage_variance_30d", "usage_trend", "days_since_last_dispense",
+    "usage_variance_30d", "usage_trend",
+    "usage_coefficient_of_variation", "usage_7d_vs_30d_ratio",
+    "days_since_last_dispense",
     "total_quantity_on_hand", "num_active_lots", "days_to_nearest_expiry",
+    "days_of_stock_remaining",
     "restock_frequency_30d", "day_of_week", "month",
 ]
 
@@ -37,7 +40,8 @@ REQUIRED_COLS_REORDER_LABEL = ["medication_id", "recommended_reorder_level"]
 
 REQUIRED_COLS_EXP_FEAT = [
     "inventory_stock_id", "medication_id", "days_to_expiry", "quantity_on_hand",
-    "avg_daily_usage_30d", "days_to_deplete", "will_expire_before_depleted",
+    "avg_daily_usage_30d", "days_to_deplete", "expiry_buffer_days",
+    "usage_to_quantity_ratio", "waste_risk_score",
     "medication_unit_value", "num_lots_same_med",
 ]
 
@@ -124,7 +128,6 @@ def main():
         for col in REQUIRED_COLS_EXP_FEAT:
             errors += check(col in ef.columns, f"Column '{col}' present")
         errors += check(ef[REQUIRED_COLS_EXP_FEAT].notna().all().all(), "No NaN in required columns")
-        errors += check(ef["will_expire_before_depleted"].isin([0, 1]).all(), "will_expire_before_depleted is binary")
     else:
         errors += 1
         print("  [SKIP] File not found")

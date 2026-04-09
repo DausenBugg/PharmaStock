@@ -1,7 +1,3 @@
-"""
-Feature engineering — transforms raw request data into model-ready feature vectors.
-"""
-
 import numpy as np
 from datetime import datetime, timedelta
 from typing import List
@@ -33,7 +29,7 @@ def build_reorder_features(
     days_to_nearest_expiry: int,
     ref_date: datetime | None = None,
 ) -> np.ndarray:
-    """Build a 1×18 feature vector for the reorder model."""
+    """Build a 1x21 feature vector for the reorder model."""
     if ref_date is None:
         ref_date = datetime.utcnow()
 
@@ -46,7 +42,6 @@ def build_reorder_features(
     avg_90 = float(daily_90.mean())
     var_30 = float(daily_30.var()) if len(daily_30) > 1 else 0.0
 
-    # Usage trend (slope)
     if len(daily_30) > 1:
         x = np.arange(len(daily_30))
         coeffs = np.polyfit(x, daily_30, 1)
@@ -54,22 +49,27 @@ def build_reorder_features(
     else:
         trend = 0.0
 
-    # Days since last dispense
+    # Derived features
+    std_30 = float(np.sqrt(var_30)) if var_30 > 0 else 0.0
+    usage_cv = std_30 / max(avg_30, 0.01)
+    usage_7d_vs_30d_ratio = avg_7 / max(avg_30, 0.01)
+    days_of_stock_remaining = current_stock / max(avg_30, 0.01)
+
     dispensed_dates = [r.occurred_at_utc for r in usage_history if r.change_type == "Dispensed" and r.occurred_at_utc < ref_date]
     days_since = (ref_date - max(dispensed_dates)).days if dispensed_dates else 999
 
-    # Restock frequency in last 30 days
     start_30 = ref_date - timedelta(days=30)
     restock_freq = sum(1 for r in usage_history if r.change_type == "Restocked" and start_30 <= r.occurred_at_utc < ref_date)
 
-    # One-hot encode form
     form_val = medication_form if medication_form in FORM_CATEGORIES else "Other"
     form_encoded = [1.0 if f == form_val else 0.0 for f in FORM_CATEGORIES]
 
     features = [
         avg_7, avg_30, avg_90, var_30, trend,
+        usage_cv, usage_7d_vs_30d_ratio,
         float(days_since), float(current_stock),
         float(num_active_lots), float(days_to_nearest_expiry),
+        days_of_stock_remaining,
         float(restock_freq),
         float(ref_date.weekday()), float(ref_date.month),
     ] + form_encoded
@@ -84,16 +84,20 @@ def build_expiration_features(
     medication_unit_value: float,
     num_lots_same_med: int,
 ) -> np.ndarray:
-    """Build a 1×7 feature vector for the expiration risk model."""
+    """Build a 1x9 feature vector for the expiration risk model."""
     days_to_deplete = quantity_on_hand / max(avg_daily_usage_30d, 0.01)
-    will_expire_before = 1.0 if days_to_expiry < days_to_deplete else 0.0
+    expiry_buffer_days = days_to_expiry - days_to_deplete
+    usage_to_quantity_ratio = avg_daily_usage_30d / max(quantity_on_hand, 1)
+    waste_risk_score = (quantity_on_hand * medication_unit_value) / max(days_to_expiry, 1)
 
     features = [
         float(days_to_expiry),
         float(quantity_on_hand),
         float(avg_daily_usage_30d),
         days_to_deplete,
-        will_expire_before,
+        expiry_buffer_days,
+        usage_to_quantity_ratio,
+        waste_risk_score,
         float(medication_unit_value),
         float(num_lots_same_med),
     ]

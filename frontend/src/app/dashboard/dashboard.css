@@ -207,6 +207,32 @@ mat-sidenav-content {
   cursor: pointer;
 }
 
+/* ===== AI SECTION HEADER ===== */
+
+.ai-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 800px;
+  margin: 0 auto 16px auto;
+  padding: 8px 0;
+  border-top: 1px solid rgba(128, 128, 128, 0.25);
+}
+
+.ai-section-icon {
+  font-size: 18px;
+}
+
+.ai-section-label {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--card-text);
+  opacity: 0.7;
+}
+
 /* ===== AI PREDICTIONS ===== */
 
 .ai-section {
@@ -222,14 +248,50 @@ mat-sidenav-content {
   min-width: 340px;
   padding: 20px;
   border: 2px solid var(--light-accent);
-  background-color: var(--bg-color);
+  border-left: 5px solid #1565c0;
+  background: linear-gradient(135deg, rgba(21, 101, 192, 0.06) 0%, transparent 60%);
   color: var(--card-text);
 }
 
-.ai-card h3 {
-  margin: 0 0 12px 0;
+body.dark-theme .ai-card {
+  border-left-color: #42a5f5;
+  background: linear-gradient(135deg, rgba(66, 165, 245, 0.08) 0%, transparent 60%);
+}
+
+.ai-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.ai-card-header h3 {
+  margin: 0;
   font-size: 18px;
   font-weight: 600;
+}
+
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background-color: #1565c0;
+  color: white;
+}
+
+body.dark-theme .ai-badge {
+  background-color: #42a5f5;
+  color: #0d2137;
+}
+
+.ai-card-subtitle {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  opacity: 0.6;
 }
 
 .ai-alert-row {
