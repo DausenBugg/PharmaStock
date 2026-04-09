@@ -6,10 +6,6 @@ using PharmaStock.Data;
 
 namespace PharmaStock.Controllers
 {
-    /// <summary>
-    /// Admin-only controller for system administration tasks.
-    /// All endpoints require Admin role.
-    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
@@ -29,9 +25,6 @@ namespace PharmaStock.Controllers
             _context = context;
         }
 
-        /// <summary>
-        /// Gets all users in the system. Admin only.
-        /// </summary>
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -54,9 +47,6 @@ namespace PharmaStock.Controllers
             return Ok(userList);
         }
 
-        /// <summary>
-        /// Gets system statistics. Admin only.
-        /// </summary>
         [HttpGet("stats")]
         public async Task<IActionResult> GetSystemStats()
         {
@@ -80,9 +70,6 @@ namespace PharmaStock.Controllers
             });
         }
 
-        /// <summary>
-        /// Deletes a user by email. Admin only.
-        /// </summary>
         [HttpDelete("users/{email}")]
         public async Task<IActionResult> DeleteUser(string email)
         {
@@ -101,9 +88,6 @@ namespace PharmaStock.Controllers
             return Ok(new { message = $"User '{email}' has been deleted." });
         }
 
-        /// <summary>
-        /// Gets admin dashboard data. Admin only.
-        /// </summary>
         [HttpGet("dashboard")]
         public IActionResult GetDashboard()
         {

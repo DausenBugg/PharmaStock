@@ -41,14 +41,17 @@ Both models consume features engineered from three data sources: `UsageHistory` 
 | 3 | `avg_daily_usage_90d` | float | UsageHistory | Mean of daily dispensed quantities over the last 90 days |
 | 4 | `usage_variance_30d` | float | UsageHistory | Variance of daily dispensed quantities over 30 days (captures demand volatility) |
 | 5 | `usage_trend` | float | UsageHistory | Slope of linear regression on daily usage over last 30 days (positive = increasing demand) |
-| 6 | `days_since_last_dispense` | int | UsageHistory | Days since the most recent `Dispensed` event for this medication |
-| 7 | `total_quantity_on_hand` | int | InventoryStock | SUM(`QuantityOnHand`) across all non-expired lots for this medication |
-| 8 | `num_active_lots` | int | InventoryStock | COUNT of lots where `ExpirationDate` > today |
-| 9 | `days_to_nearest_expiry` | int | InventoryStock | MIN(`ExpirationDate` - today) across active lots |
-| 10 | `medication_form` | categorical | Medication | One-hot encoded: Tablet, Capsule, Oral Solution, Inhaler, Topical Gel, Other |
-| 11 | `restock_frequency_30d` | int | UsageHistory | COUNT of `Restocked` events in the last 30 days |
-| 12 | `day_of_week` | int (0-6) | Derived | Current day of week (0=Monday) — captures weekly patterns |
-| 13 | `month` | int (1-12) | Derived | Current month — captures seasonal patterns |
+| 6 | `usage_coefficient_of_variation` | float | Derived | `std_30d / max(avg_30d, 0.01)` — normalized volatility (scale-independent) |
+| 7 | `usage_7d_vs_30d_ratio` | float | Derived | `avg_7d / max(avg_30d, 0.01)` — short-term vs long-term trend signal |
+| 8 | `days_since_last_dispense` | int | UsageHistory | Days since the most recent `Dispensed` event for this medication |
+| 9 | `total_quantity_on_hand` | int | InventoryStock | SUM(`QuantityOnHand`) across all non-expired lots for this medication |
+| 10 | `num_active_lots` | int | InventoryStock | COUNT of lots where `ExpirationDate` > today |
+| 11 | `days_to_nearest_expiry` | int | InventoryStock | MIN(`ExpirationDate` - today) across active lots |
+| 12 | `days_of_stock_remaining` | float | Derived | `total_quantity_on_hand / max(avg_daily_usage_30d, 0.01)` — stock coverage in days |
+| 13 | `medication_form` | categorical | Medication | One-hot encoded: Tablet, Capsule, Oral Solution, Inhaler, Topical Gel, Other |
+| 14 | `restock_frequency_30d` | int | UsageHistory | COUNT of `Restocked` events in the last 30 days |
+| 15 | `day_of_week` | int (0-6) | Derived | Current day of week (0=Monday) — captures weekly patterns |
+| 16 | `month` | int (1-12) | Derived | Current month — captures seasonal patterns |
 
 ### Target Variable
 
@@ -85,9 +88,11 @@ Adjustments:
 | 2 | `quantity_on_hand` | int | InventoryStock | Current stock of this specific lot |
 | 3 | `avg_daily_usage_30d` | float | UsageHistory | Mean daily usage for this medication over 30 days |
 | 4 | `days_to_deplete` | float | Derived | `quantity_on_hand / max(avg_daily_usage_30d, 0.01)` — estimated days until lot is consumed |
-| 5 | `will_expire_before_depleted` | int (0/1) | Derived | `1` if `days_to_expiry < days_to_deplete`, else `0` |
-| 6 | `medication_unit_value` | float | Config | Relative cost/value of the drug (1.0 = standard, >1 = high-value, configurable) |
-| 7 | `num_lots_same_med` | int | InventoryStock | COUNT of other active lots for the same medication |
+| 5 | `expiry_buffer_days` | float | Derived | `days_to_expiry - days_to_deplete` — margin before expiry (negative = will expire before consumed) |
+| 6 | `usage_to_quantity_ratio` | float | Derived | `avg_daily_usage_30d / max(quantity_on_hand, 1)` — depletion intensity |
+| 7 | `waste_risk_score` | float | Derived | `quantity_on_hand × medication_unit_value / max(days_to_expiry, 1)` — financial risk proxy |
+| 8 | `medication_unit_value` | float | Config | Relative cost/value of the drug (1.0 = standard, >1 = high-value, configurable) |
+| 9 | `num_lots_same_med` | int | InventoryStock | COUNT of other active lots for the same medication |
 
 ### Target Variable
 

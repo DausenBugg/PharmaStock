@@ -1,9 +1,3 @@
-"""
-PharmaStock AI Prediction Service — FastAPI Application
-=========================================================
-Exposes ML-powered reorder level and expiration risk predictions via REST API.
-"""
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,7 +14,6 @@ from . import prediction_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load ML models on startup."""
     prediction_service.load_models()
     reorder_ok, expiration_ok = prediction_service.models_loaded()
     print(f"Models loaded — Reorder: {reorder_ok}, Expiration: {expiration_ok}")
@@ -34,7 +27,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow .NET backend and Angular frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5177", "http://localhost:4200"],
@@ -43,7 +35,6 @@ app.add_middleware(
 )
 
 
-# ─── Health Check ────────────────────────────────────────────────────────────
 
 @app.get("/health", response_model=HealthResponse)
 def health_check():
@@ -56,7 +47,6 @@ def health_check():
     )
 
 
-# ─── Reorder Predictions ────────────────────────────────────────────────────
 
 @app.post("/predict/reorder", response_model=ReorderPredictionResponse)
 def predict_reorder(request: ReorderPredictionRequest):
@@ -84,9 +74,18 @@ def predict_batch_reorder(request: BatchReorderRequest):
         raise
 
 
+
+
 # ─── Expiration Risk Predictions ─────────────────────────────────────────────
-# Added error handling and logging to the batch expiration endpoint to help diagnose any issues that may arise when processing multiple inventory items 
-#  in a single request.
+
+@app.post("/predict/expiration-risk", response_model=ExpirationRiskResponse)
+def predict_expiration_risk(request: ExpirationRiskRequest):
+    try:
+        return prediction_service.predict_expiration_risk(request)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
 @app.post("/predict/batch-expiration", response_model=BatchExpirationResponse)
 def predict_batch_expiration(request: BatchExpirationRequest):
     print("batch expiration hit")
@@ -101,11 +100,3 @@ def predict_batch_expiration(request: BatchExpirationRequest):
     except Exception as e:
         print(f"unexpected error: {e}")
         raise
-
-@app.post("/predict/batch-expiration", response_model=BatchExpirationResponse)
-def predict_batch_expiration(request: BatchExpirationRequest):
-    try:
-        scores = [prediction_service.predict_expiration_risk(item) for item in request.inventory_items]
-        return BatchExpirationResponse(risk_scores=scores)
-    except RuntimeError as e:
-        raise HTTPException(status_code=503, detail=str(e))

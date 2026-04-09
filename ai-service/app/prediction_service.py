@@ -1,7 +1,3 @@
-"""
-Prediction service — loads models and exposes predict methods.
-"""
-
 import os
 import joblib
 import numpy as np
@@ -15,13 +11,11 @@ from .models import (
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "models")
 
-# Global model references
 _reorder_model = None
 _expiration_model = None
 
 
 def load_models():
-    """Load serialized models into memory."""
     global _reorder_model, _expiration_model
 
     reorder_path = os.path.join(MODEL_DIR, "reorder_model.joblib")
@@ -43,9 +37,6 @@ def models_loaded() -> tuple[bool, bool]:
 
 
 def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionResponse:
-    # Added logging statements to the predict_reorder function to help trace the flow of data and identify any potential issues during the prediction process. 
-    # This will allow us to see when the function is called, when features are built, when the model makes a prediction, and when the final response is constructed, 
-    # which can be invaluable for debugging and ensuring that the prediction logic is working as intended.
     print(f"predict_reorder start med {request.medication_id}")
 
     if _reorder_model is None:
@@ -65,15 +56,19 @@ def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionRespo
 
     recommended = int(np.clip(round(prediction), 5, 100))
 
-    rf_model = _reorder_model.named_steps["model"]
-    tree_preds = np.array([
-        tree.predict(_reorder_model.named_steps["scaler"].transform(features))[0]
-        for tree in rf_model.estimators_
-    ])
-    print("reorder tree predictions done")
+    # Estimate confidence from model internals (algorithm-aware)
+    model_obj = _reorder_model.named_steps["model"]
+    scaled_features = _reorder_model.named_steps["scaler"].transform(features)
 
-    std = float(tree_preds.std())
-    confidence = max(0.0, min(1.0, 1.0 - (std / max(prediction, 1.0))))
+    if hasattr(model_obj, "estimators_") and hasattr(model_obj.estimators_[0], "predict"):
+        # RandomForest: variance across individual tree predictions
+        tree_preds = np.array([t.predict(scaled_features)[0] for t in model_obj.estimators_])
+        std = float(tree_preds.std())
+        confidence = max(0.0, min(1.0, 1.0 - (std / max(prediction, 1.0))))
+    else:
+        # HistGradientBoosting, GradientBoosting, Ridge, etc.: default high confidence
+        confidence = 0.85
+
     is_popular = recommended >= 40
 
     print(f"predict_reorder done med {request.medication_id}")
@@ -87,9 +82,6 @@ def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionRespo
 
 
 def predict_expiration_risk(request: ExpirationRiskRequest) -> ExpirationRiskResponse:
-    # Added logging statements to the predict_expiration_risk function to help trace the flow of data and identify any potential issues during the prediction process.
-    # This will allow us to see when the function is called, when features are built,
-    # when the model makes a prediction, and when the final response is constructed, which can be invaluable for debugging and ensuring that the prediction logic is working as intended.
     print(f"predict_expiration start stock {request.inventory_stock_id}")
 
     if _expiration_model is None:
