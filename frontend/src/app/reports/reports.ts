@@ -93,6 +93,7 @@ export class Reports implements OnInit, AfterViewInit {
   }
 
   loadInventory(): void {
+<<<<<<< HEAD
   this.inventoryService.getInventoryStocks({
     pageNumber: 1,
     pageSize: 100
@@ -106,6 +107,23 @@ export class Reports implements OnInit, AfterViewInit {
     }
   });
 }
+=======
+
+    this.inventoryService.getInventoryStocks({pageNumber: 1, pageSize: 100}).subscribe({
+      next: (response) => {
+
+        this.allItems = response.items.map(mapInventoryApiToRow);
+
+        this.applyFilters();
+
+      },
+      error: (err) => {
+        console.error('Failed to load inventory:', err);
+      }
+    });
+
+  }
+>>>>>>> esDev
 
   onSearch(): void {
     this.applyFilters();

@@ -79,12 +79,20 @@ export class Orders implements AfterViewInit {
   }
 
   private loadInventory(): void {
+<<<<<<< HEAD
     this.inventoryService.getInventoryStocks({
       pageNumber: 1,
       pageSize: 100
     }).subscribe({
       next: (response) => {
         this.allItems = response.items.map(mapInventoryApiToRow);
+=======
+    this.inventoryService.getInventoryStocks({pageNumber: 1, pageSize: 100}).subscribe({
+      next: (data) => {
+
+        this.allItems = data.items.map(mapInventoryApiToRow);
+
+>>>>>>> esDev
         this.dataSource.data = this.allItems;
 
         if (this.paginator) {
