@@ -1,0 +1,26 @@
+<h2 mat-dialog-title>Export Report</h2>
+
+<div mat-dialog-content>
+  <p>Select a date range for the export.</p>
+
+  <div class="export-form">
+    <label>
+      Start Date
+      <input type="date" [(ngModel)]="startDate" />
+    </label>
+
+    <label>
+      End Date
+      <input type="date" [(ngModel)]="endDate" />
+    </label>
+  </div>
+
+  <p *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </p>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="close()">Cancel</button>
+  <button mat-raised-button type="button" (click)="exportCsv()">Export CSV</button>
+</div>

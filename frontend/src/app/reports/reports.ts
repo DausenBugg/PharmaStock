@@ -16,6 +16,10 @@ import { InventoryRow } from '../inventory/inventory.model';
 import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
 import { InventoryApiItem } from '../services/inventory-api.model';
 
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ReportExportDialogComponent } from './reports-export-form';
+
+
 type Medication = InventoryRow;
 
 @Component({
@@ -30,7 +34,8 @@ type Medication = InventoryRow;
     MatListModule,
     MatToolbarModule,
     MatButtonModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatDialogModule
   ],
   templateUrl: './reports.html',
   styleUrl: './reports.css',
@@ -39,7 +44,8 @@ export class Reports implements OnInit, AfterViewInit {
 
   constructor(
     private route: ActivatedRoute,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private dialog: MatDialog
   ) {}
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -87,21 +93,19 @@ export class Reports implements OnInit, AfterViewInit {
   }
 
   loadInventory(): void {
-
-    this.inventoryService.getInventoryStocks().subscribe({
-      next: (data: InventoryApiItem[]) => {
-
-        this.allItems = data.map(mapInventoryApiToRow);
-
-        this.applyFilters();
-
-      },
-      error: (err) => {
-        console.error('Failed to load inventory:', err);
-      }
-    });
-
-  }
+  this.inventoryService.getInventoryStocks({
+    pageNumber: 1,
+    pageSize: 100
+  }).subscribe({
+    next: (response) => {
+      this.allItems = response.items.map(mapInventoryApiToRow);
+      this.applyFilters();
+    },
+    error: (err) => {
+      console.error('Failed to load inventory:', err);
+    }
+  });
+}
 
   onSearch(): void {
     this.applyFilters();
@@ -199,6 +203,17 @@ export class Reports implements OnInit, AfterViewInit {
     if (diffInDays <= 30) return 'health-warning';
 
     return '';
+  }
+
+  // OPEN EXPORT DIALOG
+  // Opens a dialog where user can select report parameters and export to CSV
+  openExportDialog(): void {
+    this.dialog.open(ReportExportDialogComponent, {
+      width: '500px',
+      data: {
+        rows: this.dataSource.data
+      }
+    });
   }
 
   logout() {
