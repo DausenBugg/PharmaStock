@@ -39,6 +39,7 @@ builder.Services.AddScoped<SyntheticUsageHistoryImporter>();
 
 builder.Services.AddScoped<MedicationServiceInterface, MedicationService>();
 builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService>();
+builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
 
 // AI Prediction Service — HttpClient for the Python ML microservice
 builder.Services.AddHttpClient<IAIPredictionService, AIPredictionService>(client =>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmaStock.Data;
+using PharmaStock.Services;
 
 namespace PharmaStock.Controllers
 {
@@ -14,15 +15,18 @@ namespace PharmaStock.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly PharmaStockDbContext _context;
+        private readonly IEmailNotificationService _emailService;
 
         public AdminController(
             UserManager<IdentityUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            PharmaStockDbContext context)
+            PharmaStockDbContext context,
+            IEmailNotificationService emailService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _context = context;
+            _emailService = emailService;
         }
 
         [HttpGet("users")]
@@ -101,6 +105,22 @@ namespace PharmaStock.Controllers
                     machineName = Environment.MachineName
                 }
             });
+        }
+
+        [HttpPost("send-inventory-alerts")]
+        public async Task<IActionResult> SendInventoryAlerts()
+        {
+            try
+            {
+                var (success, message) = await _emailService.SendUrgentInventoryAlertsAsync();
+                return success
+                    ? Ok(new { message })
+                    : BadRequest(new { message });
+            }
+            catch (HttpRequestException)
+            {
+                return StatusCode(503, new { error = "AI prediction service is unavailable." });
+            }
         }
     }
 }
