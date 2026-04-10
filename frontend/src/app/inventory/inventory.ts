@@ -118,19 +118,16 @@ export class InventoryComponent implements AfterViewInit {
   
    loadInventory(): void {
 
-    this.inventoryService.getInventoryStocks().subscribe({
-      next: (data) => {
-
-        this.allItems = data.map(mapInventoryApiToRow);
+    this.inventoryService.getInventoryStocks({ pageNumber: 1, pageSize: 100 }).subscribe({
+      next: (response) => {
+        this.allItems = response.items.map(mapInventoryApiToRow);
         this.dataSource.data = this.allItems;
 
-        // attach paginator
         if (this.paginator) {
           this.dataSource.paginator = this.paginator;
         }
 
         this.loadRiskScores();
-
         this.cdr.detectChanges();
       },
       error: (err) => {
