@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using PharmaStock.Data;
 using PharmaStock.Data.Infrastucture;
 using PharmaStock.Services;
+using PharmaStock.Services.ReportService;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,12 +41,16 @@ builder.Services.AddScoped<SyntheticUsageHistoryImporter>();
 builder.Services.AddScoped<MedicationServiceInterface, MedicationService>();
 builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService>();
 
+// Report Service
+builder.Services.AddScoped<IReportService, ReportService>();
+
 // AI Prediction Service — HttpClient for the Python ML microservice
 builder.Services.AddHttpClient<IAIPredictionService, AIPredictionService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["AIPrediction:BaseUrl"] ?? "http://127.0.0.1:8000");
     client.Timeout = TimeSpan.FromSeconds(30);
 });
+
 
 
 // --------------------------

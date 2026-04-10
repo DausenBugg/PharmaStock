@@ -1,0 +1,11 @@
+.export-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.error-message {
+  color: #b00020;
+  margin-top: 12px;
+}
