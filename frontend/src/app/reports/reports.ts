@@ -88,10 +88,10 @@ export class Reports implements OnInit, AfterViewInit {
 
   loadInventory(): void {
 
-    this.inventoryService.getInventoryStocks().subscribe({
-      next: (data: InventoryApiItem[]) => {
+    this.inventoryService.getInventoryStocks({pageNumber: 1, pageSize: 100}).subscribe({
+      next: (response) => {
 
-        this.allItems = data.map(mapInventoryApiToRow);
+        this.allItems = response.items.map(mapInventoryApiToRow);
 
         this.applyFilters();
 

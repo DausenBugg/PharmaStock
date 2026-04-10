@@ -79,10 +79,10 @@ export class Orders implements AfterViewInit {
   }
 
   private loadInventory(): void {
-    this.inventoryService.getInventoryStocks().subscribe({
+    this.inventoryService.getInventoryStocks({pageNumber: 1, pageSize: 100}).subscribe({
       next: (data) => {
 
-        this.allItems = data.map(mapInventoryApiToRow);
+        this.allItems = data.items.map(mapInventoryApiToRow);
 
         this.dataSource.data = this.allItems;
 
