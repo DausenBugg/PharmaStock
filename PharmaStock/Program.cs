@@ -40,6 +40,7 @@ builder.Services.AddScoped<SyntheticUsageHistoryImporter>();
 
 builder.Services.AddScoped<MedicationServiceInterface, MedicationService>();
 builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService>();
+builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
 
 // Report Service
 builder.Services.AddScoped<IReportService, ReportService>();
