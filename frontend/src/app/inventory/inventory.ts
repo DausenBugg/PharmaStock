@@ -118,14 +118,8 @@ export class InventoryComponent implements AfterViewInit {
   
    loadInventory(): void {
 
-<<<<<<< HEAD
     this.inventoryService.getInventoryStocks({ pageNumber: 1, pageSize: 100 }).subscribe({
       next: (response) => {
-=======
-    this.inventoryService.getInventoryStocks({pageNumber: 1, pageSize: 100}).subscribe({
-      next: (response) => {
-
->>>>>>> esDev
         this.allItems = response.items.map(mapInventoryApiToRow);
         this.dataSource.data = this.allItems;
 

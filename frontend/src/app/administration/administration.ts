@@ -120,27 +120,47 @@ export class Administration implements OnInit{
     // 🔧 UPDATE (role change)
     if (this.pendingEmployeeUpdate) {
 
-      const email = this.pendingEmployeeUpdate.email;
-      const role = this.pendingEmployeeUpdate.role;
+  const email = this.pendingEmployeeUpdate.email;
+  const newRole = this.pendingEmployeeUpdate.role;
 
-      this.employeeService.removeRole(email, 'Admin').subscribe({
-        next: () => {
+  this.employeeService.getRoles(email).subscribe({
+      next: (roles: string[]) => {
 
-          if (role === 'Admin') {
-            this.employeeService.assignRole(email, 'Admin').subscribe({
-              next: () => this.loadEmployees(),
-              error: (err) => console.error('Assign role failed', err)
-            });
-          } else {
-            this.loadEmployees();
-          }
+        const isCurrentlyAdmin = roles.some(r => r.toLowerCase() === 'Admin');
 
-        },
-        error: (err) => {
-          console.error('Remove role failed', err);
+        console.log('ROLES:', roles);
+        console.log('newRole:', newRole);
+        console.log('isCurrentlyAdmin:', isCurrentlyAdmin);
+
+        
+        if ((newRole === 'Admin' && isCurrentlyAdmin) ||
+            (newRole === 'Staff' && !isCurrentlyAdmin)) {
+          this.loadEmployees();
+          return;
         }
-      });
-    }
+
+        // 🔼 Promote
+        if (newRole === 'Admin') {
+          this.employeeService.assignRole(email, 'Admin').subscribe({
+            next: () => this.loadEmployees(),
+            error: (err) => console.error('Assign role failed', err)
+          });
+        }
+
+        // 🔽 Demote
+        else {
+          this.employeeService.removeRole(email, 'Admin').subscribe({
+            next: () => this.loadEmployees(),
+            error: (err) => console.error('Remove role failed', err)
+          });
+        }
+
+      },
+      error: (err) => {
+        console.error('Failed to fetch roles', err);
+      }
+    });
+  }
 
     // 🗑 DELETE
     if (this.pendingEmployeeRemoval) {
@@ -156,7 +176,8 @@ export class Administration implements OnInit{
 
       const payload = {
         email: this.newEmployee.email,
-        password: this.tempPassword
+        password: this.tempPassword,
+        confirmPassword: this.tempPassword
       };
 
       this.employeeService.register(payload).subscribe({

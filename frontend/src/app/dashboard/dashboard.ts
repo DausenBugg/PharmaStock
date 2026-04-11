@@ -162,11 +162,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     console.log('Refreshing dashboard data at:', new Date().toLocaleTimeString());
 
-    this.inventoryService.getInventoryStocks().subscribe({
-      next: (data: InventoryApiItem[]) => {
-
-        this.inventoryItems = data.map(mapInventoryApiToRow);
-
+    this.inventoryService.getInventoryStocks({ pageNumber: 1, pageSize: 100 }).subscribe({
+      next: (response) => {
+        this.inventoryItems = response.items.map(mapInventoryApiToRow);
         this.calculateInventoryStats();
         this.loadAIPredictions();
         this.cdr.detectChanges();

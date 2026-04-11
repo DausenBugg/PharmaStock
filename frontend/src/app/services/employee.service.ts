@@ -37,4 +37,9 @@ export class EmployeeService {
       role
     });
   }
+
+  getRoles(email: string) {
+    return this.http.get<string[]>(`http://localhost:5177/api/Auth/roles?email=${email}`);
+  }
+  
 }
