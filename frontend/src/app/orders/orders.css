@@ -7,7 +7,8 @@
 .sidebar {
   width: 220px;
   background-color: var(--sidebar-bg);
-  padding-top: 0;
+  padding-top: 0;  
+  border-radius: 0;
 }
 
 .sidebar .mat-mdc-list-item {

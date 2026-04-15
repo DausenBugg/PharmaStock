@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
+import { CommonModule } from "@angular/common";
 
 @Component({
   selector: 'app-logon-screen',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './logon-screen.html',
   styleUrls: ['./logon-screen.css'],
 })

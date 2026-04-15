@@ -108,7 +108,7 @@ Should see ✔ Container pharmastock-mysql Running
 To confirm use docker exec -it pharmastock-mysql mysql -u dev -padim -e "USE pharmastockdb; SHOW TABLES;"
 
 3. Run the API
-    From the backend project folder in bash or Powershell:
+    From the backend project folder in bash or Powershell:   
         dotnet run
 
 Swagger will be available at:

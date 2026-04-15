@@ -7,4 +7,5 @@ export interface LoginResponse  {
     token: string;
     expiresInMinutes: number;
     roles: string[];
-}   
+}
+
