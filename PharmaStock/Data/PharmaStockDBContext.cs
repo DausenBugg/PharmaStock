@@ -41,6 +41,9 @@ namespace PharmaStock.Data
         public DbSet<InventoryStock> InventoryStocks { get; set; } = null!;
         public DbSet<UsageHistory> UsageHistories { get; set; } = null!;
 
+        // UserProfile is a separate entity linked to IdentityUser via UserId
+        public DbSet<UserProfile> UserProfiles { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -127,6 +130,29 @@ namespace PharmaStock.Data
 
                 // Composite index for ML queries: filter by medication, order by time
                 entity.HasIndex(u => new { u.MedicationId, u.OccurredAtUtc });
+            });
+
+            // UserProfile configuration
+            modelBuilder.Entity<UserProfile>(entity =>
+            {
+                entity.HasIndex(p => p.UserId)
+                    .IsUnique();
+
+                entity.Property(p => p.DisplayName)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(p => p.ProfileImageContentType)
+                    .HasMaxLength(100);
+
+                entity.Property(p => p.Bio)
+                    .HasMaxLength(1000);
+
+                entity.HasOne(p => p.User)
+                    .WithOne()
+                    .HasForeignKey<UserProfile>(p => p.UserId)
+                    .HasPrincipalKey<IdentityUser>(u => u.Id)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

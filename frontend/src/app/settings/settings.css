@@ -3,6 +3,9 @@
 }
 
 .sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   width: 220px;
   background-color: var(--sidebar-bg);
   padding-top: 0;
@@ -316,3 +319,22 @@ mat-nav-list {
   color: #c62828;
 }
 
+.nav-links {
+  flex: 1;
+}
+
+.sidebar-footer {
+  padding: 12px 16px;
+
+  font-size: 12px;
+  text-align: center;
+
+  color: rgba(255, 255, 255, 0.6);
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-footer span {
+  font-size: 11px;
+  opacity: 0.8;
+}

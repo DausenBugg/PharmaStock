@@ -6,6 +6,10 @@ import { ChangeDetectorRef } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { environment } from '../environment/environment';
+import { versionInfo } from '../environment/version';
+
+
 
 @Component({
   selector: 'app-settings',
@@ -22,6 +26,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   styleUrl: './settings.css',
 })
 export class Settings {
+
+  //================== ENVIRONMENT INFO =================
+  environment = environment;
+  versionInfo = versionInfo;
 
   // ================= PROFILE =================
   displayName: string = 'John Doe';

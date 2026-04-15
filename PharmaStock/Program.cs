@@ -12,6 +12,7 @@ using PharmaStock.Services;
 using PharmaStock.Services.ReportService;
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------------
@@ -43,6 +44,9 @@ builder.Services.AddScoped<InventoryStockServiceInterface, InventoryStockService
 
 // Report Service
 builder.Services.AddScoped<IReportService, ReportService>();
+
+// Profile Service
+builder.Services.AddScoped<ProfileServiceInterface, ProfileService>();
 
 // AI Prediction Service — HttpClient for the Python ML microservice
 builder.Services.AddHttpClient<IAIPredictionService, AIPredictionService>(client =>
