@@ -11,7 +11,7 @@ import { PredictionService, ReorderAlert, ExpirationRisk } from '../services/pre
 import { catchError, finalize, interval, of, Subject, takeUntil, timeout } from 'rxjs';
 
 import { InventoryService } from '../services/inventory.service';
-import { InventoryApiItem } from '../services/inventory-api.model';
+import { InventoryApiItem } from '../models/inventory-api.model';
 import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
 import { InventoryRow } from '../inventory/inventory.model';
 import { NotificationSettingService } from '../services/notification-setting.service';

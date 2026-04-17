@@ -3,7 +3,7 @@ import { Observable, of } from 'rxjs';
 import { concatMap, map } from 'rxjs/operators';
 
 import { InventoryService } from './inventory.service';
-import { InventoryApiItem } from './inventory-api.model';
+import { InventoryApiItem } from '../models/inventory-api.model';
 import { InventoryRow } from '../inventory/inventory.model';
 
 @Injectable({

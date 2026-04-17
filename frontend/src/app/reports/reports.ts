@@ -14,7 +14,7 @@ import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { InventoryService } from '../services/inventory.service';
 import { InventoryRow } from '../inventory/inventory.model';
 import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
-import { InventoryApiItem } from '../services/inventory-api.model';
+import { InventoryApiItem } from '../models/inventory-api.model';
 
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ReportExportDialogComponent } from './reports-export-form';

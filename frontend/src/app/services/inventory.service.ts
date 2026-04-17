@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPatchRequest } from './inventory-api.model';
+import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPatchRequest } from '../models/inventory-api.model';
 import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
 
 
