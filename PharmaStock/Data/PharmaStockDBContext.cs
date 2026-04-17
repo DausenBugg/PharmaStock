@@ -40,6 +40,7 @@ namespace PharmaStock.Data
         public DbSet<Medication> Medications { get; set; } = null!;
         public DbSet<InventoryStock> InventoryStocks { get; set; } = null!;
         public DbSet<UsageHistory> UsageHistories { get; set; } = null!;
+        public DbSet<NotificationSetting> NotificationSettings { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -128,6 +129,18 @@ namespace PharmaStock.Data
                 // Composite index for ML queries: filter by medication, order by time
                 entity.HasIndex(u => new { u.MedicationId, u.OccurredAtUtc });
             });
+
+            // Seed default notification settings (single-row config)
+            modelBuilder.Entity<NotificationSetting>().HasData(new NotificationSetting
+            {
+                Id = 1,
+                ExpirationWarningDays = 30,
+                LowStockThresholdPercent = 20,
+                RiskScoreCriticalThreshold = 0.75,
+                RiskScoreWarningThreshold = 0.50,
+                MinRiskScoreFilter = 0.25,
+                UpdatedAtUtc = new DateTime(2026, 4, 17, 0, 0, 0, DateTimeKind.Utc)
+            });
         }
 
         // Override SaveChanges for synchronous calls
@@ -175,6 +188,14 @@ namespace PharmaStock.Data
                     if (entry.State == EntityState.Added)
                     {
                         usage.CreatedAtUtc = utcNow;
+                    }
+                }
+
+                if (entry.Entity is NotificationSetting ns)
+                {
+                    if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+                    {
+                        ns.UpdatedAtUtc = utcNow;
                     }
                 }
             }

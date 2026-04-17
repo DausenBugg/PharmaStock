@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,6 +6,8 @@ import { ChangeDetectorRef } from '@angular/core';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { NotificationSettingService } from '../services/notification-setting.service';
+import { NotificationSetting } from '../services/notification-setting.model';
 
 @Component({
   selector: 'app-settings',
@@ -21,7 +23,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   templateUrl: './settings.html',
   styleUrl: './settings.css',
 })
-export class Settings {
+export class Settings implements OnInit {
 
   // ================= PROFILE =================
   displayName: string = 'John Doe';
@@ -38,12 +40,87 @@ export class Settings {
   darkMode: boolean = false;
   compactDensity: boolean = false;
 
-  constructor(private cdr: ChangeDetectorRef) {
+  // ================= ALERT THRESHOLDS =================
+  isAdmin: boolean = false;
+  thresholdsLoading: boolean = false;
+  thresholdsSaveMessage: string = '';
+  thresholdsSaveError: boolean = false;
+  expirationWarningDays: number = 30;
+  lowStockThresholdPercent: number = 20;
+  riskScoreCriticalThreshold: number = 0.75;
+  riskScoreWarningThreshold: number = 0.50;
+  minRiskScoreFilter: number = 0.25;
+
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private notificationSettingService: NotificationSettingService
+  ) {
   const body = document.body;
 
   this.darkMode = body.classList.contains('dark-theme');
   this.compactDensity = body.classList.contains('compact-density');
+
+  this.checkAdminRole();
 }
+
+  ngOnInit(): void {
+    if (this.isAdmin) {
+      this.loadThresholds();
+    }
+  }
+
+  private checkAdminRole(): void {
+    const token = localStorage.getItem('pharmastock_jwt');
+    if (!token) return;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const roles = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      this.isAdmin = Array.isArray(roles) ? roles.includes('Admin') : roles === 'Admin';
+    } catch {
+      this.isAdmin = false;
+    }
+  }
+
+  loadThresholds(): void {
+    this.thresholdsLoading = true;
+    this.notificationSettingService.get().subscribe({
+      next: (settings) => {
+        this.expirationWarningDays = settings.expirationWarningDays;
+        this.lowStockThresholdPercent = settings.lowStockThresholdPercent;
+        this.riskScoreCriticalThreshold = settings.riskScoreCriticalThreshold;
+        this.riskScoreWarningThreshold = settings.riskScoreWarningThreshold;
+        this.minRiskScoreFilter = settings.minRiskScoreFilter;
+        this.thresholdsLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.thresholdsLoading = false;
+      }
+    });
+  }
+
+  saveThresholds(): void {
+    this.thresholdsSaveMessage = '';
+    this.thresholdsSaveError = false;
+    this.notificationSettingService.update({
+      expirationWarningDays: this.expirationWarningDays,
+      lowStockThresholdPercent: this.lowStockThresholdPercent,
+      riskScoreCriticalThreshold: this.riskScoreCriticalThreshold,
+      riskScoreWarningThreshold: this.riskScoreWarningThreshold,
+      minRiskScoreFilter: this.minRiskScoreFilter
+    }).subscribe({
+      next: () => {
+        this.thresholdsSaveMessage = 'Thresholds saved successfully.';
+        this.thresholdsSaveError = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.thresholdsSaveMessage = 'Failed to save thresholds.';
+        this.thresholdsSaveError = true;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   // ================= IMAGE PREVIEW =================
   onImageUpload(event: any) {
