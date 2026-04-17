@@ -1,4 +1,4 @@
-import { InventoryApiItem } from '../services/inventory-api.model';
+import { InventoryApiItem } from '../models/inventory-api.model';
 import { InventoryRow } from './inventory.model';
 
 // inventory.mapper.ts

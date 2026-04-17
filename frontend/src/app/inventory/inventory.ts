@@ -16,11 +16,11 @@ import { PredictionService, ExpirationRisk } from '../services/prediction.servic
 import { InventoryService } from '../services/inventory.service';
 import { InventoryRow } from './inventory.model';
 import { mapInventoryApiToRow } from './inventory.mapper';
-import { InventoryApiItem } from '../services/inventory-api.model';
+import { InventoryApiItem } from '../models/inventory-api.model';
 
 // Updated for Patch Requests
-import { UpdateInventoryStockPatchRequest } from '../services/inventory-api.model';
-import { UpdateMedicationPatchRequest } from '../services/inventory-api.model';
+import { UpdateInventoryStockPatchRequest } from '../models/inventory-api.model';
+import { UpdateMedicationPatchRequest } from '../models/inventory-api.model';
 
 // Save service
 import { InventorySaveService } from '../services/inventory-save.service';

@@ -17,12 +17,6 @@ export interface Employee {
   role: 'Staff' | 'Admin';
 }
 
-/* const EMPLOYEE_DATA: Employee[] = [
-  { name: 'Alice Johnson', email: 'alice@pharmastock.com', role: 'Administrator' },
-  { name: 'Bob Smith', email: 'bob@pharmastock.com', role: 'Manager' },
-  { name: 'Carol White', email: 'carol@pharmastock.com', role: 'User' }
-]; */
-
 @Component({
   selector: 'app-administration',
   standalone: true,
