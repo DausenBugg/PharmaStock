@@ -88,12 +88,12 @@
 
         <div class="profile-picture-section">
           <img
-            *ngIf="profileImage"
-            [src]="profileImage"
+            *ngIf="profileImageUrl"
+            [src]="profileImageUrl"
             class="profile-preview"
           />
 
-          <div *ngIf="!profileImage" class="profile-placeholder">
+          <div *ngIf="!profileImageUrl" class="profile-placeholder">
             No Image
           </div>
 
@@ -112,7 +112,7 @@
           class="app-input"
           type="text"
           placeholder="Display Name"
-          [(ngModel)]="displayName"
+          [(ngModel)]="profile.userName"
           name="displayName"
         />
 
@@ -120,12 +120,12 @@
           class="app-input"
           type="email"
           placeholder="Email Address"
-          [(ngModel)]="email"
+          [(ngModel)]="profile.email"
           name="email"
         />
 
         <div class="role-display">
-          Role: <strong>{{ role }}</strong>
+          Role: <strong>{{ profile.roles?.[0] }}</strong>
         </div>
 
       </div>
