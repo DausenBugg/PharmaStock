@@ -317,3 +317,41 @@ mat-nav-list {
   color: #c62828;
 }
 
+/* ================= ALERT THRESHOLDS ================= */
+
+.threshold-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+.threshold-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--card-text);
+  text-align: center;
+  width: 100%;
+  max-width: 250px;
+}
+
+.threshold-loading {
+  color: var(--card-text);
+  font-size: 14px;
+}
+
+.threshold-success {
+  color: #2e7d32;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.threshold-error {
+  color: #d32f2f;
+  font-size: 14px;
+  font-weight: 600;
+}
+

@@ -10,15 +10,17 @@ public class AIPredictionService : IAIPredictionService
 {
     private readonly HttpClient _httpClient;
     private readonly PharmaStockDbContext _context;
+    private readonly INotificationSettingService _notificationSettings;
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public AIPredictionService(HttpClient httpClient, PharmaStockDbContext context)
+    public AIPredictionService(HttpClient httpClient, PharmaStockDbContext context, INotificationSettingService notificationSettings)
     {
         _httpClient = httpClient;
         _context = context;
+        _notificationSettings = notificationSettings;
     }
 
     public async Task<List<ReorderPredictionResponse>> GetReorderAlertsAsync()
@@ -106,7 +108,9 @@ public class AIPredictionService : IAIPredictionService
                     .Where(s => s.ExpirationDate > now)
                     .Sum(s => s.QuantityOnHand);
 
-                if (totalStock <= pred.RecommendedReorderLevel)
+                var settings = await _notificationSettings.GetAsync();
+                var buffer = pred.RecommendedReorderLevel * (1 + settings.LowStockThresholdPercent / 100.0);
+                if (totalStock <= buffer)
                 {
                     alerts.Add(pred);
                 }
@@ -134,7 +138,9 @@ public class AIPredictionService : IAIPredictionService
     public async Task<List<ExpirationRiskResponse>> GetExpirationRisksAsync()
     {
         var now = DateTime.UtcNow;
-        var thirtyDaysAgo = now.AddDays(-30);
+        var settings = await _notificationSettings.GetAsync();
+        var lookbackDays = settings.ExpirationWarningDays;
+        var lookbackDate = now.AddDays(-lookbackDays);
 
         // Get all active inventory lots
         var stocks = await _context.InventoryStocks
@@ -148,14 +154,14 @@ public class AIPredictionService : IAIPredictionService
 
         // Get daily usage averages per medication
         var usageByMed = await _context.UsageHistories
-            .Where(u => u.OccurredAtUtc >= thirtyDaysAgo && u.ChangeType == "Dispensed")
+            .Where(u => u.OccurredAtUtc >= lookbackDate && u.ChangeType == "Dispensed")
             .GroupBy(u => u.MedicationId)
             .Select(g => new { MedicationId = g.Key, TotalUsed = g.Sum(u => u.QuantityChanged) })
             .ToListAsync();
 
         var avgUsageLookup = usageByMed.ToDictionary(
             u => u.MedicationId,
-            u => u.TotalUsed / 30.0
+            u => u.TotalUsed / (double)lookbackDays
         );
 
         // Added console lines to log the number of inventory lots and usage records being sent to the AI prediction service for better visibility into the batch request size
