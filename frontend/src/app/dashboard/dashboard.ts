@@ -15,7 +15,10 @@ import { InventoryApiItem } from '../models/inventory-api.model';
 import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
 import { InventoryRow } from '../inventory/inventory.model';
 import { NotificationSettingService } from '../services/notification-setting.service';
-import { NotificationSetting } from '../services/notification-setting.model';
+import { NotificationSetting } from '../models/notification-setting.model';
+import { ProfileService } from '../services/profile.service';
+import { Profile } from "../models/profile.model";
+import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 
 
 @Component({
@@ -27,12 +30,16 @@ import { NotificationSetting } from '../services/notification-setting.model';
     MatListModule,
     MatCardModule,
     RouterModule,
-    CommonModule
+    CommonModule,
+    MainLayoutComponent
   ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+
+  profile: Profile | null = null;
+  profileImageUrl: string | null = null;
 
   // Added private var for dashboard destroy for auto-refresh
   private destroyDashboard$ = new Subject<void>();
@@ -67,7 +74,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private inventoryService: InventoryService,
-    private notificationSettingService: NotificationSettingService
+    private notificationSettingService: NotificationSettingService,
+    private profileService: ProfileService
   ){}
 
   calculateInventoryStats() {
@@ -156,6 +164,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
 
     this.updateThemeState();
+
+    this.loadUserProfile();
+    this.loadUserImage();
 
     this.themeObserver = new MutationObserver(() => {
       this.updateThemeState();
@@ -275,6 +286,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
     localStorage.clear(); // or remove specific token
     sessionStorage.clear();
     window.location.href = '/login'; // or your login route
+  }
+
+  loadUserProfile(): void {
+    this.profileService.getProfile().subscribe({
+      next: (data) => {
+        this.profile = data;
+      },
+      error: () => {
+        console.warn('Using fallback user');
+
+        // TEMP fallback (until backend fully wired)
+        this.profile = {
+          id: '1',
+          email: 'john@example.com',
+          userName: 'John Doe',
+          roles: ['Administrator']
+        };
+      }
+    });
+  }
+
+  loadUserImage(): void {
+    this.profileService.getProfileImage().subscribe({
+      next: (blob) => {
+        this.profileImageUrl = URL.createObjectURL(blob);
+      },
+      error: () => {
+        this.profileImageUrl = null; // fallback to placeholder
+      }
+    });
   }
 
 

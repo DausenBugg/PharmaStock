@@ -1,89 +1,27 @@
-.settings-container {
-  height: 100vh;
-}
-
-.sidebar {
-  width: 220px;
-  background-color: var(--sidebar-bg);
-  padding-top: 0;
-  border-radius: 0;
-}
-
-.sidebar .mat-mdc-list-item {
-  margin: 0;
-  border-radius: 0;
-}
-
-.sidebar-logo {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px 0;
-}
-
-.sidebar-logo-img {
-  width: 120px;
-  height: auto;
-}
-
-.logo-dark {
-  display: none;
-}
-
-/* When dark theme is active */
-body.dark-theme .logo-light {
-  display: none;
-}
-
-body.dark-theme .logo-dark {
-  display: block;
-}
-
-.nav-item {
-  height: 52px;
-  display: flex;
-  align-items: center;
-  padding-left: 24px;
-  font-size: 16px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-
-/* Inactive text */
-:host ::ng-deep .sidebar .mat-mdc-list-item .mdc-list-item__primary-text {
-  color: var(--sidebar-text);
-  font-size: 18px;
-  font-weight: 500;
-}
-
-.nav-item:hover {
-  opacity: 0.9;
-}
-
-/* Active indicator */
-.nav-item.active {
-  background-color: var(--active-bg);
-  border-radius: 0;
-  width: 100%;
-}
-
-:host ::ng-deep .nav-item.active .mdc-list-item__primary-text {
-  color: var(--active-text);
-  font-weight: 700;
-  font-size: 18px;
-}
-
-mat-sidenav-content {
-  background-color: var(--bg-color);
-}
-
 .settings-header {
   background-color: var(--bg-color);
   color: var(--card-text);
-  font-weight: 700;
-  font-size: 64px;
+  display: flex;
   justify-content: center;
-  padding-top: 32px;
+  align-items: center;
+  min-height: 140px;
+  padding: 24px 0;
+}
+
+.header-container {
+  text-align: center;
+}
+
+.pharmacy-title {
+  font-size: 64px; 
+  font-weight: 700;
+  margin: 0;
+}
+
+.settings-subtitle {
+  font-size: 48px;
+  font-weight: 500;
+  margin: 24px 0 0 0;
 }
 
 .content {
@@ -92,6 +30,8 @@ mat-sidenav-content {
   flex-direction: column;
   align-items: center;
 }
+
+/* ================= ACTIONS ================= */
 
 .settings-actions {
   display: flex;
@@ -121,17 +61,12 @@ mat-sidenav-content {
   opacity: 0.7;
 }
 
-/* Table styling */
-
-.content {
-  padding: 32px;
-  display: flex;
-  justify-content: center;
-}
+/* ================= TABLE ================= */
 
 .settings-table {
   width: 100%;
   max-width: 1100px;
+  background-color: var(--table-bg);
 }
 
 th {
@@ -143,56 +78,19 @@ td {
   font-size: 14px;
 }
 
-.mat-mdc-header-row {
-  background-color: var(--sidebar-bg);
-}
+/* ================= HEALTH COLORS ================= */
 
-.mat-mdc-header-cell {
-  color: var(--sidebar-text);
-}
-
-:host ::ng-deep .mat-mdc-cell {
-  color: var(--table-text);
-}
-
-.settings-header {
-  background-color: var(--bg-color);
-  color: var(--card-text);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 140px;
-  height: auto;
-  padding-top: 24px 0;
-}
-
-.header-container {
-  text-align: center;
-}
-
-.pharmacy-title {
-  font-size: 64px; 
-  font-weight: 700;
-  margin: 0;
-}
-
-.settings-subtitle {
-  font-size: 48px;
-  font-weight: 500;
-  margin: 24px 0 0 0;
-}
-
-/* ===== INVENTORY HEALTH COLORS ===== */
-
-:host ::ng-deep .mat-mdc-cell.health-warning {
+.health-warning {
   background-color: #ed6c02;
   color: white;
 }
 
-:host ::ng-deep .mat-mdc-cell.health-critical {
+.health-critical {
   background-color: #d32f2f;
   color: white;
 }
+
+/* ================= CARD ================= */
 
 .settings-card {
   width: 100%;
@@ -211,8 +109,10 @@ td {
   margin: 0 0 12px 0;
   font-size: 32px;
   font-weight: 700;
-  color: var(--card-text)
+  color: var(--card-text);
 }
+
+/* ================= PROFILE ================= */
 
 .profile-picture-section {
   display: flex;
@@ -251,20 +151,7 @@ td {
   color: var(--card-text);
 }
 
-.file-upload-button {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: var(--button-bg);
-  color: var(--button-text);
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 400;
-  transition: opacity 0.2s ease;
-}
-
-.file-upload-button:hover {
-  opacity: 0.8;
-}
+/* ================= INPUT ================= */
 
 .app-input {
   width: 100%;
@@ -281,14 +168,17 @@ td {
 
 .app-input:focus {
   border-color: var(--button-bg);
-  box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.15); /* subtle glow */
+  box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.15);
 }
 
-.app-input::placeholder{
+.app-input::placeholder {
   color: var(--accent-color);
   opacity: 1;
 }
 
+/* ================= BUTTONS ================= */
+
+.file-upload-button,
 .pass-update-btn {
   display: inline-block;
   padding: 10px 20px;
@@ -300,21 +190,9 @@ td {
   transition: opacity 0.2s ease;
 }
 
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-
-mat-nav-list {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.logout-link {
-  margin-top: auto;
-  color: #c62828;
+.file-upload-button:hover,
+.pass-update-btn:hover {
+  opacity: 0.8;
 }
 
 /* ================= ALERT THRESHOLDS ================= */
@@ -354,4 +232,3 @@ mat-nav-list {
   font-size: 14px;
   font-weight: 600;
 }
-

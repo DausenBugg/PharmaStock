@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { NotificationSetting } from './notification-setting.model';
+import { NotificationSetting } from '../models/notification-setting.model';
 
 @Injectable({
   providedIn: 'root'

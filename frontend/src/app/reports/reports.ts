@@ -18,6 +18,7 @@ import { InventoryApiItem } from '../models/inventory-api.model';
 
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ReportExportDialogComponent } from './reports-export-form';
+import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 
 
 type Medication = InventoryRow;
@@ -35,7 +36,8 @@ type Medication = InventoryRow;
     MatToolbarModule,
     MatButtonModule,
     MatPaginatorModule,
-    MatDialogModule
+    MatDialogModule,
+    MainLayoutComponent
   ],
   templateUrl: './reports.html',
   styleUrl: './reports.css',

@@ -1,252 +1,184 @@
-<mat-sidenav-container class="dashboard-container">
+<app-main-layout>
 
-  <!-- ================= SIDEBAR ================= -->
-  <mat-sidenav mode="side" opened class="sidebar">
-
-    <a routerLink="/dashboard" class="logo-link">
-        <div class="sidebar-logo">
-        <img src="assets/pharmastock-logo-transparent-dark.png"
-            class="sidebar-logo-img logo-light"
-            alt="PharmaStock Logo" />
-
-        <img src="assets/pharmastock-logo-transparent-nav.png"
-            class="sidebar-logo-img logo-dark"
-            alt="PharmaStock Logo" />
-        </div>
-    </a>
-
-    <mat-nav-list>
-
-      <a mat-list-item
-         routerLink="/dashboard"
-         routerLinkActive="active"
-         [routerLinkActiveOptions]="{ exact: true }"
-         class="nav-item">
-        Dashboard
-      </a>
-
-      <a mat-list-item
-         routerLink="/inventory"
-         routerLinkActive="active"
-         class="nav-item">
-         Inventory
-      </a>
-
-      <a mat-list-item
-         routerLink="/orders"
-         routerLinkActive="active"
-         class="nav-item">
-         Orders
-      </a>
-
-      <a mat-list-item
-         routerLink="/reports"
-         routerLinkActive="active"
-         class="nav-item">
-         Reports
-      </a>
-
-      <a mat-list-item
-         routerLink="/settings"
-         routerLinkActive="active"
-         class="nav-item">
-         Settings
-      </a>
-
-      <a mat-list-item
-         routerLink="/administration"
-         routerLinkActive="active"
-         class="nav-item">
-         Administration
-      </a>
-
-      <a mat-list-item
-        (click)="logout()"
-        class="nav-item logout-link">
-        Sign Out
-      </a>
-
-    </mat-nav-list>
-
-  </mat-sidenav>
-
-  <!-- ================= MAIN CONTENT ================= -->
-  <mat-sidenav-content>
-
-    <!-- HEADER -->
-    <mat-toolbar class="dashboard-header">
-      <div class="header-container">
-          <div class="pharmacy-title">Pharmacy Name</div>
-          <div class="dashboard-subtitle">Dashboard</div>
-        </div>
+  <!-- HEADER -->
+  <mat-toolbar class="dashboard-header">
+    <div class="header-container">
+      <div class="pharmacy-title">Pharmacy Name</div>
+      <div class="dashboard-subtitle">Dashboard</div>
+    </div>
   </mat-toolbar>
 
+  <div class="content">
 
-    <div class="content">
+    <!-- ===== TOP ROW ===== -->
+    <div class="card-row large-row">
 
-      <!-- ===== TOP ROW ===== -->
-      <div class="card-row large-row">
+      <mat-card
+        class="dashboard-card large-card clickable-card"
+        (click)="goToInventory()"
+        [ngClass]="inventoryHealthClass"
+        [class.health-good]="inventoryHealth > 95"
+        [class.health-warning]="inventoryHealth >= 85 && inventoryHealth <= 95"
+        [class.health-critical]="inventoryHealth < 85">
 
-        <!-- Inventory Health -->
-        <mat-card
-          class="dashboard-card large-card clickable-card"
-          (click) = "goToInventory()"
-          [ngClass]="inventoryHealthClass"
-          [class.health-good]="inventoryHealth > 95"
-          [class.health-warning]="inventoryHealth >= 85 && inventoryHealth <= 95"
-          [class.health-critical]="inventoryHealth < 85">
+        <h3>Inventory Health</h3>
+        <div class="card-value">{{ inventoryHealth }}%</div>
 
-          <h3>Inventory Health</h3>
-          <div class="card-value">{{ inventoryHealth }}%</div>
+      </mat-card>
 
-        </mat-card>
+      <mat-card
+        class="dashboard-card large-card"
+        [class.health-good]="totalMeds >= 499"
+        [class.health-warning]="totalMeds >= 350 && totalMeds < 499"
+        [class.health-critical]="totalMeds < 350">
 
-        <!-- Total Medications -->
-        <mat-card
-          class="dashboard-card large-card"
-          [class.health-good]="totalMeds >= 499"
-          [class.health-warning]="totalMeds >= 350 && totalMeds < 499"
-          [class.health-critical]="totalMeds < 350">
+        <h3>Total Medications</h3>
+        <div class="card-value">{{ totalMeds }}</div>
 
-          <h3>Total Medications</h3>
-          <div class="card-value">{{ totalMeds }}</div>
-
-        </mat-card>
-
-      </div>
-
-      <!-- ===== SECOND ROW ===== -->
-      <div class="card-row small-row">
-
-        <!-- Expired -->
-        <mat-card
-          class="dashboard-card small-card clickable-card"
-          (click) = "goToReports('expired')"
-          [class.health-good]="expired === 0"
-          [class.health-critical]="expired > 0">
-
-          <h4>Expired</h4>
-          <div class="card-value">{{ expired }}</div>
-        </mat-card>
-
-        <!-- About to Expire -->
-        <mat-card
-          class="dashboard-card small-card clickable-card"
-          (click) = "goToReports('expiringSoon')"
-          [class.health-good]="expiringSoon === 0"
-          [class.health-warning]="expiringSoon > 0">
-
-          <h4>About to Expire</h4>
-          <div class="card-value">{{ expiringSoon }}</div>
-        </mat-card>
-
-        <!-- Stocked Out -->
-        <mat-card
-          class="dashboard-card small-card clickable-card"
-          (click) = "goToReports('stockedOut')"
-          [class.health-good]="stockedOut === 0"
-          [class.health-critical]="stockedOut > 0">
-
-          <h4>Stocked Out</h4>
-          <div class="card-value">{{ stockedOut }}</div>
-        </mat-card>
-
-        <!-- Low Inventory -->
-        <mat-card
-          class="dashboard-card small-card clickable-card"
-          (click) = "goToReports('lowInventory')"
-          [class.health-good]="lowInventory === 0"
-          [class.health-warning]="lowInventory > 0">
-
-          <h4>Low Inventory</h4>
-          <div class="card-value">{{ lowInventory }}</div>
-        </mat-card>
-
-      </div>
-
-      <!-- ===== ACTION BUTTONS ===== -->
-      <div class="dashboard-actions">
-
-        <button 
-          class="primary-button dashboard-btn"
-          routerLink="/inventory">
-          Enter New Inventory
-        </button>
-
-        <button 
-          class="primary-button dashboard-btn"
-          routerLink="/reports">
-          Remove Expired Inventory
-        </button>
-
-      </div>
-
-      <!-- ===== AI PREDICTIONS ROW ===== -->
-      <div class="ai-section-header">
-        <span class="ai-section-label">AI-Powered Insights</span>
-      </div>
-      <div class="ai-section">
-
-        <!-- AI Reorder Alerts -->
-        <mat-card class="dashboard-card ai-card">
-          <div class="ai-card-header">
-            <h3>AI Reorder Alerts</h3>
-            <span class="ai-badge">AI</span>
-          </div>
-          <p class="ai-card-subtitle">ML-predicted reorder levels based on usage patterns</p>
-          <div *ngIf="reorderLoading" class="ai-empty">
-            Loading AI reorder alerts...
-          </div>
-          <div *ngIf="!reorderLoading && reorderAlerts.length === 0 && !reorderError" class="ai-empty">
-            All medications are above AI-recommended thresholds.
-          </div>
-          <div *ngIf="!reorderLoading && reorderError" class="ai-empty ai-error-text">
-            AI service unavailable
-          </div>
-          <div *ngFor="let alert of reorderAlerts" class="ai-alert-row">
-            <span class="ai-alert-badge"
-                  [class.badge-popular]="alert.isPopular"
-                  [class.badge-slow]="!alert.isPopular">
-              {{ alert.isPopular ? 'POPULAR' : 'SLOW' }}
-            </span>
-            <span class="ai-alert-text">
-              Med #{{ alert.medicationId }} — Reorder at <strong>{{ alert.recommendedReorderLevel }}</strong>
-            </span>
-            <span class="ai-confidence">{{ (alert.confidence * 100).toFixed(0) }}%</span>
-          </div>
-        </mat-card>
-
-        <!-- AI Expiration Risk -->
-        <mat-card class="dashboard-card ai-card">
-          <div class="ai-card-header">
-            <h3>Expiration Risk</h3>
-            <span class="ai-badge">AI</span>
-          </div>
-          <p class="ai-card-subtitle">ML-predicted risk of expiring before use</p>
-          <div *ngIf="expirationLoading" class="ai-empty">
-            Loading expiration risk predictions...
-          </div>
-          <div *ngIf="!expirationLoading && expirationRisks.length === 0 && !expirationError" class="ai-empty">
-            No high-risk lots detected.
-          </div>
-          <div *ngIf="!expirationLoading && expirationError" class="ai-empty ai-error-text">
-            AI service unavailable
-          </div>
-          <div *ngFor="let risk of expirationRisks" class="ai-alert-row">
-            <span class="ai-risk-badge" [ngClass]="getRiskClass(risk.riskScore)">
-              {{ risk.riskLabel }}
-            </span>
-            <span class="ai-alert-text">
-              Lot #{{ risk.inventoryStockId }} — {{ risk.daysToExpiry }}d to expiry
-            </span>
-            <span class="ai-risk-score">{{ (risk.riskScore * 100).toFixed(0) }}%</span>
-          </div>
-        </mat-card>
-
-      </div>
+      </mat-card>
 
     </div>
 
-  </mat-sidenav-content>
+    <!-- ===== SECOND ROW ===== -->
+    <div class="card-row small-row">
 
-</mat-sidenav-container>
+      <mat-card class="dashboard-card small-card clickable-card"
+        (click)="goToReports('expired')"
+        [class.health-good]="expired === 0"
+        [class.health-critical]="expired > 0">
+
+        <h4>Expired</h4>
+        <div class="card-value">{{ expired }}</div>
+      </mat-card>
+
+      <mat-card class="dashboard-card small-card clickable-card"
+        (click)="goToReports('expiringSoon')"
+        [class.health-good]="expiringSoon === 0"
+        [class.health-warning]="expiringSoon > 0">
+
+        <h4>About to Expire</h4>
+        <div class="card-value">{{ expiringSoon }}</div>
+      </mat-card>
+
+      <mat-card class="dashboard-card small-card clickable-card"
+        (click)="goToReports('stockedOut')"
+        [class.health-good]="stockedOut === 0"
+        [class.health-critical]="stockedOut > 0">
+
+        <h4>Stocked Out</h4>
+        <div class="card-value">{{ stockedOut }}</div>
+      </mat-card>
+
+      <mat-card class="dashboard-card small-card clickable-card"
+        (click)="goToReports('lowInventory')"
+        [class.health-good]="lowInventory === 0"
+        [class.health-warning]="lowInventory > 0">
+
+        <h4>Low Inventory</h4>
+        <div class="card-value">{{ lowInventory }}</div>
+      </mat-card>
+
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="dashboard-actions">
+
+      <button class="primary-button dashboard-btn" routerLink="/inventory">
+        Enter New Inventory
+      </button>
+
+      <button class="primary-button dashboard-btn" routerLink="/reports">
+        Remove Expired Inventory
+      </button>
+
+    </div>
+
+    <!-- AI SECTION -->
+    <div class="ai-section-header">
+      <span class="ai-section-label">AI-Powered Insights</span>
+    </div>
+
+    <div class="ai-section">
+
+      <mat-card class="dashboard-card ai-card">
+        <div class="ai-card-header">
+          <h3>AI Reorder Alerts</h3>
+          <span class="ai-badge">AI</span>
+        </div>
+
+        <p class="ai-card-subtitle">
+          ML-predicted reorder levels based on usage patterns
+        </p>
+
+        <div *ngIf="reorderLoading" class="ai-empty">
+          Loading AI reorder alerts...
+        </div>
+
+        <div *ngIf="!reorderLoading && reorderAlerts.length === 0 && !reorderError" class="ai-empty">
+          All medications are above AI-recommended thresholds.
+        </div>
+
+        <div *ngIf="!reorderLoading && reorderError" class="ai-empty ai-error-text">
+          AI service unavailable
+        </div>
+
+        <div *ngFor="let alert of reorderAlerts" class="ai-alert-row">
+          <span class="ai-alert-badge"
+                [class.badge-popular]="alert.isPopular"
+                [class.badge-slow]="!alert.isPopular">
+            {{ alert.isPopular ? 'POPULAR' : 'SLOW' }}
+          </span>
+
+          <span class="ai-alert-text">
+            Med #{{ alert.medicationId }} — Reorder at
+            <strong>{{ alert.recommendedReorderLevel }}</strong>
+          </span>
+
+          <span class="ai-confidence">
+            {{ (alert.confidence * 100).toFixed(0) }}%
+          </span>
+        </div>
+      </mat-card>
+
+      <mat-card class="dashboard-card ai-card">
+        <div class="ai-card-header">
+          <h3>Expiration Risk</h3>
+          <span class="ai-badge">AI</span>
+        </div>
+
+        <p class="ai-card-subtitle">
+          ML-predicted risk of expiring before use
+        </p>
+
+        <div *ngIf="expirationLoading" class="ai-empty">
+          Loading expiration risk predictions...
+        </div>
+
+        <div *ngIf="!expirationLoading && expirationRisks.length === 0 && !expirationError" class="ai-empty">
+          No high-risk lots detected.
+        </div>
+
+        <div *ngIf="!expirationLoading && expirationError" class="ai-empty ai-error-text">
+          AI service unavailable
+        </div>
+
+        <div *ngFor="let risk of expirationRisks" class="ai-alert-row">
+          <span class="ai-risk-badge" [ngClass]="getRiskClass(risk.riskScore)">
+            {{ risk.riskLabel }}
+          </span>
+
+          <span class="ai-alert-text">
+            Lot #{{ risk.inventoryStockId }} — {{ risk.daysToExpiry }}d to expiry
+          </span>
+
+          <span class="ai-risk-score">
+            {{ (risk.riskScore * 100).toFixed(0) }}%
+          </span>
+        </div>
+      </mat-card>
+
+    </div>
+
+  </div>
+
+</app-main-layout>

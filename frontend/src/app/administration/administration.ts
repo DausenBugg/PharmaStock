@@ -9,6 +9,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 
+import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 import { EmployeeService } from "../services/employee.service";
 
 export interface Employee {
@@ -28,7 +29,8 @@ export interface Employee {
     MatSidenavModule,
     MatListModule,
     MatToolbarModule,
-    MatButtonModule
+    MatButtonModule,
+    MainLayoutComponent
   ],
   templateUrl: './administration.html',
   styleUrl: './administration.css'

@@ -1,200 +1,106 @@
-<mat-sidenav-container class="settings-container">
+<app-main-layout>
 
-  <!-- SIDEBAR -->
-  <mat-sidenav mode="side" opened class="sidebar">
+  <!-- HEADER -->
+  <mat-toolbar class="settings-header">
+    <div class="header-container">
+      <div class="pharmacy-title">Pharmacy Name</div>
+      <div class="settings-subtitle">Settings</div>
+    </div>
+  </mat-toolbar>
 
-    <a routerLink="/dashboard" class="logo-link">
-        <div class="sidebar-logo">
-        <img src="assets/pharmastock-logo-transparent-dark.png"
-            class="sidebar-logo-img logo-light"
-            alt="PharmaStock Logo" />
+  <div class="content">
 
-        <img src="assets/pharmastock-logo-transparent-nav.png"
-            class="sidebar-logo-img logo-dark"
-            alt="PharmaStock Logo" />
+    <!-- PROFILE -->
+    <div class="settings-card">
+
+      <h2>Profile</h2>
+
+      <div class="profile-picture-section">
+        <img
+          *ngIf="profileImageUrl"
+          [src]="profileImageUrl"
+          class="profile-preview"
+        />
+
+        <div *ngIf="!profileImageUrl" class="profile-placeholder">
+          No Image
         </div>
-    </a>
-    
-    <mat-nav-list>
-      <a mat-list-item
-         routerLink="/dashboard"
-         routerLinkActive="active"
-         [routerLinkActiveOptions]="{ exact: true }"
-         class="nav-item">
-        Dashboard
-      </a>
 
-      <a mat-list-item
-         routerLink="/inventory"
-         routerLinkActive="active"
-         class="nav-item">
-         Inventory
-      </a>
-
-      <a mat-list-item
-         routerLink="/orders"
-         routerLinkActive="active"
-         class="nav-item">
-         Orders
-      </a>
-
-      <a mat-list-item
-         routerLink="/reports"
-         routerLinkActive="active"
-         class="nav-item">
-         Reports
-      </a>
-
-      <a mat-list-item
-         routerLink="/settings"
-         routerLinkActive="active"
-         class="nav-item">
-         Settings
-      </a>
-
-      <a mat-list-item
-         routerLink="/administration"
-         routerLinkActive="active"
-         class="nav-item">
-         Administration
-      </a>
-
-      <a mat-list-item
-        (click)="logout()"
-        class="nav-item logout-link">
-        Sign Out
-      </a>
-      
-    </mat-nav-list>
-
-  </mat-sidenav>
-
-  <!-- MAIN AREA -->
-  <mat-sidenav-content>
-
-    <!-- HEADER -->
-    <mat-toolbar class="settings-header">
-      <div class="header-container">
-          <div class="pharmacy-title">Pharmacy Name</div>
-          <div class="settings-subtitle">Settings</div>
-        </div>
-    </mat-toolbar>
-
-    <div class="content">
-          <!-- ================= PROFILE ================= -->
-      <div class="settings-card">
-
-        <h2>Profile</h2>
-
-        <div class="profile-picture-section">
-          <img
-            *ngIf="profileImageUrl"
-            [src]="profileImageUrl"
-            class="profile-preview"
+        <label class="file-upload-button">
+          Choose File
+          <input
+            type="file"
+            accept="image/*"
+            (change)="onImageUpload($event)"
+            hidden
           />
-
-          <div *ngIf="!profileImageUrl" class="profile-placeholder">
-            No Image
-          </div>
-
-          <label class="file-upload-button">
-            Choose File
-            <input
-              type="file"
-              accept="image/*"
-              (change)="onImageUpload($event)"
-              hidden
-            />
-          </label>
-        </div>
-
-        <input
-          class="app-input"
-          type="text"
-          placeholder="Display Name"
-          [(ngModel)]="profile.userName"
-          name="displayName"
-        />
-
-        <input
-          class="app-input"
-          type="email"
-          placeholder="Email Address"
-          [(ngModel)]="profile.email"
-          name="email"
-        />
-
-        <div class="role-display">
-          Role: <strong>{{ profile.roles?.[0] }}</strong>
-        </div>
-
+        </label>
       </div>
 
-      <!-- ================= SECURITY ================= -->
-      <div class="settings-card">
+      <input
+        class="app-input"
+        type="text"
+        placeholder="Display Name"
+        [(ngModel)]="profile.userName"
+        name="displayName"
+      />
 
-        <h2>Change Password</h2>
+      <input
+        class="app-input"
+        type="email"
+        placeholder="Email Address"
+        [(ngModel)]="profile.email"
+        name="email"
+      />
 
-        <input
-          class="app-input"
-          type="password"
-          placeholder="Current Password"
-          [(ngModel)]="currentPassword"
-          name="currentPassword"
-        />
-
-        <input
-          class="app-input"
-          type="password"
-          placeholder="New Password"
-          [(ngModel)]="newPassword"
-          name="newPassword"
-        />
-
-        <input
-          class="app-input"
-          type="password"
-          placeholder="Confirm New Password"
-          [(ngModel)]="confirmPassword"
-          name="confirmPassword"
-        />
-
-        <button class="file-upload-button" (click)="changePassword()">
-          Update Password
-        </button>
-
+      <div class="role-display">
+        Role: <strong>{{ profile.roles?.[0] }}</strong>
       </div>
 
-      <!-- ================= APPEARANCE ================= -->
-      <div class="settings-card">
+    </div>
 
-        <h2>Appearance</h2>
+    <!-- SECURITY -->
+    <div class="settings-card">
 
-        <div class="toggle-row">
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="darkMode"
-              (change)="toggleTheme()"
-            />
-            Enable Dark Mode
-          </label>
-        </div>
+      <h2>Change Password</h2>
 
-        <div class="toggle-row">
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="compactDensity"
-              (change)="toggleDensity()"
-            />
-            Compact Table Density
-          </label>
-        </div>
+      <input class="app-input" type="password" placeholder="Current Password"
+             [(ngModel)]="currentPassword" name="currentPassword" />
 
+      <input class="app-input" type="password" placeholder="New Password"
+             [(ngModel)]="newPassword" name="newPassword" />
+
+      <input class="app-input" type="password" placeholder="Confirm New Password"
+             [(ngModel)]="confirmPassword" name="confirmPassword" />
+
+      <button class="file-upload-button" (click)="changePassword()">
+        Update Password
+      </button>
+
+    </div>
+
+    <!-- APPEARANCE -->
+    <div class="settings-card">
+
+      <h2>Appearance</h2>
+
+      <div class="toggle-row">
+        <label>
+          <input type="checkbox" [(ngModel)]="darkMode" (change)="toggleTheme()" />
+          Enable Dark Mode
+        </label>
       </div>
 
-      <!-- ================= ALERT THRESHOLDS (Admin Only) ================= -->
+      <div class="toggle-row">
+        <label>
+          <input type="checkbox" [(ngModel)]="compactDensity" (change)="toggleDensity()" />
+          Compact Table Density
+        </label>
+      </div>
+
+    </div>
+
+    <!-- ================= ALERT THRESHOLDS (Admin Only) ================= -->
       <div class="settings-card" *ngIf="isAdmin">
 
         <h2>Alert Thresholds</h2>
@@ -281,9 +187,6 @@
 
       </div>
 
-    </div>
-    
-  </mat-sidenav-content>
+  </div>
 
-</mat-sidenav-container>
-
+</app-main-layout>

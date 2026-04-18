@@ -1,0 +1,153 @@
+/* ============================= */
+/* LAYOUT CONTAINER */
+/* ============================= */
+
+.dashboard-container {
+  height: 100vh;
+}
+
+:host ::ng-deep .mat-drawer {
+    border-radius: 0;
+}
+
+
+/* ============================= */
+/* SIDEBAR */
+/* ============================= */
+
+.sidebar {
+  width: 220px;
+  background-color: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+
+/* ============================= */
+/* LOGO */
+/* ============================= */
+
+.sidebar-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.sidebar-logo-img {
+  width: 120px;
+  height: auto;
+}
+
+/* Light / Dark logo toggle */
+.logo-dark {
+  display: none;
+}
+
+body.dark-theme .logo-light {
+  display: none;
+}
+
+body.dark-theme .logo-dark {
+  display: block;
+}
+
+
+/* ============================= */
+/* USER BLOCK */
+/* ============================= */
+
+.nav-user-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--light-accent);
+}
+
+.user-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.welcome-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--sidebar-text);
+  text-align: center;
+}
+
+
+/* ============================= */
+/* NAVIGATION */
+/* ============================= */
+
+mat-nav-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Nav item container */
+.nav-item {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding-left: 24px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Fix Angular Material text color */
+:host ::ng-deep .sidebar .mat-mdc-list-item .mdc-list-item__primary-text {
+  color: var(--sidebar-text);
+  font-size: 16px;
+}
+
+/* Hover */
+.nav-item:hover {
+  opacity: 0.9;
+}
+
+/* Active state */
+.nav-item.active {
+  background-color: var(--active-bg);
+  width: 100%;
+  border-radius: 0;
+}
+
+:host ::ng-deep .nav-item.active .mdc-list-item__primary-text {
+  color: var(--active-text);
+  font-weight: 700;
+}
+
+
+/* ============================= */
+/* LOGOUT (BOTTOM) */
+/* ============================= */
+
+.logout-link {
+  margin-top: auto;
+  color: #c62828;
+}
+
+
+/* ============================= */
+/* MAIN CONTENT AREA */
+/* ============================= */
+
+mat-sidenav-content {
+  background-color: var(--bg-color);
+}

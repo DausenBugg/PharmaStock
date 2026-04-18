@@ -27,6 +27,7 @@ import { InventorySaveService } from '../services/inventory-save.service';
 import { MedicationSaveService } from '../services/medication-save.service';
 import { Observable, of } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
+import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 
 @Component({
   selector: 'app-inventory',
@@ -39,7 +40,8 @@ import { concatMap } from 'rxjs/operators';
     MatListModule,
     MatToolbarModule,
     MatTableModule, 
-    MatPaginatorModule
+    MatPaginatorModule,
+    MainLayoutComponent
   ],
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.css']

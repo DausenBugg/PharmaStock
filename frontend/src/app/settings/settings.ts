@@ -9,6 +9,7 @@ import { NotificationSettingService } from '../services/notification-setting.ser
 
 import { ProfileService } from '../services/profile.service';
 import { Profile } from '../models/profile.model';
+import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 
 @Component({
   selector: 'app-settings',
@@ -19,7 +20,8 @@ import { Profile } from '../models/profile.model';
     FormsModule,
     MatSidenavModule,
     MatListModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MainLayoutComponent
   ],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
@@ -34,7 +36,7 @@ export class Settings implements OnInit {
     firstName: 'John',
     lastName: 'Doe',
     phoneNumber: '123-456-7890',
-    roles: ['Administrator']
+    roles: ['Admin']
   };
 
   profileImageUrl: string | null = null;
