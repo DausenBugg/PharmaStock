@@ -1,208 +1,293 @@
-<mat-sidenav-container class="settings-container">
+<app-main-layout>
+  <mat-sidenav-container class="settings-container">
 
-  <!-- SIDEBAR -->
-  <mat-sidenav mode="side" opened class="sidebar">
-
-    <a routerLink="/dashboard" class="logo-link">
+    <!-- SIDEBAR -->
+    <mat-sidenav mode="side" opened class="sidebar">
+      <a routerLink="/dashboard" class="logo-link">
         <div class="sidebar-logo">
-        <img src="assets/pharmastock-logo-transparent-dark.png"
-            class="sidebar-logo-img logo-light"
-            alt="PharmaStock Logo" />
-
-        <img src="assets/pharmastock-logo-transparent-nav.png"
+          <img
+            src="assets/pharmastock-logo-transparent-nav.png"
             class="sidebar-logo-img logo-dark"
-            alt="PharmaStock Logo" />
+            alt="PharmaStock Logo"
+          />
         </div>
-    </a>
-    
-    <mat-nav-list>
-      <a mat-list-item
-         routerLink="/dashboard"
-         routerLinkActive="active"
-         [routerLinkActiveOptions]="{ exact: true }"
-         class="nav-item">
-        Dashboard
       </a>
 
-      <a mat-list-item
-         routerLink="/inventory"
-         routerLinkActive="active"
-         class="nav-item">
-         Inventory
-      </a>
+      <mat-nav-list class="nav-links">
+        <a
+          mat-list-item
+          routerLink="/dashboard"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="nav-item"
+        >
+          Dashboard
+        </a>
 
-      <a mat-list-item
-         routerLink="/orders"
-         routerLinkActive="active"
-         class="nav-item">
-         Orders
-      </a>
+        <a
+          mat-list-item
+          routerLink="/inventory"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Inventory
+        </a>
 
-      <a mat-list-item
-         routerLink="/reports"
-         routerLinkActive="active"
-         class="nav-item">
-         Reports
-      </a>
+        <a
+          mat-list-item
+          routerLink="/orders"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Orders
+        </a>
 
-      <a mat-list-item
-         routerLink="/settings"
-         routerLinkActive="active"
-         class="nav-item">
-         Settings
-      </a>
+        <a
+          mat-list-item
+          routerLink="/reports"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Reports
+        </a>
 
-      <a mat-list-item
-         routerLink="/administration"
-         routerLinkActive="active"
-         class="nav-item">
-         Administration
-      </a>
+        <a
+          mat-list-item
+          routerLink="/settings"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Settings
+        </a>
 
-      <a mat-list-item
-        (click)="logout()"
-        class="nav-item logout-link">
-        Sign Out
-      </a>
-      
-    </mat-nav-list>
+        <a
+          mat-list-item
+          routerLink="/administration"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Administration
+        </a>
 
-    <div class=" sidebar-footer">
-      {{ environment.releaseChannel }} v{{ environment.appVersion }} 
-      <br />
-      <span>({{ versionInfo.buildSha }})</span>
-    </div>
-    
-  </mat-sidenav>
+        <a
+          mat-list-item
+          (click)="logout()"
+          class="nav-item logout-link"
+        >
+          Sign Out
+        </a>
+      </mat-nav-list>
 
-  <!-- MAIN AREA -->
-  <mat-sidenav-content>
+      <div class="sidebar-footer">
+        {{ environment.releaseChannel }} v{{ environment.appVersion }}
+        <br />
+        <span>({{ versionInfo.buildSha }})</span>
+      </div>
+    </mat-sidenav>
 
-    <!-- HEADER -->
-    <mat-toolbar class="settings-header">
-      <div class="header-container">
+    <!-- MAIN AREA -->
+    <mat-sidenav-content>
+      <!-- HEADER -->
+      <mat-toolbar class="settings-header">
+        <div class="header-container">
           <div class="pharmacy-title">Pharmacy Name</div>
           <div class="settings-subtitle">Settings</div>
         </div>
-    </mat-toolbar>
+      </mat-toolbar>
 
-    <div class="content">
-          <!-- ================= PROFILE ================= -->
-      <div class="settings-card">
+      <div class="content">
+        <!-- PROFILE -->
+        <div class="settings-card">
+          <h2>Profile</h2>
 
-        <h2>Profile</h2>
+          <div class="profile-picture-section">
+            <img
+              *ngIf="profileImageUrl"
+              [src]="profileImageUrl"
+              class="profile-preview"
+            />
 
-        <div class="profile-picture-section">
-          <img
-            *ngIf="profileImage"
-            [src]="profileImage"
-            class="profile-preview"
-          />
+            <div *ngIf="!profileImageUrl" class="profile-placeholder">
+              No Image
+            </div>
 
-          <div *ngIf="!profileImage" class="profile-placeholder">
-            No Image
+            <label class="file-upload-button">
+              Choose File
+              <input
+                type="file"
+                accept="image/*"
+                (change)="onImageUpload($event)"
+                hidden
+              />
+            </label>
           </div>
 
-          <label class="file-upload-button">
-            Choose File
-            <input
-              type="file"
-              accept="image/*"
-              (change)="onImageUpload($event)"
-              hidden
-            />
-          </label>
+          <input
+            class="app-input"
+            type="text"
+            placeholder="Display Name"
+            [(ngModel)]="profile.userName"
+            name="displayName"
+          />
+
+          <input
+            class="app-input"
+            type="email"
+            placeholder="Email Address"
+            [(ngModel)]="profile.email"
+            name="email"
+          />
+
+          <div class="role-display">
+            Role: <strong>{{ profile.roles?.[0] }}</strong>
+          </div>
         </div>
 
-        <input
-          class="app-input"
-          type="text"
-          placeholder="Display Name"
-          [(ngModel)]="displayName"
-          name="displayName"
-        />
+        <!-- SECURITY -->
+        <div class="settings-card">
+          <h2>Change Password</h2>
 
-        <input
-          class="app-input"
-          type="email"
-          placeholder="Email Address"
-          [(ngModel)]="email"
-          name="email"
-        />
+          <input
+            class="app-input"
+            type="password"
+            placeholder="Current Password"
+            [(ngModel)]="currentPassword"
+            name="currentPassword"
+          />
 
-        <div class="role-display">
-          Role: <strong>{{ role }}</strong>
+          <input
+            class="app-input"
+            type="password"
+            placeholder="New Password"
+            [(ngModel)]="newPassword"
+            name="newPassword"
+          />
+
+          <input
+            class="app-input"
+            type="password"
+            placeholder="Confirm New Password"
+            [(ngModel)]="confirmPassword"
+            name="confirmPassword"
+          />
+
+          <button class="file-upload-button" (click)="changePassword()">
+            Update Password
+          </button>
         </div>
 
+        <!-- APPEARANCE -->
+        <div class="settings-card">
+          <h2>Appearance</h2>
+
+          <div class="toggle-row">
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="darkMode"
+                (change)="toggleTheme()"
+              />
+              Enable Dark Mode
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <label>
+              <input
+                type="checkbox"
+                [(ngModel)]="compactDensity"
+                (change)="toggleDensity()"
+              />
+              Compact Table Density
+            </label>
+          </div>
+        </div>
+
+        <!-- ALERT THRESHOLDS (Admin Only) -->
+        <div class="settings-card" *ngIf="isAdmin">
+          <h2>Alert Thresholds</h2>
+
+          <div *ngIf="thresholdsLoading" class="threshold-loading">
+            Loading...
+          </div>
+
+          <div *ngIf="!thresholdsLoading" class="threshold-form">
+            <label class="threshold-label">
+              Expiration Warning (days)
+              <input
+                class="app-input"
+                type="number"
+                min="1"
+                max="365"
+                [(ngModel)]="expirationWarningDays"
+                name="expirationWarningDays"
+              />
+            </label>
+
+            <label class="threshold-label">
+              Low Stock Buffer (%)
+              <input
+                class="app-input"
+                type="number"
+                min="0"
+                max="100"
+                [(ngModel)]="lowStockThresholdPercent"
+                name="lowStockThresholdPercent"
+              />
+            </label>
+
+            <label class="threshold-label">
+              Risk Score — Critical (&ge;)
+              <input
+                class="app-input"
+                type="number"
+                min="0.01"
+                max="1"
+                step="0.01"
+                [(ngModel)]="riskScoreCriticalThreshold"
+                name="riskScoreCriticalThreshold"
+              />
+            </label>
+
+            <label class="threshold-label">
+              Risk Score — Warning (&ge;)
+              <input
+                class="app-input"
+                type="number"
+                min="0.01"
+                max="1"
+                step="0.01"
+                [(ngModel)]="riskScoreWarningThreshold"
+                name="riskScoreWarningThreshold"
+              />
+            </label>
+
+            <label class="threshold-label">
+              Min Risk Score Filter
+              <input
+                class="app-input"
+                type="number"
+                min="0"
+                max="1"
+                step="0.01"
+                [(ngModel)]="minRiskScoreFilter"
+                name="minRiskScoreFilter"
+              />
+            </label>
+
+            <button class="file-upload-button" (click)="saveThresholds()">
+              Save Thresholds
+            </button>
+
+            <div
+              *ngIf="thresholdsSaveMessage"
+              [class]="thresholdsSaveError ? 'threshold-error' : 'threshold-success'"
+            >
+              {{ thresholdsSaveMessage }}
+            </div>
+          </div>
+        </div>
       </div>
-
-      <!-- ================= SECURITY ================= -->
-      <div class="settings-card">
-
-        <h2>Change Password</h2>
-
-        <input
-          class="app-input"
-          type="password"
-          placeholder="Current Password"
-          [(ngModel)]="currentPassword"
-          name="currentPassword"
-        />
-
-        <input
-          class="app-input"
-          type="password"
-          placeholder="New Password"
-          [(ngModel)]="newPassword"
-          name="newPassword"
-        />
-
-        <input
-          class="app-input"
-          type="password"
-          placeholder="Confirm New Password"
-          [(ngModel)]="confirmPassword"
-          name="confirmPassword"
-        />
-
-        <button class="file-upload-button" (click)="changePassword()">
-          Update Password
-        </button>
-
-      </div>
-
-      <!-- ================= APPEARANCE ================= -->
-      <div class="settings-card">
-
-        <h2>Appearance</h2>
-
-        <div class="toggle-row">
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="darkMode"
-              (change)="toggleTheme()"
-            />
-            Enable Dark Mode
-          </label>
-        </div>
-
-        <div class="toggle-row">
-          <label>
-            <input
-              type="checkbox"
-              [(ngModel)]="compactDensity"
-              (change)="toggleDensity()"
-            />
-            Compact Table Density
-          </label>
-        </div>
-
-      </div>
-
-    </div>
-    
-  </mat-sidenav-content>
-
-</mat-sidenav-container>
-
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</app-main-layout>

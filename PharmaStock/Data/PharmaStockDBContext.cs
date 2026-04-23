@@ -40,6 +40,7 @@ namespace PharmaStock.Data
         public DbSet<Medication> Medications { get; set; } = null!;
         public DbSet<InventoryStock> InventoryStocks { get; set; } = null!;
         public DbSet<UsageHistory> UsageHistories { get; set; } = null!;
+        public DbSet<NotificationSetting> NotificationSettings { get; set; } = null!;
 
         // UserProfile is a separate entity linked to IdentityUser via UserId
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
@@ -153,6 +154,16 @@ namespace PharmaStock.Data
                     .HasForeignKey<UserProfile>(p => p.UserId)
                     .HasPrincipalKey<IdentityUser>(u => u.Id)
                     .OnDelete(DeleteBehavior.Cascade);
+            // Seed default notification settings (single-row config)
+            modelBuilder.Entity<NotificationSetting>().HasData(new NotificationSetting
+            {
+                Id = 1,
+                ExpirationWarningDays = 30,
+                LowStockThresholdPercent = 20,
+                RiskScoreCriticalThreshold = 0.75,
+                RiskScoreWarningThreshold = 0.50,
+                MinRiskScoreFilter = 0.25,
+                UpdatedAtUtc = new DateTime(2026, 4, 17, 0, 0, 0, DateTimeKind.Utc)
             });
         }
 
@@ -201,6 +212,14 @@ namespace PharmaStock.Data
                     if (entry.State == EntityState.Added)
                     {
                         usage.CreatedAtUtc = utcNow;
+                    }
+                }
+
+                if (entry.Entity is NotificationSetting ns)
+                {
+                    if (entry.State == EntityState.Added || entry.State == EntityState.Modified)
+                    {
+                        ns.UpdatedAtUtc = utcNow;
                     }
                 }
             }

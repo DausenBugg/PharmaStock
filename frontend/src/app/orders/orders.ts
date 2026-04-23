@@ -14,6 +14,7 @@ import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { InventoryService } from "../services/inventory.service";
 import { InventoryRow } from '../inventory/inventory.model';
 import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
+import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 
 @Component({
   selector: 'app-orders',
@@ -29,7 +30,8 @@ import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MainLayoutComponent
   ],
   templateUrl: './orders.html',
   styleUrl: './orders.css',

@@ -98,16 +98,59 @@ body.dark-theme .logo-dark {
   opacity: 0.7;
 }
 
+/* ================= COMPACT TABLE MODE ================= */
+
 body.compact-density .mat-mdc-row {
-  height: 36px !important;
+  height: 36px;
 }
 
 body.compact-density .mat-mdc-header-row {
-  height: 40px !important;
+  height: 40px;
 }
 
 body.compact-density .mat-mdc-cell,
 body.compact-density .mat-mdc-header-cell {
-  padding: 4px 8px !important;
-  font-size: 13px !important;
+  padding: 4px 8px;
+  font-size: 13px ;
+}
+
+/* ================= GLOBAL TABLE STYLING ================= */
+
+.mat-mdc-table .mat-mdc-header-row .mdc-data-table__header-cell {
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+}
+
+/* Header row */
+.mat-mdc-header-row {  
+  background-color: var(--sidebar-bg);
+  border-bottom: 2px solid var(--card-color);
+}
+
+/* Header cells */
+.mat-mdc-header-cell {
+  color: var(--sidebar-text);
+  border-right: 2px solid var(--card-color);  
+  background-color: var(--sidebar-bg);
+}
+
+/* Body cells */
+.mat-mdc-cell {
+  color: var(--table-text);
+  border-right: 1px solid var(--table-text);
+}
+
+/* Remove last column border */
+.mat-mdc-header-cell:last-child,
+.mat-mdc-cell:last-child {
+  border-right: none;
+}
+
+/* Horizontal row borders */
+.mat-mdc-row {
+  border-bottom: 1px solid var(--table-text);
+}
+
+.mat-mdc-row:hover {
+  background-color: rgba(0, 0, 0, 0.03);
 }

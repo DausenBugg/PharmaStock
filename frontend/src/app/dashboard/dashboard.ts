@@ -11,9 +11,14 @@ import { PredictionService, ReorderAlert, ExpirationRisk } from '../services/pre
 import { catchError, finalize, interval, of, Subject, takeUntil, timeout } from 'rxjs';
 
 import { InventoryService } from '../services/inventory.service';
-import { InventoryApiItem } from '../services/inventory-api.model';
+import { InventoryApiItem } from '../models/inventory-api.model';
 import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
 import { InventoryRow } from '../inventory/inventory.model';
+import { NotificationSettingService } from '../services/notification-setting.service';
+import { NotificationSetting } from '../models/notification-setting.model';
+import { ProfileService } from '../services/profile.service';
+import { Profile } from "../models/profile.model";
+import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 
 
 @Component({
@@ -25,12 +30,16 @@ import { InventoryRow } from '../inventory/inventory.model';
     MatListModule,
     MatCardModule,
     RouterModule,
-    CommonModule
+    CommonModule,
+    MainLayoutComponent
   ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit, OnDestroy {
+
+  profile: Profile | null = null;
+  profileImageUrl: string | null = null;
 
   // Added private var for dashboard destroy for auto-refresh
   private destroyDashboard$ = new Subject<void>();
@@ -53,12 +62,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   reorderError = false;
   expirationError = false;
 
+  // Alert thresholds (defaults until loaded from API)
+  expirationWarningDays = 30;
+  riskScoreCriticalThreshold = 0.75;
+  riskScoreWarningThreshold = 0.50;
+  minRiskScoreFilter = 0.25;
+
   constructor(
     private router: Router,
     private predictionService: PredictionService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
-    private inventoryService: InventoryService
+    private inventoryService: InventoryService,
+    private notificationSettingService: NotificationSettingService,
+    private profileService: ProfileService
   ){}
 
   calculateInventoryStats() {
@@ -81,7 +98,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
       const diff =
         (exp.getTime() - today.getTime()) / (1000*60*60*24);
 
-      return diff >= 0 && diff <= 30;
+      return diff >= 0 && diff <= this.expirationWarningDays;
     }).length;
 
     this.stockedOut = data.filter(item =>
@@ -103,7 +120,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         (expirationDate.getTime() - today.getTime()) / (1000*60*60*24);
 
       const expired = expirationDate < today;
-      const expiringSoon = diff >= 0 && diff <= 30;
+      const expiringSoon = diff >= 0 && diff <= this.expirationWarningDays;
       const lowInventory = item.quantity < item.reorderPoint;
 
       return expired || expiringSoon || lowInventory;
@@ -134,9 +151,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // -----------------------------
 
   ngOnInit(): void {
-    this.refreshDashboard();
+    this.notificationSettingService.get().pipe(
+      catchError(() => of(null))
+    ).subscribe((settings) => {
+      if (settings) {
+        this.expirationWarningDays = settings.expirationWarningDays;
+        this.riskScoreCriticalThreshold = settings.riskScoreCriticalThreshold;
+        this.riskScoreWarningThreshold = settings.riskScoreWarningThreshold;
+        this.minRiskScoreFilter = settings.minRiskScoreFilter;
+      }
+      this.refreshDashboard();
+    });
 
     this.updateThemeState();
+
+    this.loadUserProfile();
+    this.loadUserImage();
 
     this.themeObserver = new MutationObserver(() => {
       this.updateThemeState();
@@ -216,13 +246,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
       })
     ).subscribe((risks) => {
       const safeRisks = Array.isArray(risks) ? risks : [];
-      this.expirationRisks = safeRisks.filter(r => r.riskScore > 0.25).slice(0, 5);
+      this.expirationRisks = safeRisks.filter(r => r.riskScore > this.minRiskScoreFilter).slice(0, 5);
     });
   }
 
   getRiskClass(score: number): string {
-    if (score >= 0.75) return 'health-critical';
-    if (score >= 0.5) return 'health-warning';
+    if (score >= this.riskScoreCriticalThreshold) return 'health-critical';
+    if (score >= this.riskScoreWarningThreshold) return 'health-warning';
     return '';
   }
 
@@ -256,6 +286,36 @@ export class DashboardComponent implements OnInit, OnDestroy {
     localStorage.clear(); // or remove specific token
     sessionStorage.clear();
     window.location.href = '/login'; // or your login route
+  }
+
+  loadUserProfile(): void {
+    this.profileService.getProfile().subscribe({
+      next: (data) => {
+        this.profile = data;
+      },
+      error: () => {
+        console.warn('Using fallback user');
+
+        // TEMP fallback (until backend fully wired)
+        this.profile = {
+          id: '1',
+          email: 'john@example.com',
+          userName: 'John Doe',
+          roles: ['Administrator']
+        };
+      }
+    });
+  }
+
+  loadUserImage(): void {
+    this.profileService.getProfileImage().subscribe({
+      next: (blob) => {
+        this.profileImageUrl = URL.createObjectURL(blob);
+      },
+      error: () => {
+        this.profileImageUrl = null; // fallback to placeholder
+      }
+    });
   }
 
 

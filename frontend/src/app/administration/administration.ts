@@ -9,6 +9,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 
+import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 import { EmployeeService } from "../services/employee.service";
 
 export interface Employee {
@@ -16,12 +17,6 @@ export interface Employee {
   email: string;
   role: 'Staff' | 'Admin';
 }
-
-/* const EMPLOYEE_DATA: Employee[] = [
-  { name: 'Alice Johnson', email: 'alice@pharmastock.com', role: 'Administrator' },
-  { name: 'Bob Smith', email: 'bob@pharmastock.com', role: 'Manager' },
-  { name: 'Carol White', email: 'carol@pharmastock.com', role: 'User' }
-]; */
 
 @Component({
   selector: 'app-administration',
@@ -34,7 +29,8 @@ export interface Employee {
     MatSidenavModule,
     MatListModule,
     MatToolbarModule,
-    MatButtonModule
+    MatButtonModule,
+    MainLayoutComponent
   ],
   templateUrl: './administration.html',
   styleUrl: './administration.css'

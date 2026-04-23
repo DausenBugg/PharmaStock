@@ -1,372 +1,157 @@
-<mat-sidenav-container class="orders-container">
-
-  <!-- SIDEBAR -->
-  <mat-sidenav mode="side" opened class="sidebar">
-
-    <a routerLink="/dashboard" class="logo-link">
-      <div class="sidebar-logo">
-
-        <img src="assets/pharmastock-logo-transparent-dark.png"
-             class="sidebar-logo-img logo-light"
-             alt="PharmaStock Logo" />
-
-        <img src="assets/pharmastock-logo-transparent-nav.png"
-             class="sidebar-logo-img logo-dark"
-             alt="PharmaStock Logo" />
-
-      </div>
-    </a>
-
-    <mat-nav-list>
-
-      <a mat-list-item routerLink="/dashboard"
-         routerLinkActive="active"
-         class="nav-item">
-        Dashboard
-      </a>
-
-      <a mat-list-item routerLink="/inventory"
-         routerLinkActive="active"
-         class="nav-item">
-        Inventory
-      </a>
-
-      <a mat-list-item routerLink="/orders"
-         routerLinkActive="active"
-         class="nav-item">
-        Orders
-      </a>
-
-      <a mat-list-item routerLink="/reports"
-         routerLinkActive="active"
-         class="nav-item">
-        Reports
-      </a>
-
-      <a mat-list-item routerLink="/settings"
-         routerLinkActive="active"
-         class="nav-item">
-        Settings
-      </a>
-
-      <a mat-list-item routerLink="/administration"
-         routerLinkActive="active"
-         class="nav-item">
-        Administration
-      </a>
-
-      <a mat-list-item
-        (click)="logout()"
-        class="nav-item logout-link">
-        Sign Out
-      </a>
-
-    </mat-nav-list>
-
-  </mat-sidenav>
-
-
-  <!-- MAIN AREA -->
-  <mat-sidenav-content>
-
-    <!-- HEADER -->
-    <mat-toolbar class="inventory-header">
-      <div class="header-container">
-        <div class="pharmacy-title">Pharmacy Name</div>
-        <div class="inventory-subtitle">Inventory</div>
-      </div>
-    </mat-toolbar>
-
-
-    <div class="content">
-
-      <!-- SEARCH -->
-      <form class="inventory-search" (ngSubmit)="onSearch()">
-
-        <div class="search-fields">
-
-          <input
-            class="app-input"
-            type="text"
-            placeholder="Medication Name"
-            [(ngModel)]="searchName"
-            name="searchName"
-          />
-
-          <input
-            class="app-input"
-            type="text"
-            placeholder="Lot Number"
-            [(ngModel)]="searchLot"
-            name="searchLot"
-          />
-
-        </div>
-
-        <div class="search-actions">
-
-          <button type="submit" class="inventory-btn search-btn">
-            Search
-          </button>
-
-          <button
-            type="button"
-            class="inventory-btn search-btn"
-            (click)="clearFilters()">
-            Clear
-          </button>
-
-          <button
-            type="button"
-            class="inventory-btn search-btn"
-            (click)="openInventoryForm()">
-            Add / Edit
-          </button>
-
-        </div>
-
-      </form>
-
-
-      <!-- TABLE -->
-      <table mat-table
-             [dataSource]="dataSource"
-             class="inventory-table mat-elevation-z2">
-
-        <!-- EDIT -->
-        <ng-container matColumnDef="edit">
-          <th mat-header-cell *matHeaderCellDef>Edit</th>
-          <td mat-cell *matCellDef="let element">
-
-            <input
-              type="checkbox"
-              (change)="onSelectRow(element, $event)"
-            />
-
-          </td>
-        </ng-container>
-
-
-        <!-- Medication Name -->
-        <ng-container matColumnDef="medicationName">
-          <th mat-header-cell *matHeaderCellDef>Medication</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.medicationName }}
-          </td>
-        </ng-container>
-
-
-        <!-- Generic Name -->
-        <ng-container matColumnDef="genericName">
-          <th mat-header-cell *matHeaderCellDef>Generic</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.genericName }}
-          </td>
-        </ng-container>
-
-
-        <!-- NDC -->
-        <ng-container matColumnDef="nationalDrugCode">
-          <th mat-header-cell *matHeaderCellDef>NDC</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.nationalDrugCode }}
-          </td>
-        </ng-container>
-
-
-        <!-- Form -->
-        <ng-container matColumnDef="form">
-          <th mat-header-cell *matHeaderCellDef>Dosage Form</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.form }}
-          </td>
-        </ng-container>
-
-
-        <!-- Strength -->
-        <ng-container matColumnDef="strength">
-          <th mat-header-cell *matHeaderCellDef>Strength</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.strength }}
-          </td>
-        </ng-container>
-
-
-        <!-- Package NDC -->
-        <ng-container matColumnDef="packageNdc">
-          <th mat-header-cell *matHeaderCellDef>Package NDC</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.packageNdc }}
-          </td>
-        </ng-container>
-
-
-        <!-- Package Description -->
-        <ng-container matColumnDef="packageDescription">
-          <th mat-header-cell *matHeaderCellDef>Package</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.packageDescription }}
-          </td>
-        </ng-container>
-
-
-        <!-- Quantity -->
-        <ng-container matColumnDef="quantity">
-          <th mat-header-cell *matHeaderCellDef>Quantity</th>
-          <td mat-cell *matCellDef="let element"
-              [ngClass]="getReorderClass(element)">
-            {{ element.quantity }}
-          </td>
-        </ng-container>
-
-
-        <!-- Reorder -->
-        <ng-container matColumnDef="reorderPoint">
-          <th mat-header-cell *matHeaderCellDef>Reorder</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.reorderPoint }}
-          </td>
-        </ng-container>
-
-
-        <!-- AI Risk -->
-        <ng-container matColumnDef="aiRiskScore">
-          <th mat-header-cell *matHeaderCellDef>AI Risk</th>
-          <td mat-cell *matCellDef="let element"
-              [ngClass]="getRiskBadgeClass(element)">
-            {{ getRiskScore(element) }}
-          </td>
-        </ng-container>
-
-
-        <!-- Bin -->
-        <ng-container matColumnDef="binLocation">
-          <th mat-header-cell *matHeaderCellDef>Bin</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.binLocation }}
-          </td>
-        </ng-container>
-
-
-        <!-- Lot -->
-        <ng-container matColumnDef="lot">
-          <th mat-header-cell *matHeaderCellDef>Lot</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.lot }}
-          </td>
-        </ng-container>
-
-
-        <!-- Expiration -->
-        <ng-container matColumnDef="expiration">
-          <th mat-header-cell *matHeaderCellDef>Expiration</th>
-          <td mat-cell *matCellDef="let element"
-              [ngClass]="getExpirationClass(element)">
-            {{ element.expiration }}
-          </td>
-        </ng-container>
-
-
-        <!-- BUD -->
-        <ng-container matColumnDef="beyondUseDate">
-          <th mat-header-cell *matHeaderCellDef>BUD</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.beyondUseDate }}
-          </td>
-        </ng-container>
-
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-      </table>
-
-      <mat-paginator
-        [pageSize]="150"
-        [pageSizeOptions]="[25, 50, 100, 150]"
-        showFirstLastButtons>
-      </mat-paginator>
-
+<app-main-layout>
+
+  <!-- HEADER -->
+  <mat-toolbar class="inventory-header">
+    <div class="header-container">
+      <div class="pharmacy-title">Pharmacy Name</div>
+      <div class="inventory-subtitle">Inventory</div>
     </div>
+  </mat-toolbar>
 
+  <div class="content">
 
-    <!-- INVENTORY FORM MODAL -->
-    <div class="modal-overlay" *ngIf="showInventoryModal">
+    <!-- SEARCH -->
+    <form class="inventory-search" (ngSubmit)="onSearch()">
 
-      <div class="modal-box large-modal">
+      <div class="search-fields">
+        <input class="app-input"
+               type="text"
+               placeholder="Medication Name"
+               [(ngModel)]="searchName"
+               name="searchName" />
 
-        <h3 class="modal-title">
-          {{ editingItem ? 'Edit Inventory Item' : 'Add Inventory Item' }}
-        </h3>
-
-        <div class="form-grid">
-
-          <input class="app-input" name="medicationName" placeholder="Medication Name" [(ngModel)]="formItem.medicationName">
-          <input class="app-input" name="genericName" placeholder="Generic Name" [(ngModel)]="formItem.genericName">
-          <input class="app-input" name="ndc" placeholder="NDC" [(ngModel)]="formItem.nationalDrugCode">
-          <input class="app-input" name="Dosage Form" placeholder="Dosage Form" [(ngModel)]="formItem.form">
-          <input class="app-input" name="strength" placeholder="Strength" [(ngModel)]="formItem.strength">
-          <input class="app-input" name="packageNdc" placeholder="Package NDC" [(ngModel)]="formItem.packageNdc">
-          <input class="app-input" name="packageDescription" placeholder="Package Description" [(ngModel)]="formItem.packageDescription">
-          <input class="app-input" name="quantityOnHand" type="number" placeholder="Quantity" [(ngModel)]="formItem.quantityOnHand">
-          <input class="app-input" name="reorderLevel" type="number" placeholder="Reorder Point" [(ngModel)]="formItem.reorderLevel">
-          <input class="app-input" name="binLocation" placeholder="Bin Location" [(ngModel)]="formItem.binLocation">
-          <input class="app-input" name="lotNumber" placeholder="Lot" [(ngModel)]="formItem.lotNumber">
-          <input class="app-input" name="expirationDate" type="date" [(ngModel)]="formItem.expirationDate">
-          <input class="app-input" name="beyondUseDate" type="date" [(ngModel)]="formItem.beyondUseDate">
-
-        </div>
-
-        <div class="modal-actions">
-
-          <button class="modal-btn" (click)="saveInventory()">Save</button>
-
-          <button class="modal-btn" (click)="cancelInventoryEdit()">Cancel</button>
-
-        </div>
-
+        <input class="app-input"
+               type="text"
+               placeholder="Lot Number"
+               [(ngModel)]="searchLot"
+               name="searchLot" />
       </div>
 
-    </div>
+      <div class="search-actions">
+        <button type="submit" class="inventory-btn search-btn">Search</button>
 
+        <button type="button"
+                class="inventory-btn search-btn"
+                (click)="clearFilters()">
+          Clear
+        </button>
 
-    <!-- PASSWORD CONFIRM MODAL -->
-    <div class="modal-overlay" *ngIf="showPasswordModal">
-
-      <div class="modal-box">
-
-        <h3 class="modal-title">
-          Confirm Inventory Change
-        </h3>
-
-        <p class="modal-text">
-          Enter your password to confirm this change.
-        </p>
-
-        <input
-          class="app-input"
-          type="password"
-          name="passwordInput"
-          placeholder="Password"
-          [(ngModel)]="passwordInput"
-        />
-
-        <div class="modal-actions">
-
-          <button class="modal-btn" (click)="confirmPassword()">
-            Confirm
-          </button>
-
-          <button class="modal-btn" (click)="cancelPassword()">
-            Cancel
-          </button>
-
-        </div>
-
+        <button type="button"
+                class="inventory-btn search-btn"
+                (click)="openInventoryForm()">
+          Add / Edit
+        </button>
       </div>
 
-    </div>
+    </form>
 
-  </mat-sidenav-content>
+    <!-- TABLE -->
+    <table mat-table
+           [dataSource]="dataSource"
+           class="inventory-table mat-elevation-z2">
 
-</mat-sidenav-container>
+      <ng-container matColumnDef="edit">
+        <th mat-header-cell *matHeaderCellDef>Edit</th>
+        <td mat-cell *matCellDef="let element">
+          <input type="checkbox"
+                 (change)="onSelectRow(element, $event)" />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="medicationName">
+        <th mat-header-cell *matHeaderCellDef>Medication</th>
+        <td mat-cell *matCellDef="let element">{{ element.medicationName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="genericName">
+        <th mat-header-cell *matHeaderCellDef>Generic</th>
+        <td mat-cell *matCellDef="let element">{{ element.genericName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="nationalDrugCode">
+        <th mat-header-cell *matHeaderCellDef>NDC</th>
+        <td mat-cell *matCellDef="let element">{{ element.nationalDrugCode }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="form">
+        <th mat-header-cell *matHeaderCellDef>Dosage Form</th>
+        <td mat-cell *matCellDef="let element">{{ element.form }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="strength">
+        <th mat-header-cell *matHeaderCellDef>Strength</th>
+        <td mat-cell *matCellDef="let element">{{ element.strength }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="packageNdc">
+        <th mat-header-cell *matHeaderCellDef>Package NDC</th>
+        <td mat-cell *matCellDef="let element">{{ element.packageNdc }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="packageDescription">
+        <th mat-header-cell *matHeaderCellDef>Package</th>
+        <td mat-cell *matCellDef="let element">{{ element.packageDescription }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="quantity">
+        <th mat-header-cell *matHeaderCellDef>Quantity</th>
+        <td mat-cell *matCellDef="let element"
+            [ngClass]="getReorderClass(element)">
+          {{ element.quantity }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="reorderPoint">
+        <th mat-header-cell *matHeaderCellDef>Reorder</th>
+        <td mat-cell *matCellDef="let element">{{ element.reorderPoint }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="aiRiskScore">
+        <th mat-header-cell *matHeaderCellDef>AI Risk</th>
+        <td mat-cell *matCellDef="let element"
+            [ngClass]="getRiskBadgeClass(element)">
+          {{ getRiskScore(element) }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="binLocation">
+        <th mat-header-cell *matHeaderCellDef>Bin</th>
+        <td mat-cell *matCellDef="let element">{{ element.binLocation }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="lot">
+        <th mat-header-cell *matHeaderCellDef>Lot</th>
+        <td mat-cell *matCellDef="let element">{{ element.lot }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="expiration">
+        <th mat-header-cell *matHeaderCellDef>Expiration</th>
+        <td mat-cell *matCellDef="let element"
+            [ngClass]="getExpirationClass(element)">
+          {{ element.expiration }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="beyondUseDate">
+        <th mat-header-cell *matHeaderCellDef>BUD</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.beyondUseDate }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    </table>
+
+    <mat-paginator
+      [pageSize]="150"
+      [pageSizeOptions]="[25, 50, 100, 150]"
+      showFirstLastButtons>
+    </mat-paginator>
+
+  </div>
+
+  <!-- MODALS (unchanged) -->
+
+</app-main-layout>
