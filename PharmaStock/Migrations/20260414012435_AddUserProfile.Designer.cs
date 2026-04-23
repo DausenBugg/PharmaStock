@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PharmaStock.Data;
 
@@ -11,9 +12,11 @@ using PharmaStock.Data;
 namespace PharmaStock.Migrations
 {
     [DbContext(typeof(PharmaStockDbContext))]
-    partial class PharmaStockDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260414012435_AddUserProfile")]
+    partial class AddUserProfile
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -284,49 +287,6 @@ namespace PharmaStock.Migrations
                         .IsUnique();
 
                     b.ToTable("InventoryStocks");
-                });
-
-            modelBuilder.Entity("PharmaStock.Data.Entities.NotificationSetting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ExpirationWarningDays")
-                        .HasColumnType("int");
-
-                    b.Property<int>("LowStockThresholdPercent")
-                        .HasColumnType("int");
-
-                    b.Property<double>("MinRiskScoreFilter")
-                        .HasColumnType("double");
-
-                    b.Property<double>("RiskScoreCriticalThreshold")
-                        .HasColumnType("double");
-
-                    b.Property<double>("RiskScoreWarningThreshold")
-                        .HasColumnType("double");
-
-                    b.Property<DateTime>("UpdatedAtUtc")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("NotificationSettings");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ExpirationWarningDays = 30,
-                            LowStockThresholdPercent = 20,
-                            MinRiskScoreFilter = 0.25,
-                            RiskScoreCriticalThreshold = 0.75,
-                            RiskScoreWarningThreshold = 0.5,
-                            UpdatedAtUtc = new DateTime(2026, 4, 17, 0, 0, 0, DateTimeKind.Utc)
-                        });
                 });
 
             modelBuilder.Entity("PharmaStock.Data.Entities.Medication", b =>

@@ -5,6 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { environment } from '../environment/environment';
+import { versionInfo } from '../environment/version';
+
+
 import { NotificationSettingService } from '../services/notification-setting.service';
 
 import { ProfileService } from '../services/profile.service';
@@ -27,6 +31,10 @@ import { MainLayoutComponent } from '../layout/main-layout/main-layout';
   styleUrl: './settings.css',
 })
 export class Settings implements OnInit {
+
+  //================== ENVIRONMENT INFO =================
+  environment = environment;
+  versionInfo = versionInfo;
 
   // ================= PROFILE =================
   profile: Profile = {
