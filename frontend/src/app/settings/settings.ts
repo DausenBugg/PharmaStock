@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
-import { environment } from '../environment/environment';
-import { versionInfo } from '../environment/version';
+import { environment } from '../../environments/environment';
+import { versionInfo } from '../../environments/version';
 
 
 import { NotificationSettingService } from '../services/notification-setting.service';

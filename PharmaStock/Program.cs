@@ -153,7 +153,8 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: corsPolicyName,
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // Angular dev server
+            policy.WithOrigins("http://localhost:4200",
+                "http://localhost:3000" ) // Angular dev server
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials(); // Allow cookies and auth headers;
