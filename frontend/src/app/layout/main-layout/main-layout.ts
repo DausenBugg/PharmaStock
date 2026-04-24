@@ -74,7 +74,8 @@ export class MainLayoutComponent implements OnInit {
   // =========================
 
   logout(): void {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('pharmastock_jwt');
     sessionStorage.clear();
     window.location.href = '/login';
   }

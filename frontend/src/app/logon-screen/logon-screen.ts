@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
@@ -11,7 +11,7 @@ import { CommonModule } from "@angular/common";
   templateUrl: './logon-screen.html',
   styleUrls: ['./logon-screen.css'],
 })
-export class LogonScreen {
+export class LogonScreen implements OnInit {
   email: string = '';
   password: string = '';
   errorMessage: string = '';
@@ -22,6 +22,16 @@ export class LogonScreen {
     private authService: AuthService
   ) {}
 
+  ngOnInit(): void {
+    this.applySavedTheme();
+  }
+
+  private applySavedTheme(): void {
+    const savedTheme = localStorage.getItem('theme');
+
+    document.body.classList.toggle('dark-theme', savedTheme === 'dark');
+    document.body.classList.toggle('light-theme', savedTheme !== 'dark');
+  }
   onSubmit(): void {
     if (!this.email || !this.password) {
       this.errorMessage = 'Email and password are required.';
