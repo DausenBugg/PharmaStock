@@ -4,6 +4,7 @@
 
 .dashboard-container {
   height: 100vh;
+  width: 100%;
 }
 
 :host ::ng-deep .mat-drawer {
@@ -17,10 +18,13 @@
 
 .sidebar {
   width: 220px;
+  min-Width: 220px;
+  max-width: 220px;
   background-color: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
   height: 100vh;
+  flex-shrink: 0;
 }
 
 
@@ -148,6 +152,33 @@ mat-nav-list {
 /* MAIN CONTENT AREA */
 /* ============================= */
 
+mat-sidenav-container,
+.dashboard-container{
+  height: 100vh;
+  width: 100%;
+}
+
 mat-sidenav-content {
+  margin-left: 220px !important;
+  width: calc(100vw - 220px) !important;
   background-color: var(--bg-color);
+  min-height: 100vh;
+  overflow-x: auto;
+  box-sizing: border-box;
+}
+
+
+/* ============================= */
+/* Table Wrapper Formating*/
+/* Used to stop the Table from sliding under the sideNav On zoom in*/
+/* ============================= */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto; /* 🔥 prevents overlap */
+}
+
+.mat-mdc-table {
+  width: 100%;
+  min-width: 1000px; /* adjust per table */
 }

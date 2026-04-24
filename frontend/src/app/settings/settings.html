@@ -10,9 +10,10 @@
 
   <div class="content">
 
+
+
     <!-- PROFILE -->
     <div class="settings-card">
-
       <h2>Profile</h2>
 
       <div class="profile-picture-section">
@@ -20,6 +21,7 @@
           *ngIf="profileImageUrl"
           [src]="profileImageUrl"
           class="profile-preview"
+          [attr.alt]="profile.displayName"
         />
 
         <div *ngIf="!profileImageUrl" class="profile-placeholder">
@@ -35,15 +37,34 @@
             hidden
           />
         </label>
+
+
+
+        <div *ngIf="successMessage" class="threshold-success">
+          {{ successMessage }}
+        </div>
+
+        <div *ngIf="errorMessage" class="threshold-error">
+          {{ errorMessage }}
+        </div>
+
       </div>
 
       <input
         class="app-input"
         type="text"
         placeholder="Display Name"
-        [(ngModel)]="profile.userName"
+        [(ngModel)]="profile.displayName" 
         name="displayName"
       />
+
+      <textarea
+        class="app-input"
+        placeholder="Bio"
+        [(ngModel)]="profile.bio"
+        name="bio">
+      </textarea>
+
 
       <input
         class="app-input"
@@ -57,136 +78,175 @@
         Role: <strong>{{ profile.roles?.[0] }}</strong>
       </div>
 
-    </div>
-
-    <!-- SECURITY -->
-    <div class="settings-card">
-
-      <h2>Change Password</h2>
-
-      <input class="app-input" type="password" placeholder="Current Password"
-             [(ngModel)]="currentPassword" name="currentPassword" />
-
-      <input class="app-input" type="password" placeholder="New Password"
-             [(ngModel)]="newPassword" name="newPassword" />
-
-      <input class="app-input" type="password" placeholder="Confirm New Password"
-             [(ngModel)]="confirmPassword" name="confirmPassword" />
-
-      <button class="file-upload-button" (click)="changePassword()">
-        Update Password
+      <!--SaveProfile button-->
+      <button class="file-upload-button" (click)="saveProfile()">
+        Save Profile
       </button>
 
     </div>
 
+    <!-- SECURITY -->
+    <div class="settings-card">
+      <h2>Change Password</h2>
+
+      <input
+        class="app-input"
+        type="password"
+        placeholder="Current Password"
+        [(ngModel)]="currentPassword"
+        name="currentPassword"
+      />
+
+      <input
+        class="app-input"
+        type="password"
+        placeholder="New Password"
+        [(ngModel)]="newPassword"
+        name="newPassword"
+      />
+
+      <input
+        class="app-input"
+        type="password"
+        placeholder="Confirm New Password"
+        [(ngModel)]="confirmPassword"
+        name="confirmPassword"
+      />
+
+      <button class="file-upload-button" (click)="changePassword()">
+        Update Password
+      </button>
+    </div>
+
     <!-- APPEARANCE -->
     <div class="settings-card">
-
       <h2>Appearance</h2>
 
       <div class="toggle-row">
         <label>
-          <input type="checkbox" [(ngModel)]="darkMode" (change)="toggleTheme()" />
+          <input
+            type="checkbox"
+            [(ngModel)]="darkMode"
+            (change)="toggleTheme()"
+          />
           Enable Dark Mode
         </label>
       </div>
 
       <div class="toggle-row">
         <label>
-          <input type="checkbox" [(ngModel)]="compactDensity" (change)="toggleDensity()" />
+          <input
+            type="checkbox"
+            [(ngModel)]="compactDensity"
+            (change)="toggleDensity()"
+          />
           Compact Table Density
         </label>
       </div>
-
     </div>
 
-    <!-- ================= ALERT THRESHOLDS (Admin Only) ================= -->
-      <div class="settings-card" *ngIf="isAdmin">
+    <!-- ALERT THRESHOLDS -->
+    <div class="settings-card" *ngIf="isAdmin">
+      <h2>Alert Thresholds</h2>
 
-        <h2>Alert Thresholds</h2>
-
-        <div *ngIf="thresholdsLoading" class="threshold-loading">Loading...</div>
-
-        <div *ngIf="!thresholdsLoading" class="threshold-form">
-
-          <label class="threshold-label">
-            Expiration Warning (days)
-            <input
-              class="app-input"
-              type="number"
-              min="1"
-              max="365"
-              [(ngModel)]="expirationWarningDays"
-              name="expirationWarningDays"
-            />
-          </label>
-
-          <label class="threshold-label">
-            Low Stock Buffer (%)
-            <input
-              class="app-input"
-              type="number"
-              min="0"
-              max="100"
-              [(ngModel)]="lowStockThresholdPercent"
-              name="lowStockThresholdPercent"
-            />
-          </label>
-
-          <label class="threshold-label">
-            Risk Score — Critical (&ge;)
-            <input
-              class="app-input"
-              type="number"
-              min="0.01"
-              max="1"
-              step="0.01"
-              [(ngModel)]="riskScoreCriticalThreshold"
-              name="riskScoreCriticalThreshold"
-            />
-          </label>
-
-          <label class="threshold-label">
-            Risk Score — Warning (&ge;)
-            <input
-              class="app-input"
-              type="number"
-              min="0.01"
-              max="1"
-              step="0.01"
-              [(ngModel)]="riskScoreWarningThreshold"
-              name="riskScoreWarningThreshold"
-            />
-          </label>
-
-          <label class="threshold-label">
-            Min Risk Score Filter
-            <input
-              class="app-input"
-              type="number"
-              min="0"
-              max="1"
-              step="0.01"
-              [(ngModel)]="minRiskScoreFilter"
-              name="minRiskScoreFilter"
-            />
-          </label>
-
-          <button class="file-upload-button" (click)="saveThresholds()">
-            Save Thresholds
-          </button>
-
-          <div
-            *ngIf="thresholdsSaveMessage"
-            [class]="thresholdsSaveError ? 'threshold-error' : 'threshold-success'"
-          >
-            {{ thresholdsSaveMessage }}
-          </div>
-
-        </div>
-
+      <div *ngIf="thresholdsLoading" class="threshold-loading">
+        Loading...
       </div>
 
+      <div *ngIf="!thresholdsLoading" class="threshold-form">
+        <label class="threshold-label">
+          Expiration Warning (days)
+          <input
+            class="app-input"
+            type="number"
+            min="1"
+            max="365"
+            [(ngModel)]="expirationWarningDays"
+            name="expirationWarningDays"
+          />
+        </label>
+
+        <label class="threshold-label">
+          Low Stock Buffer (%)
+          <input
+            class="app-input"
+            type="number"
+            min="0"
+            max="100"
+            [(ngModel)]="lowStockThresholdPercent"
+            name="lowStockThresholdPercent"
+          />
+        </label>
+
+        <label class="threshold-label">
+          Risk Score — Critical (&ge;)
+          <input
+            class="app-input"
+            type="number"
+            min="0.01"
+            max="1"
+            step="0.01"
+            [(ngModel)]="riskScoreCriticalThreshold"
+            name="riskScoreCriticalThreshold"
+          />
+        </label>
+
+        <label class="threshold-label">
+          Risk Score — Warning (&ge;)
+          <input
+            class="app-input"
+            type="number"
+            min="0.01"
+            max="1"
+            step="0.01"
+            [(ngModel)]="riskScoreWarningThreshold"
+            name="riskScoreWarningThreshold"
+          />
+        </label>
+
+        <label class="threshold-label">
+          Min Risk Score Filter
+          <input
+            class="app-input"
+            type="number"
+            min="0"
+            max="1"
+            step="0.01"
+            [(ngModel)]="minRiskScoreFilter"
+            name="minRiskScoreFilter"
+          />
+        </label>
+
+        <button class="file-upload-button" (click)="saveThresholds()">
+          Save Thresholds
+        </button>
+
+        <div
+          *ngIf="thresholdsSaveMessage"
+          [class]="thresholdsSaveError ? 'threshold-error' : 'threshold-success'"
+        >
+          {{ thresholdsSaveMessage }}
+        </div>
+      </div>
+    </div>
+
+        <!-- VERSION -->
+    <div class="settings-card version-card">
+      <h2>Version</h2>
+
+      <div class="role-display">
+        Release: <strong>{{ environment.releaseChannel }}</strong>
+      </div>
+
+      <div class="role-display">
+        Version: <strong>v{{ environment.appVersion }}</strong>
+      </div>
+
+      <div class="role-display">
+        Build: <strong>{{ versionInfo.buildSha }}</strong>
+      </div>
+    </div>
+    
   </div>
 
 </app-main-layout>

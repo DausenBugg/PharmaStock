@@ -22,13 +22,13 @@ export class ProfileService {
   }
 
   getProfile(): Observable<Profile> {
-    return this.http.get<Profile>(this.apiUrl, {
+    return this.http.get<Profile>(`${this.apiUrl}/me`, {
       headers: this.getAuthHeaders()
     });
   }
 
   updateProfile(profile: Profile): Observable<any> {
-    return this.http.put(this.apiUrl, profile, {
+    return this.http.patch(`${this.apiUrl}/update-profile`, profile, {
       headers: this.getAuthHeaders()
     });
   }
@@ -38,7 +38,7 @@ export class ProfileService {
     newPassword: string;
     confirmPassword: string;
   }): Observable<any> {
-    return this.http.put(`${this.apiUrl}/change-password`, payload, {
+    return this.http.patch(`${this.apiUrl}/update-password`, payload, {
       headers: this.getAuthHeaders()
     });
   }
@@ -52,7 +52,7 @@ export class ProfileService {
 
   updateProfileImage(file: File): Observable<any> {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('File', file, file.name);
 
     return this.http.patch(`${this.apiUrl}/profile-image`, formData, {
       headers: this.getAuthHeaders()

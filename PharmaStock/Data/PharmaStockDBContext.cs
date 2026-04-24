@@ -42,6 +42,9 @@ namespace PharmaStock.Data
         public DbSet<UsageHistory> UsageHistories { get; set; } = null!;
         public DbSet<NotificationSetting> NotificationSettings { get; set; } = null!;
 
+        // UserProfile is a separate entity linked to IdentityUser via UserId
+        public DbSet<UserProfile> UserProfiles { get; set; } = null!;
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -130,6 +133,29 @@ namespace PharmaStock.Data
                 entity.HasIndex(u => new { u.MedicationId, u.OccurredAtUtc });
             });
 
+            // UserProfile configuration
+            modelBuilder.Entity<UserProfile>(entity =>
+            {
+                entity.HasIndex(p => p.UserId)
+                    .IsUnique();
+
+                entity.Property(p => p.DisplayName)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(p => p.ProfileImageContentType)
+                    .HasMaxLength(100);
+
+                entity.Property(p => p.Bio)
+                    .HasMaxLength(1000);
+
+                entity.HasOne(p => p.User)
+                    .WithOne()
+                    .HasForeignKey<UserProfile>(p => p.UserId)
+                    .HasPrincipalKey<IdentityUser>(u => u.Id)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+            
             // Seed default notification settings (single-row config)
             modelBuilder.Entity<NotificationSetting>().HasData(new NotificationSetting
             {

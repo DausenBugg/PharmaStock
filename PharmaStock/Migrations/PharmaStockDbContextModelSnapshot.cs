@@ -420,6 +420,42 @@ namespace PharmaStock.Migrations
                     b.ToTable("UsageHistories");
                 });
 
+            modelBuilder.Entity("PharmaStock.Data.Entities.UserProfile", b =>
+                {
+                    b.Property<int>("UserProfileId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserProfileId"));
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<byte[]>("ProfileImage")
+                        .HasColumnType("longblob");
+
+                    b.Property<string>("ProfileImageContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("UserProfileId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserProfiles");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -499,6 +535,17 @@ namespace PharmaStock.Migrations
                     b.Navigation("InventoryStock");
 
                     b.Navigation("Medication");
+                });
+
+            modelBuilder.Entity("PharmaStock.Data.Entities.UserProfile", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithOne()
+                        .HasForeignKey("PharmaStock.Data.Entities.UserProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PharmaStock.Data.Entities.Medication", b =>

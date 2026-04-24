@@ -89,7 +89,45 @@ Deployment instructions will be provided in a future release.
 - (Update as needed)
 
 # PharmaStock Frontend Start Up
-# steps need to be implemented 
+PharmaStock PWA — Start Guide
+Run the App
+1. Start Backend
+cd pharmastock
+dotnet run
+
+Runs at:
+
+http://localhost:5177
+2. Build Frontend
+cd frontend
+ng build --configuration production
+3. Serve PWA
+npx serve -s dist/frontend/browser
+
+Runs at:
+
+http://localhost:3000
+4. Open App
+http://localhost:3000
+
+5. Install Desktop App (Edge)
+⋯ → Apps → Install this site as an app
+Troubleshooting
+Login Issues
+Ensure backend is running
+Check CORS allows http://localhost:3000
+Icons / Images Not Updating
+F12 → Application → Service Workers → Unregister
+F12 → Application → Storage → Clear site data
+Ctrl + Shift + R
+Desktop Icon Not Updating
+edge://apps → remove app
+delete desktop shortcut
+reinstall
+Notes
+Backend must be running before login
+PWA uses service worker caching
+Desktop icon may be cached by Windows
 
 # PharmaStock Backend API Start Up (Current Update as Needed)
 

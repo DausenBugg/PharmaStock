@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 import { InventoryComponent } from './inventory';
 import { InventoryService } from '../services/inventory.service';
 import { InventoryRow } from './inventory.model';
+import { PagedResponse } from '../models/Pagination.model';
+import { InventoryApiItem } from '../models/inventory-api.model';
 
 describe('InventoryComponent', () => {
   let component: InventoryComponent;
@@ -82,7 +84,8 @@ describe('InventoryComponent', () => {
 
   beforeEach(async () => {
     inventoryServiceSpy = jasmine.createSpyObj<InventoryService>('InventoryService', ['getInventoryStocks']);
-    inventoryServiceSpy.getInventoryStocks.and.returnValue(of([])); // default
+    const value: Observable<PagedResponse<InventoryApiItem>> = of();
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(value); // default
 
     await TestBed.configureTestingModule({
       imports: [InventoryComponent],

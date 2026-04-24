@@ -527,9 +527,10 @@ export class InventoryComponent implements AfterViewInit {
   }
 
   logout() {
-    localStorage.clear(); // or remove specific token
+    localStorage.removeItem('token');
+    localStorage.removeItem('pharmastock_jwt');
     sessionStorage.clear();
-    window.location.href = '/login'; // or your login route
+    window.location.href = '/login'; 
   }
 
 }

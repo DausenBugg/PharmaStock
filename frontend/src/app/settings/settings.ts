@@ -5,6 +5,10 @@ import { FormsModule } from '@angular/forms';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
+import { environment } from '../../environments/environment';
+import { versionInfo } from '../../environments/version';
+
+
 import { NotificationSettingService } from '../services/notification-setting.service';
 
 import { ProfileService } from '../services/profile.service';
@@ -28,19 +32,37 @@ import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 })
 export class Settings implements OnInit {
 
+  // =================== Refresh ==================
+    refreshPage(): void {
+      this.loadProfile();
+      this.loadProfileImage();
+
+      // admin-only thresholds
+      if (this.isAdmin) {
+        this.loadThresholds();
+      }
+    }
+
+  //================== ENVIRONMENT INFO =================
+  environment = environment;
+  versionInfo = versionInfo;
+
   // ================= PROFILE =================
   profile: Profile = {
     id: '1',
     email: 'john@example.com',
     userName: 'John Doe',
-    firstName: 'John',
-    lastName: 'Doe',
-    phoneNumber: '123-456-7890',
-    roles: ['Admin']
+    roles: ['Admin'],
+    displayName: 'John Doe',
+    bio: ''
   };
 
   profileImageUrl: string | null = null;
   selectedFile: File | null = null;
+
+  editDisplayName: string = '';
+  editBio: string = '';
+
 
   // Keep these for compatibility with existing template bindings.
   displayName: string = this.profile.userName;
@@ -73,11 +95,6 @@ export class Settings implements OnInit {
     private notificationSettingService: NotificationSettingService,
     private profileService: ProfileService
   ) {
-    const body = document.body;
-
-    this.darkMode = body.classList.contains('dark-theme');
-    this.compactDensity = body.classList.contains('compact-density');
-
     this.checkAdminRole();
   }
 
@@ -85,18 +102,28 @@ export class Settings implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
 
+  
+   // ================= Apply Theme On Init =================
+  applySavedTheme(): void {
+    const savedTheme = localStorage.getItem('theme');
+
+    this.darkMode = savedTheme === 'dark';
+     document.body.classList.toggle('dark-theme', this.darkMode);
+     document.body.classList.toggle('light-theme', !this.darkMode);
+  }
+
+
   // ================= INIT =================
   ngOnInit(): void { // UNCOMMENT PROFILE BACKEND CALLS WHEN TIED IN
+    // Apply saved theme
+    this.applySavedTheme();
+
+    // Load profile and image
+    this.refreshPage();
 
     if (this.isAdmin) {
       this.loadThresholds();
     }
-
-    // BACKEND VERSION (enable later)
-    /*
-    this.loadProfile();
-    this.loadProfileImage();
-    */
   }
 
   // ================= LOAD PROFILE =================
@@ -104,7 +131,7 @@ export class Settings implements OnInit {
     this.profileService.getProfile().subscribe({
       next: (data) => {
         this.profile = data;
-        this.displayName = data.userName;
+        this.displayName = data.displayName;
         this.email = data.email;
         this.role = data.roles?.[0] ?? 'User';
       },
@@ -115,17 +142,24 @@ export class Settings implements OnInit {
   }
 
   // ================= LOAD IMAGE =================
-  loadProfileImage(): void {
-    this.profileService.getProfileImage().subscribe({
-      next: (blob) => {
-        this.profileImageUrl = URL.createObjectURL(blob);
-        this.profileImage = this.profileImageUrl;
-      },
-      error: () => {
-        console.warn('No profile image found');
+loadProfileImage(): void {
+  this.profileService.getProfileImage().subscribe({
+    next: (blob) => {
+      if (this.profileImageUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(this.profileImageUrl);
       }
-    });
-  }
+
+      this.profileImageUrl = URL.createObjectURL(blob);
+      this.profileImage = this.profileImageUrl;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.profileImageUrl = null;
+      this.profileImage = null;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   private checkAdminRole(): void {
     const token = localStorage.getItem('pharmastock_jwt');
@@ -185,7 +219,33 @@ export class Settings implements OnInit {
     const file = event.target.files?.[0];
     if (!file) return;
 
+
+    // size validation 2MB
+    const maxSize = 2 * 1024 * 1024;
+
+    if(file.size > maxSize){
+      this.errorMessage = 'Image must be 2MB or less. ;)';
+      alert(this.errorMessage);
+    
+
+      this.selectedFile = null;
+      event.target.value = ''; 
+      return;
+    }
+    
+    // type validation
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Please select a valid image file.';
+      alert(this.errorMessage);
+
+      this.selectedFile = null;
+      event.target.value = '';
+      return;
+    }
+
+    // for vaild file type
     this.selectedFile = file;
+    this.refreshPage();
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -198,45 +258,78 @@ export class Settings implements OnInit {
   }
 
   // ================= IMAGE UPLOAD ================= 
-  uploadImage(): void {
-    if (!this.selectedFile) return;     //UNCOMMENT WHEN  BACKEND IS TIED IN
+ uploadImage(): void {
+  this.errorMessage = '';
+  this.successMessage = '';
 
-    /*
-    this.profileService.updateProfileImage(this.selectedFile).subscribe({
-      next: () => {
-        this.successMessage = 'Image updated.';
-        this.loadProfileImage();
-      },
-      error: () => {
-        this.errorMessage = 'Image upload failed.';
-      }
-    });
-    */
-
-    // TEMP: simulate success
-    this.successMessage = 'Image updated (simulation).';
+  if (!this.selectedFile) {
+    this.errorMessage = 'Please choose an image first.';
+    return;
   }
 
+  this.profileService.updateProfileImage(this.selectedFile).subscribe({
+    next: () => {
+      this.successMessage = 'Profile image updated successfully.';
+      this.refreshPage();
+      this.selectedFile = null;
+
+      // refresh backend profile image
+     
+      this.cdr.detectChanges();
+
+      alert(this.successMessage);
+    },
+    error: () => {
+      this.errorMessage = 'Image upload failed.';
+      alert(this.errorMessage);
+    }
+  });
+}
+
   // ================= SAVE PROFILE =================
-  saveProfile(): void { // UNCOMMENT WHEN BACKEND IS TIED IN
+  saveProfile(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
 
-    // Keep compatibility with existing template bindings.
-    this.profile.userName = this.displayName;
-    this.profile.email = this.email;
-
-    /*
+    // First update profile fields
     this.profileService.updateProfile(this.profile).subscribe({
       next: () => {
-        this.successMessage = 'Profile updated.';
+
+        // If image selected → upload it too
+        if (this.selectedFile) {
+          this.profileService.updateProfileImage(this.selectedFile).subscribe({
+            next: () => {
+              this.successMessage = 'Profile and image updated successfully.';
+              this.selectedFile = null;
+              this.loadProfile();
+              this.loadProfileImage();
+
+              
+              this.cdr.detectChanges();
+
+              alert(this.successMessage);
+            },
+            error: () => {
+              this.errorMessage = 'Profile updated, but image upload failed.';
+              alert(this.errorMessage);
+            }
+          });
+
+        } else {
+          // No image change
+          this.successMessage = 'Profile updated successfully.';
+
+          this.refreshPage();
+          this.cdr.detectChanges();
+
+          alert(this.successMessage);
+        }
       },
       error: () => {
         this.errorMessage = 'Failed to update profile.';
+        alert(this.errorMessage);
       }
     });
-    */
-
-    // TEMP: simulate success
-    this.successMessage = 'Profile updated (simulation).';
   }
 
   // ================= PASSWORD =================
@@ -254,7 +347,7 @@ export class Settings implements OnInit {
       return;
     }                                 //UNCOMMENT WHEN BACKEND IS TIED IN
         
-    /*
+  
     this.profileService.changePassword({
       currentPassword: this.currentPassword,
       newPassword: this.newPassword,
@@ -270,28 +363,29 @@ export class Settings implements OnInit {
         this.errorMessage = 'Password update failed.';
       }
     });
-    */
+    
 
-    // TEMP: simulate success
-    this.successMessage = 'Password updated (simulation).';
+    // // TEMP: simulate success
+    // this.successMessage = 'Password updated (simulation).';
 
-    this.currentPassword = '';
-    this.newPassword = '';
-    this.confirmPassword = '';
+    // this.currentPassword = '';
+    // this.newPassword = '';
+    // this.confirmPassword = '';
   }
 
   // ================= DARK MODE =================
   toggleTheme(): void {
-    const body = document.body;
-
     if (this.darkMode) {
-      body.classList.remove('light-theme');
-      body.classList.add('dark-theme');
+      document.body.classList.remove('light-theme');
+      document.body.classList.add('dark-theme');
+      localStorage.setItem('theme', 'dark');
     } else {
-      body.classList.remove('dark-theme');
-      body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
+      document.body.classList.add('light-theme');
+      localStorage.setItem('theme', 'light');
     }
   }
+
 
   // ================= TABLE DENSITY =================
   toggleDensity(): void {
@@ -306,8 +400,11 @@ export class Settings implements OnInit {
 
   // ================= LOGOUT =================
   logout(): void {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('pharmastock_jwt');
     sessionStorage.clear();
     window.location.href = '/login';
   }
+
 }
+

@@ -1,3 +1,29 @@
+.settings-container {
+  height: 100vh;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 220px;
+  background-color: var(--sidebar-bg);
+  padding-top: 0;
+  border-radius: 0;
+}
+
+.sidebar .mat-mdc-list-item {
+  margin: 0;
+  border-radius: 0;
+}
+
+.sidebar-logo {
+   display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 140px;
+  padding: 24px 0;
+}
 .settings-header {
   background-color: var(--bg-color);
   color: var(--card-text);
@@ -221,6 +247,10 @@ td {
   font-size: 14px;
 }
 
+.nav-links {
+  flex: 1;
+}
+  
 .threshold-success {
   color: #2e7d32;
   font-size: 14px;
@@ -231,4 +261,10 @@ td {
   color: #d32f2f;
   font-size: 14px;
   font-weight: 600;
+}
+/*=============== version info ===============*/
+.version-card{
+  margin-top: auto;
+  max-width: 260px;
+  opacity: 0.85;
 }
