@@ -177,12 +177,12 @@ export class Orders implements AfterViewInit {
     }
 
     const adjustment = -this.adjustQuantity!;
-    const targetId = this.selectedItem.id;
+    const targetId = this.selectedItem.inventoryStockId;
 
     this.inventoryService.adjustQuantity(targetId, adjustment).subscribe({
       next: () => {
         // update local display without a full reload
-        const row = this.dataSource.data.find(r => r.id === targetId);
+        const row = this.dataSource.data.find(r => r.inventoryStockId === targetId);
         if (row) row.quantity += adjustment;
         this.dataSource.data = [...this.dataSource.data];
         this.resetState();

@@ -1,4 +1,4 @@
 export const versionInfo = {
-  buildSha: '5ddae7a',
-  buildDate: '2026-04-13T23:46:03.398Z'
+  buildSha: '3f3328d',
+  buildDate: '2026-04-24T18:35:24.350Z'
 };
