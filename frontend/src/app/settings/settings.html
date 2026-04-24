@@ -36,15 +36,34 @@
             hidden
           />
         </label>
+
+
+
+        <div *ngIf="successMessage" class="threshold-success">
+          {{ successMessage }}
+        </div>
+
+        <div *ngIf="errorMessage" class="threshold-error">
+          {{ errorMessage }}
+        </div>
+
       </div>
 
       <input
         class="app-input"
         type="text"
         placeholder="Display Name"
-        [(ngModel)]="fullName" 
+        [(ngModel)]="profile.displayName" 
         name="displayName"
       />
+
+      <textarea
+        class="app-input"
+        placeholder="Bio"
+        [(ngModel)]="profile.bio"
+        name="bio">
+      </textarea>
+
 
       <input
         class="app-input"
@@ -57,6 +76,12 @@
       <div class="role-display">
         Role: <strong>{{ profile.roles?.[0] }}</strong>
       </div>
+
+      <!--SaveProfile button-->
+      <button class="file-upload-button" (click)="saveProfile()">
+        Save Profile
+      </button>
+
     </div>
 
     <!-- SECURITY -->
