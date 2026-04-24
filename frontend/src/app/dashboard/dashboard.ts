@@ -19,6 +19,8 @@ import { NotificationSetting } from '../models/notification-setting.model';
 import { ProfileService } from '../services/profile.service';
 import { Profile } from "../models/profile.model";
 import { MainLayoutComponent } from '../layout/main-layout/main-layout';
+import { UsageHistoryService } from '../services/usage-history.service';
+import { UsageHistoryEntry } from '../models/usage-history.model';
 
 
 @Component({
@@ -54,6 +56,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   stockedOut = 6;
   lowInventory = 10;
 
+  // Recent Adjustments
+  recentAdjustments: UsageHistoryEntry[] = [];
+
   // AI Predictions
   reorderAlerts: ReorderAlert[] = [];
   expirationRisks: ExpirationRisk[] = [];
@@ -75,7 +80,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private ngZone: NgZone,
     private inventoryService: InventoryService,
     private notificationSettingService: NotificationSettingService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private usageHistoryService: UsageHistoryService
   ){}
 
   calculateInventoryStats() {
@@ -197,6 +203,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.inventoryItems = response.items.map(mapInventoryApiToRow);
         this.calculateInventoryStats();
         this.loadAIPredictions();
+        this.loadRecentAdjustments();
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -247,6 +254,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ).subscribe((risks) => {
       const safeRisks = Array.isArray(risks) ? risks : [];
       this.expirationRisks = safeRisks.filter(r => r.riskScore > this.minRiskScoreFilter).slice(0, 5);
+    });
+  }
+
+  loadRecentAdjustments(): void {
+    this.usageHistoryService.getRecent(5).pipe(
+      catchError(() => of([] as UsageHistoryEntry[]))
+    ).subscribe((entries) => {
+      this.recentAdjustments = entries;
+      this.cdr.detectChanges();
     });
   }
 
