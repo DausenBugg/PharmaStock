@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -22,18 +22,22 @@ import { Profile } from '../../models/profile.model';
   templateUrl: './main-layout.html',
   styleUrls: ['./main-layout.css']
 })
-export class MainLayoutComponent implements OnInit {
+export class MainLayoutComponent implements OnInit, AfterViewInit {
 
   profile: Profile | null = null;
   profileImageUrl: string | null = null;
 
-  constructor(private profileService: ProfileService) {}
+  constructor(private profileService: ProfileService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadUserProfile();
     this.loadUserImage();
   }
 
+  ngAfterViewInit(): void {
+    this.loadUserProfile();
+    this.loadUserImage();
+  }
   // =========================
   // PROFILE DATA
   // =========================
@@ -62,6 +66,7 @@ export class MainLayoutComponent implements OnInit {
     this.profileService.getProfileImage().subscribe({
       next: (blob: Blob) => {
         this.profileImageUrl = URL.createObjectURL(blob);
+        this.cdr.detectChanges();
       },
       error: () => {
         this.profileImageUrl = null; // fallback to placeholder

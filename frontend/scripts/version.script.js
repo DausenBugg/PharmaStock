@@ -19,7 +19,7 @@ const content = `export const versionInfo = {
 };
 `;
 
-const outputPath = path.join(__dirname, '../src/app/environment/version.ts');
+const outputPath = path.join(__dirname, '../src/environments/version.ts');
 fs.writeFileSync(outputPath, content);
 
 console.log('version.ts updated');
