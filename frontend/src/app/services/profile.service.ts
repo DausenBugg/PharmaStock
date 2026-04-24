@@ -22,13 +22,13 @@ export class ProfileService {
   }
 
   getProfile(): Observable<Profile> {
-    return this.http.get<Profile>(this.apiUrl, {
+    return this.http.get<Profile>(`${this.apiUrl}/me`, {
       headers: this.getAuthHeaders()
     });
   }
 
   updateProfile(profile: Profile): Observable<any> {
-    return this.http.put(this.apiUrl, profile, {
+    return this.http.put(`${this.apiUrl}/me`, profile, {
       headers: this.getAuthHeaders()
     });
   }

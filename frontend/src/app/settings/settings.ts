@@ -101,10 +101,10 @@ export class Settings implements OnInit {
     }
 
     // BACKEND VERSION (enable later)
-    /*
+  
     this.loadProfile();
     this.loadProfileImage();
-    */
+    
   }
 
   // ================= LOAD PROFILE =================
@@ -209,7 +209,7 @@ export class Settings implements OnInit {
   uploadImage(): void {
     if (!this.selectedFile) return;     //UNCOMMENT WHEN  BACKEND IS TIED IN
 
-    /*
+    
     this.profileService.updateProfileImage(this.selectedFile).subscribe({
       next: () => {
         this.successMessage = 'Image updated.';
@@ -219,10 +219,10 @@ export class Settings implements OnInit {
         this.errorMessage = 'Image upload failed.';
       }
     });
-    */
+    
 
-    // TEMP: simulate success
-    this.successMessage = 'Image updated (simulation).';
+    // // TEMP: simulate success
+    // this.successMessage = 'Image updated (simulation).';
   }
 
   // ================= SAVE PROFILE =================
@@ -232,7 +232,7 @@ export class Settings implements OnInit {
     this.profile.userName = this.displayName;
     this.profile.email = this.email;
 
-    /*
+    
     this.profileService.updateProfile(this.profile).subscribe({
       next: () => {
         this.successMessage = 'Profile updated.';
@@ -241,10 +241,10 @@ export class Settings implements OnInit {
         this.errorMessage = 'Failed to update profile.';
       }
     });
-    */
+    
 
-    // TEMP: simulate success
-    this.successMessage = 'Profile updated (simulation).';
+    // // TEMP: simulate success
+    // this.successMessage = 'Profile updated (simulation).';
   }
 
   // ================= PASSWORD =================
@@ -262,7 +262,7 @@ export class Settings implements OnInit {
       return;
     }                                 //UNCOMMENT WHEN BACKEND IS TIED IN
         
-    /*
+  
     this.profileService.changePassword({
       currentPassword: this.currentPassword,
       newPassword: this.newPassword,
@@ -278,14 +278,14 @@ export class Settings implements OnInit {
         this.errorMessage = 'Password update failed.';
       }
     });
-    */
+    
 
-    // TEMP: simulate success
-    this.successMessage = 'Password updated (simulation).';
+    // // TEMP: simulate success
+    // this.successMessage = 'Password updated (simulation).';
 
-    this.currentPassword = '';
-    this.newPassword = '';
-    this.confirmPassword = '';
+    // this.currentPassword = '';
+    // this.newPassword = '';
+    // this.confirmPassword = '';
   }
 
   // ================= DARK MODE =================
@@ -318,4 +318,16 @@ export class Settings implements OnInit {
     sessionStorage.clear();
     window.location.href = '/login';
   }
+
+  //=========== get/set for full name ===============
+  get fullName(): string {
+    return `${this.profile.firstName} ${this.profile.lastName}`;
+  }
+
+  set fullName(name: string) {
+    const [firstName, ...lastNameParts] = name.split(' ');
+    this.profile.firstName = firstName;
+    this.profile.lastName = lastNameParts.join(' ');   
+  }
+
 }

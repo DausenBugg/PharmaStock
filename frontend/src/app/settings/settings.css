@@ -262,20 +262,9 @@ td {
   font-size: 14px;
   font-weight: 600;
 }
-/*=============== version footer ================== */
-
-.sidebar-footer {
-  padding: 12px 16px;
-
-  font-size: 12px;
-  text-align: center;
-
-  color: rgba(255, 255, 255, 0.6);
-
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.sidebar-footer span {
-  font-size: 11px;
-  opacity: 0.8;
+/*=============== version info ===============*/
+.version-card{
+  margin-top: auto;
+  max-width: 260px;
+  opacity: 0.85;
 }
