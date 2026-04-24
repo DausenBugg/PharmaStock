@@ -21,6 +21,7 @@
           *ngIf="profileImageUrl"
           [src]="profileImageUrl"
           class="profile-preview"
+          [attr.alt]="profile.displayName"
         />
 
         <div *ngIf="!profileImageUrl" class="profile-placeholder">

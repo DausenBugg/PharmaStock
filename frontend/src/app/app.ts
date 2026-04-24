@@ -11,16 +11,10 @@ import { MatButtonModule } from '@angular/material/button';
     MatToolbarModule,
     MatButtonModule
   ],
-  template: `
-    <mat-toolbar color="primary">
-      PharmaStock
-      <span style="flex: 1 1 auto;"></span>
-      <button mat-button (click)="toggleTheme()">Toggle Theme</button>
-    </mat-toolbar>
-
-    <router-outlet></router-outlet>
-  `
+  templateUrl: './app.html',
+  styleUrls: ['./app.css']
 })
+
 export class App implements OnInit {
 
   ngOnInit(): void {

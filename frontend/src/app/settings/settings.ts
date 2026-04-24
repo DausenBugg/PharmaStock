@@ -32,6 +32,17 @@ import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 })
 export class Settings implements OnInit {
 
+  // =================== Refresh ==================
+    refreshPage(): void {
+      this.loadProfile();
+      this.loadProfileImage();
+
+      // admin-only thresholds
+      if (this.isAdmin) {
+        this.loadThresholds();
+      }
+    }
+
   //================== ENVIRONMENT INFO =================
   environment = environment;
   versionInfo = versionInfo;
@@ -107,8 +118,8 @@ export class Settings implements OnInit {
     // Apply saved theme
     this.applySavedTheme();
 
-    this.loadProfile();
-    this.loadProfileImage();
+    // Load profile and image
+    this.refreshPage();
 
     if (this.isAdmin) {
       this.loadThresholds();
@@ -234,6 +245,7 @@ loadProfileImage(): void {
 
     // for vaild file type
     this.selectedFile = file;
+    this.refreshPage();
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -258,12 +270,11 @@ loadProfileImage(): void {
   this.profileService.updateProfileImage(this.selectedFile).subscribe({
     next: () => {
       this.successMessage = 'Profile image updated successfully.';
+      this.refreshPage();
       this.selectedFile = null;
 
       // refresh backend profile image
-      this.loadProfileImage();
-      this.loadProfile();
-
+     
       this.cdr.detectChanges();
 
       alert(this.successMessage);
@@ -290,9 +301,10 @@ loadProfileImage(): void {
             next: () => {
               this.successMessage = 'Profile and image updated successfully.';
               this.selectedFile = null;
-
               this.loadProfile();
               this.loadProfileImage();
+
+              
               this.cdr.detectChanges();
 
               alert(this.successMessage);
@@ -307,8 +319,7 @@ loadProfileImage(): void {
           // No image change
           this.successMessage = 'Profile updated successfully.';
 
-          this.loadProfile();
-          this.loadProfileImage();
+          this.refreshPage();
           this.cdr.detectChanges();
 
           alert(this.successMessage);
