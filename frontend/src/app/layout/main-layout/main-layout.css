@@ -32,11 +32,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px 0;
+  padding: 0;
 }
 
 .sidebar-logo-img {
-  width: 120px;
+  width: 180px;
   height: auto;
 }
 
@@ -62,8 +62,8 @@ body.dark-theme .logo-dark {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 10px 0;
+  gap: 2px;
+  padding: 8px 0;
   margin-bottom: 16px;
   border-bottom: 1px solid var(--light-accent);
 }
