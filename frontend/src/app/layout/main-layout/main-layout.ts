@@ -8,6 +8,10 @@ import { MatListModule } from '@angular/material/list';
 
 import { ProfileService } from '../../services/profile.service';
 import { Profile } from '../../models/profile.model';
+import { logoutUser } from "../../helpers/auth.helpers";
+import { createProfileImage, revokeProfileImage } from '../../helpers/profile.helpers';
+import { applySavedTheme, applySavedDensity } from '../../helpers/theme.helpers';
+
 
 @Component({
   selector: 'app-main-layout',
@@ -30,6 +34,9 @@ export class MainLayoutComponent implements OnInit, AfterViewInit {
   constructor(private profileService: ProfileService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    
+    applySavedDensity();
+    applySavedTheme();
     this.loadUserProfile();
     this.loadUserImage();
   }
@@ -65,7 +72,7 @@ export class MainLayoutComponent implements OnInit, AfterViewInit {
   loadUserImage(): void {
     this.profileService.getProfileImage().subscribe({
       next: (blob: Blob) => {
-        this.profileImageUrl = URL.createObjectURL(blob);
+        this.profileImageUrl = createProfileImage(blob);
         this.cdr.detectChanges();
       },
       error: () => {
@@ -78,10 +85,7 @@ export class MainLayoutComponent implements OnInit, AfterViewInit {
   // LOGOUT
   // =========================
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('pharmastock_jwt');
-    sessionStorage.clear();
-    window.location.href = '/login';
+  logout() {
+    logoutUser();
   }
 }

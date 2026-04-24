@@ -19,6 +19,9 @@ import { InventoryApiItem } from '../models/inventory-api.model';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ReportExportDialogComponent } from './reports-export-form';
 import { MainLayoutComponent } from '../layout/main-layout/main-layout';
+import { logoutUser } from "../helpers/auth.helpers";
+import { getExpirationClass, getReorderClass} from '../helpers/inventory.helpers';
+
 
 
 type Medication = InventoryRow;
@@ -180,31 +183,12 @@ export class Reports implements OnInit, AfterViewInit {
     }
   }
 
-  getReorderClass(item: Medication): string {
-
-    if (item.quantity < item.reorderPoint) return 'health-critical';
-    if (item.quantity === item.reorderPoint) return 'health-warning';
-
-    return '';
+  getExpirationClass(item: InventoryRow){
+    return getExpirationClass(item.expiration);
   }
 
-  getExpirationClass(item: Medication): string {
-
-    if (!item.expiration) return '';
-
-    const today = new Date();
-    const expirationDate = new Date(item.expiration);
-
-    today.setHours(0,0,0,0);
-
-    const diffInDays =
-      (expirationDate.getTime() - today.getTime()) /
-      (1000 * 60 * 60 * 24);
-
-    if (diffInDays < 0) return 'health-critical';
-    if (diffInDays <= 30) return 'health-warning';
-
-    return '';
+  getReorderClass(item: InventoryRow){
+    return getReorderClass(item.quantity, item.reorderPoint);
   }
 
   // OPEN EXPORT DIALOG
@@ -219,9 +203,6 @@ export class Reports implements OnInit, AfterViewInit {
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('pharmastock_jwt');
-    sessionStorage.clear();
-    window.location.href = '/login'; // or your login route
+    logoutUser();
   }
 }
