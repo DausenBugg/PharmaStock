@@ -1,6 +1,6 @@
 import { Component } from "@angular/core";
-import { environment } from "../environment/environment";
-import { versionInfo } from "../environment/version";
+import { environment } from "../../environments/environment";
+import { versionInfo } from "../../environments/version";
 
 @Component({
     selector: 'app-root',
