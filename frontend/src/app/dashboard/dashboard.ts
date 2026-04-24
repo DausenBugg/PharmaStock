@@ -301,6 +301,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
           id: '1',
           email: 'john@example.com',
           userName: 'John Doe',
+          displayName: 'John Doe',
           roles: ['Administrator']
         };
       }

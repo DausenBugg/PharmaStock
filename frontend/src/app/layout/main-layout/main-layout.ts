@@ -51,6 +51,7 @@ export class MainLayoutComponent implements OnInit {
           id: '1',
           email: 'john@example.com',
           userName: 'User',
+          displayName: 'John Doe',
           roles: []
         };
       }

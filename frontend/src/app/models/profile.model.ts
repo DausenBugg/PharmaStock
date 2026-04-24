@@ -2,8 +2,9 @@ export interface Profile {
   id: string;
   email: string;
   userName: string;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  roles?: string[]; // VERY likely included
+  emailConfirmed?: boolean;
+  roles?: string[];
+  displayName: string;
+  bio?: string;
+  hasProfileImage?: boolean;
 }

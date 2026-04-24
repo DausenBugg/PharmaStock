@@ -41,14 +41,17 @@ export class Settings implements OnInit {
     id: '1',
     email: 'john@example.com',
     userName: 'John Doe',
-    firstName: 'John',
-    lastName: 'Doe',
-    phoneNumber: '123-456-7890',
-    roles: ['Admin']
+    roles: ['Admin'],
+    displayName: 'John Doe',
+    bio: ''
   };
 
   profileImageUrl: string | null = null;
   selectedFile: File | null = null;
+
+  editDisplayName: string = '';
+  editBio: string = '';
+
 
   // Keep these for compatibility with existing template bindings.
   displayName: string = this.profile.userName;
@@ -112,7 +115,7 @@ export class Settings implements OnInit {
     this.profileService.getProfile().subscribe({
       next: (data) => {
         this.profile = data;
-        this.displayName = data.userName;
+        this.displayName = data.displayName;
         this.email = data.email;
         this.role = data.roles?.[0] ?? 'User';
       },
@@ -123,17 +126,24 @@ export class Settings implements OnInit {
   }
 
   // ================= LOAD IMAGE =================
-  loadProfileImage(): void {
-    this.profileService.getProfileImage().subscribe({
-      next: (blob) => {
-        this.profileImageUrl = URL.createObjectURL(blob);
-        this.profileImage = this.profileImageUrl;
-      },
-      error: () => {
-        console.warn('No profile image found');
+loadProfileImage(): void {
+  this.profileService.getProfileImage().subscribe({
+    next: (blob) => {
+      if (this.profileImageUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(this.profileImageUrl);
       }
-    });
-  }
+
+      this.profileImageUrl = URL.createObjectURL(blob);
+      this.profileImage = this.profileImageUrl;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.profileImageUrl = null;
+      this.profileImage = null;
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   private checkAdminRole(): void {
     const token = localStorage.getItem('pharmastock_jwt');
@@ -193,6 +203,31 @@ export class Settings implements OnInit {
     const file = event.target.files?.[0];
     if (!file) return;
 
+
+    // size validation 2MB
+    const maxSize = 2 * 1024 * 1024;
+
+    if(file.size > maxSize){
+      this.errorMessage = 'Image must be 2MB or less. ;)';
+      alert(this.errorMessage);
+    
+
+      this.selectedFile = null;
+      event.target.value = ''; 
+      return;
+    }
+    
+    // type validation
+    if (!file.type.startsWith('image/')) {
+      this.errorMessage = 'Please select a valid image file.';
+      alert(this.errorMessage);
+
+      this.selectedFile = null;
+      event.target.value = '';
+      return;
+    }
+
+    // for vaild file type
     this.selectedFile = file;
 
     const reader = new FileReader();
@@ -206,45 +241,79 @@ export class Settings implements OnInit {
   }
 
   // ================= IMAGE UPLOAD ================= 
-  uploadImage(): void {
-    if (!this.selectedFile) return;     //UNCOMMENT WHEN  BACKEND IS TIED IN
+ uploadImage(): void {
+  this.errorMessage = '';
+  this.successMessage = '';
 
-    
-    this.profileService.updateProfileImage(this.selectedFile).subscribe({
-      next: () => {
-        this.successMessage = 'Image updated.';
-        this.loadProfileImage();
-      },
-      error: () => {
-        this.errorMessage = 'Image upload failed.';
-      }
-    });
-    
-
-    // // TEMP: simulate success
-    // this.successMessage = 'Image updated (simulation).';
+  if (!this.selectedFile) {
+    this.errorMessage = 'Please choose an image first.';
+    return;
   }
 
+  this.profileService.updateProfileImage(this.selectedFile).subscribe({
+    next: () => {
+      this.successMessage = 'Profile image updated successfully.';
+      this.selectedFile = null;
+
+      // refresh backend profile image
+      this.loadProfileImage();
+      this.loadProfile();
+
+      this.cdr.detectChanges();
+
+      alert(this.successMessage);
+    },
+    error: () => {
+      this.errorMessage = 'Image upload failed.';
+      alert(this.errorMessage);
+    }
+  });
+}
+
   // ================= SAVE PROFILE =================
-  saveProfile(): void { // UNCOMMENT WHEN BACKEND IS TIED IN
+  saveProfile(): void {
+    this.errorMessage = '';
+    this.successMessage = '';
 
-    // Keep compatibility with existing template bindings.
-    this.profile.userName = this.displayName;
-    this.profile.email = this.email;
-
-    
+    // First update profile fields
     this.profileService.updateProfile(this.profile).subscribe({
       next: () => {
-        this.successMessage = 'Profile updated.';
+
+        // If image selected → upload it too
+        if (this.selectedFile) {
+          this.profileService.updateProfileImage(this.selectedFile).subscribe({
+            next: () => {
+              this.successMessage = 'Profile and image updated successfully.';
+              this.selectedFile = null;
+
+              this.loadProfile();
+              this.loadProfileImage();
+              this.cdr.detectChanges();
+
+              alert(this.successMessage);
+            },
+            error: () => {
+              this.errorMessage = 'Profile updated, but image upload failed.';
+              alert(this.errorMessage);
+            }
+          });
+
+        } else {
+          // No image change
+          this.successMessage = 'Profile updated successfully.';
+
+          this.loadProfile();
+          this.loadProfileImage();
+          this.cdr.detectChanges();
+
+          alert(this.successMessage);
+        }
       },
       error: () => {
         this.errorMessage = 'Failed to update profile.';
+        alert(this.errorMessage);
       }
     });
-    
-
-    // // TEMP: simulate success
-    // this.successMessage = 'Profile updated (simulation).';
   }
 
   // ================= PASSWORD =================
@@ -319,15 +388,5 @@ export class Settings implements OnInit {
     window.location.href = '/login';
   }
 
-  //=========== get/set for full name ===============
-  get fullName(): string {
-    return `${this.profile.firstName} ${this.profile.lastName}`;
-  }
-
-  set fullName(name: string) {
-    const [firstName, ...lastNameParts] = name.split(' ');
-    this.profile.firstName = firstName;
-    this.profile.lastName = lastNameParts.join(' ');   
-  }
-
 }
+

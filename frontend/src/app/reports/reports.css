@@ -28,7 +28,9 @@
   padding: 32px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: strecth;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* ================= ACTIONS ================= */
