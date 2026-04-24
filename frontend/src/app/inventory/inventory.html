@@ -1,4 +1,4 @@
-<app-main-layout>
+s<app-main-layout>
 
   <!-- HEADER -->
   <mat-toolbar class="inventory-header">
@@ -147,13 +147,129 @@
     </div>  
 
     <mat-paginator
-      [pageSize]="150"
+      [pageSize]="25"
       [pageSizeOptions]="[25, 50, 100, 150]"
       showFirstLastButtons>
     </mat-paginator>
 
   </div>
 
-  <!-- MODALS (unchanged) -->
+  <!-- ================= INVENTORY MODAL ================= -->
+<div class="modal-overlay" *ngIf="showInventoryModal">
+
+  <div class="modal-box">
+
+    <h3 class="modal-title">
+      {{ editingItem ? 'Edit Inventory Item' : 'Add Inventory Item' }}
+    </h3>
+
+    <div class="form-grid">
+
+      <input class="app-input"
+             placeholder="Medication Name"
+             [(ngModel)]="formItem.medicationName" />
+
+      <input class="app-input"
+             placeholder="Generic Name"
+             [(ngModel)]="formItem.genericName" />
+
+      <input class="app-input"
+             placeholder="NDC"
+             [(ngModel)]="formItem.nationalDrugCode" />
+
+      <input class="app-input"
+             placeholder="Dosage Form"
+             [(ngModel)]="formItem.form" />
+
+      <input class="app-input"
+             placeholder="Strength"
+             [(ngModel)]="formItem.strength" />
+
+      <input class="app-input"
+             placeholder="Package NDC"
+             [(ngModel)]="formItem.packageNdc" />
+
+      <input class="app-input"
+             placeholder="Package Description"
+             [(ngModel)]="formItem.packageDescription" />
+
+      <input class="app-input"
+             type="number"
+             placeholder="Quantity"
+             [(ngModel)]="formItem.quantityOnHand" />
+
+      <input class="app-input"
+             type="number"
+             placeholder="Reorder Level"
+             [(ngModel)]="formItem.reorderLevel" />
+
+      <input class="app-input"
+             placeholder="Bin Location"
+             [(ngModel)]="formItem.binLocation" />
+
+      <input class="app-input"
+             placeholder="Lot"
+             [(ngModel)]="formItem.lotNumber" />
+
+      <input class="app-input"
+             type="date"
+             [(ngModel)]="formItem.expirationDate" />
+
+      <input class="app-input"
+             type="date"
+             [(ngModel)]="formItem.beyondUseDate" />
+
+    </div>
+
+    <div class="modal-actions">
+
+      <!-- IMPORTANT: this does NOT save yet -->
+      <button class="modal-btn" (click)="saveInventory()">
+        Save
+      </button>
+
+      <button class="modal-btn" (click)="cancelInventoryEdit()">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ================= PASSWORD MODAL ================= -->
+<div class="modal-overlay" *ngIf="showPasswordModal">
+
+  <div class="modal-box">
+
+    <h3 class="modal-title">Administrator Verification Required</h3>
+
+    <p class="modal-text">
+      Enter your password to confirm changes.
+    </p>
+
+    <input class="app-input"
+           type="password"
+           placeholder="Password"
+           [(ngModel)]="passwordInput" />
+
+    <div class="modal-actions">
+
+      <!-- THIS is the actual save -->
+      <button class="modal-btn" (click)="confirmPassword()">
+        Confirm
+      </button>
+
+      <button class="modal-btn" (click)="cancelPassword()">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
 
 </app-main-layout>

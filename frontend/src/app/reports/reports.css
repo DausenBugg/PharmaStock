@@ -76,6 +76,11 @@ th {
   font-size: 14px;
 }
 
+.reports-table .mat-header-cell {
+  justify-content: center;
+  text-align: center;
+}
+
 td {
   font-size: 14px;
 }

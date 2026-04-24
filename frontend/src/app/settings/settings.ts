@@ -112,11 +112,21 @@ export class Settings implements OnInit {
      document.body.classList.toggle('light-theme', !this.darkMode);
   }
 
+  applySavedDensity(): void {
+    const savedDensity = localStorage.getItem('density');
+
+    this.compactDensity = savedDensity === 'compact';
+
+    document.body.classList.toggle('compact-density', this.compactDensity);
+  }
+
+
 
   // ================= INIT =================
   ngOnInit(): void { // UNCOMMENT PROFILE BACKEND CALLS WHEN TIED IN
     // Apply saved theme
     this.applySavedTheme();
+    this.applySavedDensity();
 
     // Load profile and image
     this.refreshPage();
@@ -389,12 +399,12 @@ loadProfileImage(): void {
 
   // ================= TABLE DENSITY =================
   toggleDensity(): void {
-    const body = document.body;
-
     if (this.compactDensity) {
-      body.classList.add('compact-density');
+      document.body.classList.add('compact-density');
+      localStorage.setItem('density', 'compact');
     } else {
-      body.classList.remove('compact-density');
+      document.body.classList.remove('compact-density');
+      localStorage.setItem('density', 'normal');
     }
   }
 

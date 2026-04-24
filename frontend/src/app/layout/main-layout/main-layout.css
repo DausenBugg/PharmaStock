@@ -159,8 +159,8 @@ mat-sidenav-container,
 }
 
 mat-sidenav-content {
-  margin-left: 220px !important;
-  width: calc(100vw - 220px) !important;
+  margin-left: 220px;
+  width: calc(100vw - 220px);
   background-color: var(--bg-color);
   min-height: 100vh;
   overflow-x: auto;
