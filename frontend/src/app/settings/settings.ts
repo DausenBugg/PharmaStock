@@ -84,11 +84,6 @@ export class Settings implements OnInit {
     private notificationSettingService: NotificationSettingService,
     private profileService: ProfileService
   ) {
-    const body = document.body;
-
-    this.darkMode = body.classList.contains('dark-theme');
-    this.compactDensity = body.classList.contains('compact-density');
-
     this.checkAdminRole();
   }
 
@@ -96,18 +91,28 @@ export class Settings implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
 
+  
+   // ================= Apply Theme On Init =================
+  applySavedTheme(): void {
+    const savedTheme = localStorage.getItem('theme');
+
+    this.darkMode = savedTheme === 'dark';
+     document.body.classList.toggle('dark-theme', this.darkMode);
+     document.body.classList.toggle('light-theme', !this.darkMode);
+  }
+
+
   // ================= INIT =================
   ngOnInit(): void { // UNCOMMENT PROFILE BACKEND CALLS WHEN TIED IN
+    // Apply saved theme
+    this.applySavedTheme();
+
+    this.loadProfile();
+    this.loadProfileImage();
 
     if (this.isAdmin) {
       this.loadThresholds();
     }
-
-    // BACKEND VERSION (enable later)
-  
-    this.loadProfile();
-    this.loadProfileImage();
-    
   }
 
   // ================= LOAD PROFILE =================
@@ -359,16 +364,17 @@ loadProfileImage(): void {
 
   // ================= DARK MODE =================
   toggleTheme(): void {
-    const body = document.body;
-
     if (this.darkMode) {
-      body.classList.remove('light-theme');
-      body.classList.add('dark-theme');
+      document.body.classList.remove('light-theme');
+      document.body.classList.add('dark-theme');
+      localStorage.setItem('theme', 'dark');
     } else {
-      body.classList.remove('dark-theme');
-      body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
+      document.body.classList.add('light-theme');
+      localStorage.setItem('theme', 'light');
     }
   }
+
 
   // ================= TABLE DENSITY =================
   toggleDensity(): void {
@@ -383,7 +389,8 @@ loadProfileImage(): void {
 
   // ================= LOGOUT =================
   logout(): void {
-    localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.removeItem('pharmastock_jwt');
     sessionStorage.clear();
     window.location.href = '/login';
   }

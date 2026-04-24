@@ -150,7 +150,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // New ngOnInIt for refreshing inventory after edits/refreshing
   // -----------------------------
 
+
+  private applySavedTheme(): void {
+    const savedTheme = localStorage.getItem('theme');
+
+    document.body.classList.toggle('dark-theme', savedTheme === 'dark');
+    document.body.classList.toggle('light-theme', savedTheme !== 'dark');
+
+    this.updateThemeState();
+  }
+
+  
   ngOnInit(): void {
+
+    this.applySavedTheme();
     this.notificationSettingService.get().pipe(
       catchError(() => of(null))
     ).subscribe((settings) => {
@@ -282,10 +295,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['administration']);
   }
 
-  logout() {
-    localStorage.clear(); // or remove specific token
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('pharmastock_jwt');
     sessionStorage.clear();
-    window.location.href = '/login'; // or your login route
+
+    window.location.href = '/login';
   }
 
   loadUserProfile(): void {
