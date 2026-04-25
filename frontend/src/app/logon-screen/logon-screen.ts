@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { CommonModule } from "@angular/common";
+import { isEmpty } from '../helpers/validation.helpers';
 
 @Component({
   selector: 'app-logon-screen',
@@ -23,21 +24,17 @@ export class LogonScreen implements OnInit {
     private cdr: ChangeDetectorRef
   ) {}
   ngAfterViewInit(): void {
-    throw new Error('Method not implemented.');
+    this.cdr.detectChanges();
   }
 
   ngOnInit(): void {
-    this.applySavedTheme();
+    
   }
 
-  private applySavedTheme(): void {
-    const savedTheme = localStorage.getItem('theme');
-
-    document.body.classList.toggle('dark-theme', savedTheme === 'dark');
-    document.body.classList.toggle('light-theme', savedTheme !== 'dark');
-  }
+  
   onSubmit(): void {
-    if (!this.email || !this.password) {
+    if (isEmpty(this.email) || isEmpty(this.password)) {
+      this.errorMessage = 'Email and password are required.';
       return;
     }
 

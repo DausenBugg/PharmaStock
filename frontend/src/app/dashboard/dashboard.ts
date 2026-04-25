@@ -19,6 +19,9 @@ import { NotificationSetting } from '../models/notification-setting.model';
 import { ProfileService } from '../services/profile.service';
 import { Profile } from "../models/profile.model";
 import { MainLayoutComponent } from '../layout/main-layout/main-layout';
+import { logoutUser } from "../helpers/auth.helpers";
+import { createProfileImage, revokeProfileImage } from '../helpers/profile.helpers';
+
 
 
 @Component({
@@ -149,21 +152,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // -----------------------------
   // New ngOnInIt for refreshing inventory after edits/refreshing
   // -----------------------------
-
-
-  private applySavedTheme(): void {
-    const savedTheme = localStorage.getItem('theme');
-
-    document.body.classList.toggle('dark-theme', savedTheme === 'dark');
-    document.body.classList.toggle('light-theme', savedTheme !== 'dark');
-
-    this.updateThemeState();
-  }
-
-  
+ 
   ngOnInit(): void {
 
-    this.applySavedTheme();
+    this.updateThemeState();
     this.notificationSettingService.get().pipe(
       catchError(() => of(null))
     ).subscribe((settings) => {
@@ -295,12 +287,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['administration']);
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('pharmastock_jwt');
-    sessionStorage.clear();
-
-    window.location.href = '/login';
+  logout() {
+    logoutUser();
   }
 
   loadUserProfile(): void {
@@ -326,7 +314,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadUserImage(): void {
     this.profileService.getProfileImage().subscribe({
       next: (blob) => {
-        this.profileImageUrl = URL.createObjectURL(blob);
+        this.profileImageUrl = createProfileImage(blob);
       },
       error: () => {
         this.profileImageUrl = null; // fallback to placeholder

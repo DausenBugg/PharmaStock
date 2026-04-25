@@ -11,6 +11,8 @@ import { MatButtonModule } from '@angular/material/button';
 
 import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 import { EmployeeService } from "../services/employee.service";
+import { logoutUser } from "../helpers/auth.helpers";
+import { mapRole } from '../helpers/role.helpers';
 
 export interface Employee {
   name: string;
@@ -49,13 +51,6 @@ export class Administration implements OnInit{
   ];
 
   dataSource = new MatTableDataSource<Employee>([]);
-
-  mapRole(roles: string[]): 'Staff' | 'Admin' {
-    if(!roles || roles.length ===0) return 'Staff';
-    if(roles.includes('Admin')) return 'Admin';
-    return 'Staff';
-  }
-  
 
   newEmployee: Employee = {
     name: '',
@@ -221,11 +216,9 @@ export class Administration implements OnInit{
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('pharmastock_jwt');
-    sessionStorage.clear();
-    window.location.href = '/login'; // or your login route
+    logoutUser();
   }
+
 
   loadEmployees() {
     this.employeeService.getAll().subscribe({
@@ -234,7 +227,7 @@ export class Administration implements OnInit{
         const mapped = users.map(u => ({
           name: u.userName,
           email: u.email,
-          role: this.mapRole(u.roles)
+          role: mapRole(u.roles)
         }));
 
         this.dataSource.data = mapped;

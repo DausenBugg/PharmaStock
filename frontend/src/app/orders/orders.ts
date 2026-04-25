@@ -15,6 +15,8 @@ import { InventoryService } from "../services/inventory.service";
 import { InventoryRow } from '../inventory/inventory.model';
 import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
 import { MainLayoutComponent } from '../layout/main-layout/main-layout';
+import { logoutUser } from "../helpers/auth.helpers";
+import { getExpirationClass, getReorderClass} from '../helpers/inventory.helpers';
 
 @Component({
   selector: 'app-orders',
@@ -127,25 +129,12 @@ export class Orders implements AfterViewInit {
     }
   }
 
-  getReorderClass(item: any): string {
-    if (item.quantity < item.reorderPoint) return 'health-critical';
-    if (item.quantity === item.reorderPoint) return 'health-warning';
-    return '';
+  getExpirationClass(item: InventoryRow){
+    return getExpirationClass(item.expiration);
   }
 
-  getExpirationClass(item: any): string {
-    const today = new Date();
-    const expirationDate = new Date(item.expiration);
-
-    today.setHours(0, 0, 0, 0);
-
-    const diffInDays =
-      (expirationDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-
-    if (diffInDays < 0) return 'health-critical';
-    if (diffInDays <= 30) return 'health-warning';
-
-    return '';
+  getReorderClass(item: InventoryRow){
+    return getReorderClass(item.quantity, item.reorderPoint);
   }
 
   onSelectRow(item: any, event: any) {
@@ -197,9 +186,6 @@ export class Orders implements AfterViewInit {
   }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('pharmastock_jwt');
-    sessionStorage.clear();
-    window.location.href = '/login'; // or your login route
+    logoutUser();
   }
 }
