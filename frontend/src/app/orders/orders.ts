@@ -176,12 +176,23 @@ export class Orders implements AfterViewInit {
       return;
     }
 
-    this.selectedItem.quantity -= this.adjustQuantity!;
+    const adjustment = -this.adjustQuantity!;
+    const targetId = this.selectedItem.inventoryStockId;
 
-    this.resetState();
-
-    // refresh table
-    this.dataSource.data = [...this.dataSource.data];
+    this.inventoryService.adjustQuantity(targetId, adjustment).subscribe({
+      next: () => {
+        // update local display without a full reload
+        const row = this.dataSource.data.find(r => r.inventoryStockId === targetId);
+        if (row) row.quantity += adjustment;
+        this.dataSource.data = [...this.dataSource.data];
+        this.resetState();
+      },
+      error: (err) => {
+        console.error('Adjustment failed:', err);
+        alert('Failed to save adjustment. Please try again.');
+        this.resetState();
+      }
+    });
   }
 
   cancelAdjustment() {

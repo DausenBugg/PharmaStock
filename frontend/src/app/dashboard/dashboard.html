@@ -179,6 +179,42 @@
 
     </div>
 
+    <!-- RECENT ADJUSTMENTS -->
+    <div class="ai-section-header">
+      <span class="ai-section-label">Recent Adjustments</span>
+    </div>
+
+    <div class="ai-section">
+      <mat-card class="dashboard-card ai-card" style="flex: 1;">
+        <div class="ai-card-header">
+          <h3>Latest Dispensed / Restocked</h3>
+        </div>
+        <p class="ai-card-subtitle">5 most recent quantity changes</p>
+
+        <div *ngIf="recentAdjustments.length === 0" class="ai-empty">
+          No adjustments recorded yet.
+        </div>
+
+        <div *ngFor="let entry of recentAdjustments" class="ai-alert-row">
+          <span class="ai-risk-badge"
+                [class.health-critical]="entry.changeType === 'Dispensed'"
+                [class.health-good]="entry.changeType === 'Restocked'">
+            {{ entry.changeType }}
+          </span>
+
+          <span class="ai-alert-text">
+            {{ entry.medicationName }}
+            <span style="opacity:0.6; font-size:0.85em;">Lot {{ entry.lotNumber }}</span>
+            — <strong>{{ entry.quantityChanged }}</strong> units
+          </span>
+
+          <span class="ai-confidence" style="white-space:nowrap;">
+            {{ entry.occurredAtUtc | date:'MMM d, h:mm a' }}
+          </span>
+        </div>
+      </mat-card>
+    </div>
+
   </div>
 
 </app-main-layout>
