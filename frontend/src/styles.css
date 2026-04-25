@@ -34,7 +34,8 @@ body.light-theme {
 
   --modal-box: #6dbe45;
   --modal-button:#1f4e79;
-  --modal-text: #6dbe45;
+  --modal-btn-text: #6dbe45;
+  --modal-text:#1f4e79;
 }
 
 /* ================= DARK THEME ================= */
@@ -60,7 +61,8 @@ body.dark-theme {
 
   --modal-box: #1f4e79;
   --modal-button:#6dbe45;
-  --modal-text: #1f4e79;
+  --modal-btn-text: #1f4e79;
+  --modal-text:#6dbe45;
 }
 
 /* ================= LOGO SWITCHING ================= */
@@ -153,4 +155,87 @@ body.compact-density .mat-mdc-header-cell {
 
 .mat-mdc-row:hover {
   background-color: rgba(0, 0, 0, 0.03);
+}
+
+.inventory-table .mat-cell,
+.inventory-table .mat-header-cell {
+  white-space: normal;    /* break long words */
+}
+
+.inventory-table .mat-column-medicationName,
+.inventory-table .mat-column-genericName,
+.inventory-table .mat-column-packageDescription {
+  white-space: normal;
+  word-break: normal;   /* ← key fix */
+  max-width: 180px;     /* adjust as needed */
+}
+
+/* ================= MODAL ================= */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: var(--modal-box);
+  padding: 32px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  align-items: center;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.modal-title {
+  font-size: 40px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: #d32f2f;
+}
+
+.modal-text {
+  font-size: 18px;      
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  color: var(--modal-text);
+}
+
+.modal-box .app-input {
+  width: 100%;
+  max-width: 200px;
+  text-align: center;
+}
+
+.modal-btn {
+  display: block;
+  flex-shrink: 0;
+  width: 150px;
+  padding: 5px;
+  background-color: var(--modal-button);
+  color: var(--modal-btn-text);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16pt;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+  text-align: center;
 }

@@ -14,6 +14,10 @@ import { NotificationSettingService } from '../services/notification-setting.ser
 import { ProfileService } from '../services/profile.service';
 import { Profile } from '../models/profile.model';
 import { MainLayoutComponent } from '../layout/main-layout/main-layout';
+import { logoutUser } from "../helpers/auth.helpers";
+import { createProfileImage, revokeProfileImage } from '../helpers/profile.helpers';
+import { applySavedTheme, toggleTheme, applySavedDensity, toggleDensity} from '../helpers/theme.helpers';
+import { isEmpty, validatePasswordMatch } from '../helpers/validation.helpers';
 
 @Component({
   selector: 'app-settings',
@@ -102,21 +106,11 @@ export class Settings implements OnInit {
   errorMessage: string = '';
   successMessage: string = '';
 
-  
-   // ================= Apply Theme On Init =================
-  applySavedTheme(): void {
-    const savedTheme = localStorage.getItem('theme');
-
-    this.darkMode = savedTheme === 'dark';
-     document.body.classList.toggle('dark-theme', this.darkMode);
-     document.body.classList.toggle('light-theme', !this.darkMode);
-  }
-
-
   // ================= INIT =================
   ngOnInit(): void { // UNCOMMENT PROFILE BACKEND CALLS WHEN TIED IN
     // Apply saved theme
-    this.applySavedTheme();
+    this.darkMode = applySavedTheme();
+    this.compactDensity = applySavedDensity();
 
     // Load profile and image
     this.refreshPage();
@@ -145,11 +139,9 @@ export class Settings implements OnInit {
 loadProfileImage(): void {
   this.profileService.getProfileImage().subscribe({
     next: (blob) => {
-      if (this.profileImageUrl?.startsWith('blob:')) {
-        URL.revokeObjectURL(this.profileImageUrl);
-      }
+      revokeProfileImage(this.profileImageUrl);
 
-      this.profileImageUrl = URL.createObjectURL(blob);
+      this.profileImageUrl = createProfileImage(blob);
       this.profileImage = this.profileImageUrl;
       this.cdr.detectChanges();
     },
@@ -337,15 +329,15 @@ loadProfileImage(): void {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (!this.currentPassword || !this.newPassword || !this.confirmPassword) {
+    if (isEmpty(this.currentPassword) || isEmpty(this.newPassword) || isEmpty(this.confirmPassword)) {
       this.errorMessage = 'All fields are required.';
       return;
     }
 
-    if (this.newPassword !== this.confirmPassword) {
+    if (!validatePasswordMatch(this.newPassword, this.confirmPassword)) {
       this.errorMessage = 'Passwords do not match.';
       return;
-    }                                 //UNCOMMENT WHEN BACKEND IS TIED IN
+    }                                 
         
   
     this.profileService.changePassword({
@@ -375,35 +367,18 @@ loadProfileImage(): void {
 
   // ================= DARK MODE =================
   toggleTheme(): void {
-    if (this.darkMode) {
-      document.body.classList.remove('light-theme');
-      document.body.classList.add('dark-theme');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.body.classList.remove('dark-theme');
-      document.body.classList.add('light-theme');
-      localStorage.setItem('theme', 'light');
-    }
+    toggleTheme(this.darkMode);
   }
 
 
   // ================= TABLE DENSITY =================
   toggleDensity(): void {
-    const body = document.body;
-
-    if (this.compactDensity) {
-      body.classList.add('compact-density');
-    } else {
-      body.classList.remove('compact-density');
-    }
+    toggleDensity(this.compactDensity);
   }
 
   // ================= LOGOUT =================
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('pharmastock_jwt');
-    sessionStorage.clear();
-    window.location.href = '/login';
+  logout() {
+    logoutUser();
   }
 
 }

@@ -102,6 +102,7 @@ td {
   align-items: center;
   gap: 16px;
   margin-bottom: 32px;
+  margin: 0 auto;
 }
 
 .search-buttons {
@@ -127,3 +128,15 @@ td {
   border-color: var(--button-bg);
   box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.15);
 }
+
+.report-filters{
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 32px;
+    margin: 0 auto;
+    justify-content: center;
+}
+
