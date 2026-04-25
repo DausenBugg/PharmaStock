@@ -208,91 +208,96 @@ export class InventoryComponent implements AfterViewInit {
   // -----------------------------
   onSelectRow(item: InventoryRow, event: any): void {
 
-    if (event.target.checked) {
-      this.selectedItem = item;
-    } else {
-      this.selectedItem = null;
+      if (event.target.checked) {
+        this.selectedItem = item;
+      } else {
+        this.selectedItem = null;
+      }
+
     }
 
-  }
-
-  // -----------------------------
-  // OPEN FORM
-  // -----------------------------
-  openInventoryForm(): void {
+    // -----------------------------
+    // OPEN FORM
+    // -----------------------------
+    openInventoryForm(): void {
 
     console.log("OPEN INVENTORY MODAL");
-    console.log('selectedItem at open:', this.selectedItem)
-
-    if(!this.selectedItem) {
-      console.warn('No row selected for editing.');
-      return;
-    }
+    console.log('selectedItem at open:', this.selectedItem);
 
     if (this.selectedItem) {
 
-        this.editingItem = this.selectedItem;
+      // =====================
+      // EDIT MODE
+      // =====================
+      console.log('EDIT MODE');
 
-        console.log('EDIT MODE');
-        console.log('editingItem set to:', this.editingItem);
+      this.editingItem = this.selectedItem;
 
-        this.formItem = {
-          inventoryStockId: this.selectedItem.inventoryStockId,
-          medicationId: this.selectedItem.medicationId,
+      this.formItem = {
+        inventoryStockId: this.selectedItem.inventoryStockId,
+        medicationId: this.selectedItem.medicationId,
 
-          medicationName: this.selectedItem.medicationName,
-          genericName: this.selectedItem.genericName,
+        medicationName: this.selectedItem.medicationName,
+        genericName: this.selectedItem.genericName,
 
-          nationalDrugCode: this.selectedItem.nationalDrugCode,
-          form: this.selectedItem.form,
-          strength: this.selectedItem.strength,
+        nationalDrugCode: this.selectedItem.nationalDrugCode,
+        form: this.selectedItem.form,
+        strength: this.selectedItem.strength,
 
-          quantityOnHand: this.selectedItem.quantity,
-          reorderLevel: this.selectedItem.reorderPoint,
+        quantityOnHand: this.selectedItem.quantity,
+        reorderLevel: this.selectedItem.reorderPoint,
 
-          binLocation: this.selectedItem.binLocation,
-          lotNumber: this.selectedItem.lot,
+        binLocation: this.selectedItem.binLocation,
+        lotNumber: this.selectedItem.lot,
 
-          expirationDate: this.selectedItem.expiration,
-          beyondUseDate: this.selectedItem.beyondUseDate,
+        expirationDate: this.selectedItem.expiration,
+        beyondUseDate: this.selectedItem.beyondUseDate,
 
-          packageNdc: this.selectedItem.packageNdc,
-          packageDescription: this.selectedItem.packageDescription
-        };
+        packageNdc: this.selectedItem.packageNdc,
+        packageDescription: this.selectedItem.packageDescription
+      };
 
-        this.originalQuantity = Number(this.selectedItem.quantity);
+      this.originalQuantity = Number(this.selectedItem.quantity);
 
-      } else {
+    } else {
 
-        console.log('CREATE MODE- selectedItem is null');
-        this.editingItem = null;
+      // =====================
+      // CREATE MODE
+      // =====================
+      console.log('CREATE MODE');
 
-        this.formItem = {
-          inventoryStockId: 0,
-          medicationId: 0,
+      this.editingItem = null;
 
-          medicationName: '',
-          genericName: null,
+      this.formItem = {
+        inventoryStockId: 0,
+        medicationId: 0,
 
-          nationalDrugCode: '',
-          form: '',
-          strength: '',
+        medicationName: '',
+        genericName: null,
 
-          quantityOnHand: null,
-          reorderLevel: null,
+        nationalDrugCode: '',
+        form: '',
+        strength: '',
 
-          binLocation: '',
-          lotNumber: '',
+        quantityOnHand: null,
+        reorderLevel: null,
 
-          expirationDate: null,
-          beyondUseDate: null,
+        binLocation: '',
+        lotNumber: '',
 
-          packageNdc: null,
-          packageDescription: null
-        };
+        expirationDate: null,
+        beyondUseDate: null,
 
-      }
+        packageNdc: null,
+        packageDescription: null
+      };
 
+      this.originalQuantity = 0;
+    }
+
+    // =====================
+    // OPEN MODAL
+    // =====================
     this.showInventoryModal = true;
   }
 
