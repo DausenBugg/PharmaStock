@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
@@ -20,8 +20,12 @@ export class LogonScreen implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
+  ngAfterViewInit(): void {
+    this.cdr.detectChanges();
+  }
 
   ngOnInit(): void {
     
@@ -49,7 +53,14 @@ export class LogonScreen implements OnInit {
       error: (error) => {
         console.error('Login failed', error);
         this.isLoading = false;
-        this.errorMessage = 'Login failed. Check your email or password.';
+      
+        this.password = '';
+        this.email = '';
+
+        setTimeout(() => {
+          this.errorMessage = 'Login failed. Check your email or password';
+          this.cdr.detectChanges();
+        }, 1000);
       }
     });
   }
