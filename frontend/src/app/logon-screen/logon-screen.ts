@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
@@ -19,8 +19,12 @@ export class LogonScreen implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
+  ngAfterViewInit(): void {
+    throw new Error('Method not implemented.');
+  }
 
   ngOnInit(): void {
     this.applySavedTheme();
@@ -34,7 +38,6 @@ export class LogonScreen implements OnInit {
   }
   onSubmit(): void {
     if (!this.email || !this.password) {
-      this.errorMessage = 'Email and password are required.';
       return;
     }
 
@@ -53,7 +56,14 @@ export class LogonScreen implements OnInit {
       error: (error) => {
         console.error('Login failed', error);
         this.isLoading = false;
-        this.errorMessage = 'Login failed. Check your email or password.';
+      
+        this.password = '';
+        this.email = '';
+
+        setTimeout(() => {
+          this.errorMessage = 'Login failed. Check your email or password';
+          this.cdr.detectChanges();
+        }, 1000);
       }
     });
   }
