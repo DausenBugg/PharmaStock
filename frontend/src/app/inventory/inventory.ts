@@ -19,6 +19,7 @@ import { mapInventoryApiToRow } from './inventory.mapper';
 import { InventoryApiItem } from '../models/inventory-api.model';
 import { logoutUser } from "../helpers/auth.helpers";
 import { getExpirationClass, getReorderClass} from '../helpers/inventory.helpers';
+import { AuthService } from "../services/auth.service";
 
 // Updated for Patch Requests
 import { UpdateInventoryStockPatchRequest } from '../models/inventory-api.model';
@@ -106,7 +107,8 @@ export class InventoryComponent implements AfterViewInit {
     private predictionService: PredictionService,
     private cdr: ChangeDetectorRef,
     private inventorySaveService: InventorySaveService,
-    private medicationSaveService: MedicationSaveService
+    private medicationSaveService: MedicationSaveService,
+    public auth: AuthService
   ) {}
 
   ngAfterViewInit(): void {
@@ -121,7 +123,7 @@ export class InventoryComponent implements AfterViewInit {
   // LOAD INVENTORY
   // -----------------------------
   
-   loadInventory(): void {
+  loadInventory(): void {
 
     this.inventoryService.getInventoryStocks({ pageNumber: 1, pageSize: 100 }).subscribe({
       next: (response) => {
@@ -208,18 +210,28 @@ export class InventoryComponent implements AfterViewInit {
   // -----------------------------
   onSelectRow(item: InventoryRow, event: any): void {
 
-      if (event.target.checked) {
-        this.selectedItem = item;
-      } else {
-        this.selectedItem = null;
-      }
-
+    if(!this.auth.isAdmin()){
+      console.warn("Blocked: non-admin attempted to select inventory row.");
+      return;
     }
+
+    if (event.target.checked) {
+      this.selectedItem = item;
+    } else {
+      this.selectedItem = null;
+    }
+  }
+
 
     // -----------------------------
     // OPEN FORM
     // -----------------------------
-    openInventoryForm(): void {
+  openInventoryForm(): void {
+    if(!this.auth.isAdmin()) {
+      console.warn("Blocked: non-admin attempted to open inventory form.");
+      return;
+    }
+  
 
     console.log("OPEN INVENTORY MODAL");
     console.log('selectedItem at open:', this.selectedItem);
@@ -311,6 +323,11 @@ export class InventoryComponent implements AfterViewInit {
   // SAVE CLICK
   // -----------------------------
   saveInventory(): void {
+
+    if(!this.auth.isAdmin()) {
+      console.warn("Blocked: non-admin attempted to alter inventory information.");
+      return;
+    }    
     this.showInventoryModal = false;
     this.showPasswordModal = true;
   }
@@ -332,6 +349,13 @@ export class InventoryComponent implements AfterViewInit {
   // specifically, it checks for changes in medication details (name, generic name, NDC, form, strength) and inventory details (expiration date, beyond use date, package NDC, package description, quantity). and calls the corresponding save functions in the services based on what was changed. After the save operations complete, it calls finishSave to reset the form and reload the inventory list.
   // -----------------------------
  confirmPassword(): void {
+
+  if(!this.auth.isAdmin()) {
+      console.warn("Blocked: non-admin attempted to alter inventory row (safe-guard 2).");
+      return;
+    }
+
+
     console.log('confirmPassword called');
     console.log('passwordInput:', this.passwordInput);
     console.log('editingItem:', this.editingItem);

@@ -81,10 +81,11 @@
         Settings
       </a>
 
-      <a mat-list-item
-         routerLink="/administration"
-         routerLinkActive="active"
-         class="nav-item">
+      <a *ngIf="auth.isAdmin()"
+        mat-list-item
+        routerLink="/administration"
+        routerLinkActive="active"
+        class="nav-item">
         Administration
       </a>
 

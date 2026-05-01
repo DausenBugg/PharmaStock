@@ -11,6 +11,7 @@ import { Profile } from '../../models/profile.model';
 import { logoutUser } from "../../helpers/auth.helpers";
 import { createProfileImage, revokeProfileImage } from '../../helpers/profile.helpers';
 import { applySavedTheme, applySavedDensity } from '../../helpers/theme.helpers';
+import { AuthService } from '../../services/auth.service';
 
 
 @Component({
@@ -31,7 +32,7 @@ export class MainLayoutComponent implements OnInit, AfterViewInit {
   profile: Profile | null = null;
   profileImageUrl: string | null = null;
 
-  constructor(private profileService: ProfileService, private cdr: ChangeDetectorRef) {}
+  constructor(private profileService: ProfileService, private cdr: ChangeDetectorRef, public auth: AuthService) {}
 
   ngOnInit(): void {
     

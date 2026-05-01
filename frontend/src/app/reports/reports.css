@@ -143,7 +143,7 @@ td {
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
-  margin-bottom: 24px;
+  margin: 0 auto 24px auto;
 }
 
 .filter-option {
@@ -152,8 +152,6 @@ td {
   gap: 8px;
   padding: 10px 14px;
   border-radius: 999px;
-  background-color: var(--table-bg);
-  color: var(--card-text);
   font-weight: 600;
 }
 
