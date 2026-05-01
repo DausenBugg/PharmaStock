@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
 import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPatchRequest } from '../models/inventory-api.model';
 import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
 
@@ -23,6 +23,18 @@ import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
                         pageSize: params.pageSize
                     }
                 }
+            );
+        }
+
+        getAllInventoryStocks(pageSize = 250): Observable<InventoryApiItem[]> {
+            return this.getInventoryStocks({ pageNumber: 1, pageSize }).pipe(
+                expand((response) =>
+                    response.pageNumber < response.totalPages
+                        ? this.getInventoryStocks({ pageNumber: response.pageNumber + 1, pageSize })
+                        : EMPTY
+                ),
+                map((response) => response.items ?? []),
+                reduce((allItems, items) => [...allItems, ...items], [] as InventoryApiItem[])
             );
         }
 

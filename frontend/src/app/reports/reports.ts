@@ -1,7 +1,8 @@
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -26,6 +27,14 @@ import { getExpirationClass, getReorderClass} from '../helpers/inventory.helpers
 
 type Medication = InventoryRow;
 
+interface ReportSummary {
+  visible: number;
+  expired: number;
+  expiringSoon: number;
+  stockedOut: number;
+  lowInventory: number;
+}
+
 @Component({
   selector: 'app-reports',
   standalone: true,
@@ -46,11 +55,13 @@ type Medication = InventoryRow;
   styleUrl: './reports.css',
 })
 export class Reports implements OnInit, AfterViewInit {
+  readonly expiringSoonWindowDays = 30;
 
   constructor(
     private route: ActivatedRoute,
     private inventoryService: InventoryService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -73,6 +84,15 @@ export class Reports implements OnInit, AfterViewInit {
 
   dataSource = new MatTableDataSource<Medication>([]);
   private allItems: Medication[] = [];
+  loading = true;
+  loadError = false;
+  summary: ReportSummary = {
+    visible: 0,
+    expired: 0,
+    expiringSoon: 0,
+    stockedOut: 0,
+    lowInventory: 0
+  };
 
   searchValue: string = '';
 
@@ -98,19 +118,30 @@ export class Reports implements OnInit, AfterViewInit {
   }
 
   loadInventory(): void {
-  this.inventoryService.getInventoryStocks({
-    pageNumber: 1,
-    pageSize: 100
-  }).subscribe({
-    next: (response) => {
-      this.allItems = response.items.map(mapInventoryApiToRow);
-      this.applyFilters();
-    },
-    error: (err) => {
-      console.error('Failed to load inventory:', err);
-    }
-  });
-}
+    this.loading = true;
+    this.loadError = false;
+
+    this.inventoryService.getAllInventoryStocks().pipe(
+      finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: (items) => {
+        this.allItems = items.map(mapInventoryApiToRow);
+        this.applyFilters();
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load inventory:', err);
+        this.loadError = true;
+        this.allItems = [];
+        this.dataSource.data = [];
+        this.summary = this.createSummary([]);
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   onSearch(): void {
     this.applyFilters();
@@ -129,24 +160,31 @@ export class Reports implements OnInit, AfterViewInit {
     if (search) {
       filtered = filtered.filter(item =>
         (item.medicationName ?? '').toLowerCase().includes(search) ||
-        (item.genericName ?? '').toLowerCase().includes(search)
+        (item.genericName ?? '').toLowerCase().includes(search) ||
+        (item.nationalDrugCode ?? '').toLowerCase().includes(search) ||
+        (item.lot ?? '').toLowerCase().includes(search) ||
+        (item.packageNdc ?? '').toLowerCase().includes(search) ||
+        (item.binLocation ?? '').toLowerCase().includes(search)
       );
     }
 
     // CHECKBOX FILTERS
     filtered = filtered.filter(item => {
+      let isExpired = false;
+      let isExpiringSoon = false;
 
-      if (!item.expiration) return true;
+      if (item.expiration) {
+        const expirationDate = new Date(item.expiration);
+        expirationDate.setHours(0,0,0,0);
 
-      const expirationDate = new Date(item.expiration);
-      expirationDate.setHours(0,0,0,0);
+        const diffDays =
+          (expirationDate.getTime() - today.getTime()) /
+          (1000 * 60 * 60 * 24);
 
-      const diffDays =
-        (expirationDate.getTime() - today.getTime()) /
-        (1000 * 60 * 60 * 24);
+        isExpired = diffDays < 0;
+        isExpiringSoon = diffDays >= 0 && diffDays <= this.expiringSoonWindowDays;
+      }
 
-      const isExpired = diffDays < 0;
-      const isExpiringSoon = diffDays >= 0 && diffDays <= 30;
       const isStockedOut = item.quantity === 0;
       const isLowInventory = item.quantity < item.reorderPoint;
 
@@ -159,10 +197,12 @@ export class Reports implements OnInit, AfterViewInit {
     });
 
     this.dataSource.data = filtered;
+    this.summary = this.createSummary(filtered);
     this.dataSource.paginator = this.paginator;
 
     // reattach paginator after data change
     if (this.paginator) {
+      this.paginator.firstPage();
       this.dataSource.paginator = this.paginator;
     }
   }
@@ -176,11 +216,62 @@ export class Reports implements OnInit, AfterViewInit {
     this.filterStockedOut = false;
     this.filterLowInventory = false;
 
-    this.dataSource.data = this.allItems;
+    this.applyFilters();
+  }
 
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
+  get totalInventoryCount(): number {
+    return this.allItems.length;
+  }
+
+  get activeFilterLabels(): string[] {
+    const labels: string[] = [];
+
+    if (this.filterExpired) labels.push('Expired');
+    if (this.filterExpiringSoon) labels.push(`About to Expire (${this.expiringSoonWindowDays} days)`);
+    if (this.filterStockedOut) labels.push('Stocked Out');
+    if (this.filterLowInventory) labels.push('Low Inventory');
+
+    return labels;
+  }
+
+  private createSummary(items: Medication[]): ReportSummary {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return items.reduce<ReportSummary>((summary, item) => {
+      summary.visible += 1;
+
+      if (item.quantity === 0) {
+        summary.stockedOut += 1;
+      }
+
+      if (item.quantity < item.reorderPoint) {
+        summary.lowInventory += 1;
+      }
+
+      if (item.expiration) {
+        const expirationDate = new Date(item.expiration);
+        expirationDate.setHours(0, 0, 0, 0);
+
+        const diffDays =
+          (expirationDate.getTime() - today.getTime()) /
+          (1000 * 60 * 60 * 24);
+
+        if (diffDays < 0) {
+          summary.expired += 1;
+        } else if (diffDays <= this.expiringSoonWindowDays) {
+          summary.expiringSoon += 1;
+        }
+      }
+
+      return summary;
+    }, {
+      visible: 0,
+      expired: 0,
+      expiringSoon: 0,
+      stockedOut: 0,
+      lowInventory: 0
+    });
   }
 
   getExpirationClass(item: InventoryRow){
