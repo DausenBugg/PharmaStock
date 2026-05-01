@@ -84,8 +84,13 @@ describe('InventoryComponent', () => {
 
   beforeEach(async () => {
     inventoryServiceSpy = jasmine.createSpyObj<InventoryService>('InventoryService', ['getInventoryStocks']);
-    const value: Observable<PagedResponse<InventoryApiItem>> = of();
-    inventoryServiceSpy.getInventoryStocks.and.returnValue(value); // default
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of({
+      items: [],
+      pageNumber: 1,
+      pageSize: 10,
+      totalItemCount: 0,
+      totalPages: 0
+    }));
 
     await TestBed.configureTestingModule({
       imports: [InventoryComponent],
@@ -103,7 +108,13 @@ describe('InventoryComponent', () => {
   it('filters by partial medication name on submit', () => {
     const rows = createRows();
     // Feed the component by mocking the service response
-    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of({
+      items: rows as any,
+      pageNumber: 1,
+      pageSize: rows.length,
+      totalItemCount: rows.length,
+      totalPages: 1
+    }));
     component.loadInventory();
 
     component.clearFilters();
@@ -116,7 +127,13 @@ describe('InventoryComponent', () => {
 
   it('filters by partial lot number (case-insensitive)', () => {
     const rows = createRows();
-    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of({
+      items: rows as any,
+      pageNumber: 1,
+      pageSize: rows.length,
+      totalItemCount: rows.length,
+      totalPages: 1
+    }));
     component.loadInventory();
 
     component.clearFilters();
@@ -129,7 +146,13 @@ describe('InventoryComponent', () => {
 
   it('applies medication name and lot filters together', () => {
     const rows = createRows();
-    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of({
+      items: rows as any,
+      pageNumber: 1,
+      pageSize: rows.length,
+      totalItemCount: rows.length,
+      totalPages: 1
+    }));
     component.loadInventory();
 
     component.clearFilters();
@@ -143,7 +166,13 @@ describe('InventoryComponent', () => {
 
   it('filters near-expiration meds within next 7 days and excludes expired', () => {
     const rows = createRows();
-    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of({
+      items: rows as any,
+      pageNumber: 1,
+      pageSize: rows.length,
+      totalItemCount: rows.length,
+      totalPages: 1
+    }));
     component.loadInventory();
 
     component.clearFilters();
@@ -155,7 +184,13 @@ describe('InventoryComponent', () => {
 
   it('clears filters and restores full dataset', () => {
     const rows = createRows();
-    inventoryServiceSpy.getInventoryStocks.and.returnValue(of(rows as any));
+    inventoryServiceSpy.getInventoryStocks.and.returnValue(of({
+      items: rows as any,
+      pageNumber: 1,
+      pageSize: rows.length,
+      totalItemCount: rows.length,
+      totalPages: 1
+    }));
     component.loadInventory();
 
     component.clearFilters();

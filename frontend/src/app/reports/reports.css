@@ -108,6 +108,7 @@ td {
 .search-buttons {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
@@ -129,14 +130,133 @@ td {
   box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.15);
 }
 
-.report-filters{
-    width: 100%;
-    max-width: 700px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 32px;
-    margin: 0 auto;
-    justify-content: center;
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
 }
 
+.report-filters {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filter-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background-color: var(--table-bg);
+  color: var(--card-text);
+  font-weight: 600;
+}
+
+.report-summary {
+  width: 100%;
+  max-width: 1100px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.96));
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.summary-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--button-bg);
+}
+
+.summary-card strong {
+  font-size: 28px;
+  line-height: 1;
+  color: #0f172a;
+}
+
+.summary-card small {
+  color: #475569;
+}
+
+.active-filters {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.active-filter-pill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background-color: rgba(31, 78, 121, 0.12);
+  color: var(--button-bg);
+  font-weight: 700;
+}
+
+.report-status {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 0 20px;
+  padding: 18px;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 600;
+  background-color: rgba(31, 78, 121, 0.08);
+  color: var(--button-bg);
+}
+
+.report-status-error {
+  background-color: rgba(211, 47, 47, 0.12);
+  color: #8b1e1e;
+}
+
+.report-status-empty {
+  background-color: rgba(237, 108, 2, 0.12);
+  color: #9a3412;
+}
+
+@media (max-width: 768px) {
+  .content {
+    padding: 24px 16px;
+  }
+
+  .pharmacy-title {
+    font-size: 40px;
+  }
+
+  .reports-subtitle {
+    font-size: 30px;
+    margin-top: 12px;
+  }
+
+  .reports-btn {
+    width: auto;
+    min-width: 120px;
+    font-size: 14pt;
+  }
+
+  .reports-table {
+    display: block;
+    overflow-x: auto;
+  }
+}

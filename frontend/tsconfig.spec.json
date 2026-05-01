@@ -3,6 +3,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "rootDir": "./src",
     "outDir": "./out-tsc/spec",
     "rootDir": "./src",
     "types": [
@@ -12,6 +13,10 @@
   },
   "include": [
     "src/**/*.d.ts",
+    "src/**/*.ts",
     "src/**/*.spec.ts"
+  ],
+  "exclude": [
+    "src/main.ts"
   ]
 }
