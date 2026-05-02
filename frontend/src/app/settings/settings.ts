@@ -13,9 +13,8 @@ import { NotificationSettingService } from '../services/notification-setting.ser
 
 import { ProfileService } from '../services/profile.service';
 import { Profile } from '../models/profile.model';
-import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 import { logoutUser } from "../helpers/auth.helpers";
-import { createProfileImage, revokeProfileImage } from '../helpers/profile.helpers';
+import { revokeProfileImage } from '../helpers/profile.helpers';
 import { applySavedTheme, toggleTheme, applySavedDensity, toggleDensity} from '../helpers/theme.helpers';
 import { isEmpty, validatePasswordMatch } from '../helpers/validation.helpers';
 
@@ -28,8 +27,7 @@ import { isEmpty, validatePasswordMatch } from '../helpers/validation.helpers';
     FormsModule,
     MatSidenavModule,
     MatListModule,
-    MatToolbarModule,
-    MainLayoutComponent
+    MatToolbarModule
   ],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
@@ -138,10 +136,10 @@ export class Settings implements OnInit {
   // ================= LOAD IMAGE =================
 loadProfileImage(): void {
   this.profileService.getProfileImage().subscribe({
-    next: (blob) => {
+    next: (imageUrl: string | null) => {
       revokeProfileImage(this.profileImageUrl);
 
-      this.profileImageUrl = createProfileImage(blob);
+      this.profileImageUrl = imageUrl;
       this.profileImage = this.profileImageUrl;
       this.cdr.detectChanges();
     },

@@ -1,10 +1,17 @@
-export interface Employee {
-  id: string;              // usually string if coming from Identity
+export interface EmployeeApi {
+  id: string;
   email: string;
   userName: string;
   emailConfirmed: boolean;
   roles: string[];
+  displayName?: string;
+}
 
-  // fallback fields (if needed for UI display)
-  [key: string]: string | boolean | string[];
+export interface Employee {
+  id: string;
+  name: string;
+  email: string;
+  role: 'Staff' | 'Admin';
+  originalRole?: 'Staff' | 'Admin';
+  originalName?: string;
 }

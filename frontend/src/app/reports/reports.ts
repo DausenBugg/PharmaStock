@@ -48,8 +48,7 @@ interface ReportSummary {
     MatToolbarModule,
     MatButtonModule,
     MatPaginatorModule,
-    MatDialogModule,
-    MainLayoutComponent
+    MatDialogModule
   ],
   templateUrl: './reports.html',
   styleUrl: './reports.css',
@@ -86,6 +85,8 @@ export class Reports implements OnInit, AfterViewInit {
   private allItems: Medication[] = [];
   loading = true;
   loadError = false;
+  totalItemCount = 0;
+
   summary: ReportSummary = {
     visible: 0,
     expired: 0,
@@ -109,35 +110,49 @@ export class Reports implements OnInit, AfterViewInit {
     if (filterParam === 'expiringSoon') this.filterExpiringSoon = true;
     if (filterParam === 'stockedOut') this.filterStockedOut = true;
     if (filterParam === 'lowInventory') this.filterLowInventory = true;
-
-    this.loadInventory();
+2
+    
+    
   }
 
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
+    this.loadInventory(1, 25); // Initial load with first page and default page size
+
+    if (this.paginator) {
+      this.paginator.page.subscribe(event => {
+        this.loadInventory(event.pageIndex + 1, event.pageSize);
+      });
+    }
   }
 
-  loadInventory(): void {
+  loadInventory(pageNumber = 1, pageSize = 25): void {
     this.loading = true;
     this.loadError = false;
 
-    this.inventoryService.getAllInventoryStocks().pipe(
+    this.inventoryService.getInventoryStocks({
+      pageNumber,
+      pageSize
+    }).pipe(
       finalize(() => {
         this.loading = false;
         this.cdr.detectChanges();
       })
     ).subscribe({
       next: (items) => {
-        this.allItems = items.map(mapInventoryApiToRow);
-        this.applyFilters();
+        this.allItems = items.items.map(mapInventoryApiToRow);
+        this.dataSource.data = this.allItems;
+
+        this.totalItemCount = items.totalItemCount;
+
+      
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Failed to load inventory:', err);
         this.loadError = true;
         this.allItems = [];
-        this.dataSource.data = [];
-        this.summary = this.createSummary([]);
+        this.applyFilters();
+        this.totalItemCount = 0;
         this.cdr.detectChanges();
       }
     });
@@ -198,13 +213,7 @@ export class Reports implements OnInit, AfterViewInit {
 
     this.dataSource.data = filtered;
     this.summary = this.createSummary(filtered);
-    this.dataSource.paginator = this.paginator;
-
-    // reattach paginator after data change
-    if (this.paginator) {
-      this.paginator.firstPage();
-      this.dataSource.paginator = this.paginator;
-    }
+  
   }
 
   clearFilters(): void {

@@ -42,3 +42,15 @@ export interface UpdateInventoryStockPatchRequest {
     packageNdc?: string | null;
     packageDescription?: string | null;
 }
+
+export interface CreateInventoryStockRequest {
+    medicationId: number;
+    quantityOnHand: number | null;
+    reorderLevel: number | null;
+    binLocation: string;
+    lotNumber: string;
+    expirationDate: string | null;
+    beyondUseDate: string | null;
+    packageNdc?: string | null;
+    packageDescription?: string | null;
+}

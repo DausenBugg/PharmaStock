@@ -1,4 +1,4 @@
-<app-main-layout>
+
 
   <!-- HEADER -->
   <mat-toolbar class="settings-header">
@@ -235,11 +235,11 @@
       <h2>Version</h2>
 
       <div class="role-display">
-        Release: <strong>{{ environment.releaseChannel }}</strong>
+        Release: <strong>{{ versionInfo.releaseChannel }}</strong>
       </div>
 
       <div class="role-display">
-        Version: <strong>v{{ environment.appVersion }}</strong>
+        Version: <strong>v{{ versionInfo.appVersion }}</strong>
       </div>
 
       <div class="role-display">
@@ -249,4 +249,3 @@
     
   </div>
 
-</app-main-layout>

@@ -32,8 +32,7 @@ import { getExpirationClass, getReorderClass} from '../helpers/inventory.helpers
     MatFormFieldModule,
     MatInputModule,
     MatButtonModule,
-    MatPaginatorModule,
-    MainLayoutComponent
+    MatPaginatorModule
   ],
   templateUrl: './orders.html',
   styleUrl: './orders.css',

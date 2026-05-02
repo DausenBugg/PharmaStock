@@ -9,15 +9,19 @@ import { MatListModule } from '@angular/material/list';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 
-import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 import { EmployeeService } from "../services/employee.service";
 import { logoutUser } from "../helpers/auth.helpers";
 import { mapRole } from '../helpers/role.helpers';
+import { NotificationService } from '../services/notification.service';
+
 
 export interface Employee {
+  id: string;
   name: string;
   email: string;
   role: 'Staff' | 'Admin';
+  originalRole: 'Staff' | 'Admin';
+  originalName: string;
 }
 
 @Component({
@@ -31,8 +35,7 @@ export interface Employee {
     MatSidenavModule,
     MatListModule,
     MatToolbarModule,
-    MatButtonModule,
-    MainLayoutComponent
+    MatButtonModule
   ],
   templateUrl: './administration.html',
   styleUrl: './administration.css'
@@ -40,7 +43,9 @@ export interface Employee {
 
 export class Administration implements OnInit{
 
-  constructor(private employeeService: EmployeeService){}
+  constructor(private employeeService: EmployeeService,
+              public notificationService: NotificationService
+  ){}
 
   displayedColumns: string[] = [
     'name',
@@ -52,16 +57,25 @@ export class Administration implements OnInit{
 
   dataSource = new MatTableDataSource<Employee>([]);
 
+  // Role options for dropdown
+  roleOptions: ['Staff', 'Admin'] = ['Staff', 'Admin'];
+
   newEmployee: Employee = {
+    
+    id: '',
     name: '',
     email: '',
-    role: 'Staff'
+    role: 'Staff',
+    originalRole: 'Staff',
+    originalName: ''
   };
 
   tempPassword = '';
 
   showConfirmModal = false;
   adminPasswordInput = '';
+
+
 
   pendingEmployeeUpdate: Employee | null = null;
   pendingEmployeeRemoval: Employee | null = null;
@@ -105,103 +119,191 @@ export class Administration implements OnInit{
   }
 
   finalizeAdminAction() {
-
     if (!this.adminPasswordInput) return;
 
-    // 🔧 UPDATE (role change)
+    // UPDATE employee name/role
     if (this.pendingEmployeeUpdate) {
+      const email = this.pendingEmployeeUpdate.email;
+      const newRole = this.pendingEmployeeUpdate.role;
+      const displayName = this.pendingEmployeeUpdate.name;
+      const id = this.pendingEmployeeUpdate.id;
+      const originalRole = this.pendingEmployeeUpdate.originalRole;
+      const originalName = this.pendingEmployeeUpdate.originalName;
 
-  const email = this.pendingEmployeeUpdate.email;
-  const newRole = this.pendingEmployeeUpdate.role;
+      this.employeeService.updateDisplayName(id, displayName).subscribe({
+        next: () => {
+          this.employeeService.getRoles(email).subscribe({
+            next: (roles: string[]) => {
+             
+              const isCurrentlyAdmin = roles.some(r => r.toLowerCase() === 'admin');
+              const isCurrentlyStaff = roles.some(r => r.toLowerCase() === 'staff');
 
-  this.employeeService.getRoles(email).subscribe({
-      next: (roles: string[]) => {
+              //get the current role to check against the new role to see if we need to change on save 
+              const currentRole: 'Staff' | 'Admin' = isCurrentlyAdmin ? 'Admin' : 'Staff';
 
-        const isCurrentlyAdmin = roles.some(r => r.toLowerCase() === 'Admin');
+              // The check to prevent unnecessary API calls if the role hasn't changed
+              if (currentRole === originalRole) {
+                this.notificationService.show('Employee name updated successfully.', 'success');
+                this.loadEmployees();
+                this.cancelAdminAction();
+                return;
+              }
+              // If the Name has changed but the role has not, we can skip role updates
+              if (displayName === originalName) {
+                this.notificationService.show('Employee role updated successfully.', 'success');
+                this.loadEmployees();
+                this.cancelAdminAction();
+                return;
+              }
 
-        console.log('ROLES:', roles);
-        console.log('newRole:', newRole);
-        console.log('isCurrentlyAdmin:', isCurrentlyAdmin);
+              if (newRole === 'Admin') {
+                this.employeeService.assignRole(email, 'Admin').subscribe({
+                  next: () => {
+                    if (isCurrentlyStaff) {
+                      this.employeeService.removeRole(email, 'Staff').subscribe({
+                        next: () => {
+                          this.notificationService.show('Employee updated to Admin.', 'success');
+                          this.loadEmployees();
+                          this.cancelAdminAction();
+                        },
+                        error: (err) => {
+                          console.error('Remove Staff role failed', err);
+                          this.notificationService.show('Role updated, but failed to remove Staff.', 'error');
+                        }
+                      });
+                    } else {
+                      this.notificationService.show('Employee updated to Admin.', 'success');
+                      this.loadEmployees();
+                      this.cancelAdminAction();
+                    }
+                  },
+                  error: (err) => {
+                    console.error('Assign Admin role failed', err);
+                    this.notificationService.show('Failed to update employee role.', 'error');
+                  }
+                });
+              }
 
-        
-        if ((newRole === 'Admin' && isCurrentlyAdmin) ||
-            (newRole === 'Staff' && !isCurrentlyAdmin)) {
-          this.loadEmployees();
-          return;
-        }
-
-        // 🔼 Promote
-        if (newRole === 'Admin') {
-          this.employeeService.assignRole(email, 'Admin').subscribe({
-            next: () => this.loadEmployees(),
-            error: (err) => console.error('Assign role failed', err)
+              if (newRole === 'Staff') {
+                this.employeeService.assignRole(email, 'Staff').subscribe({
+                  next: () => {
+                    if (isCurrentlyAdmin) {
+                      this.employeeService.removeRole(email, 'Admin').subscribe({
+                        next: () => {
+                          this.notificationService.show('Employee updated to Staff.', 'success');
+                          this.loadEmployees();
+                          this.cancelAdminAction();
+                        },
+                        error: (err) => {
+                          console.error('Remove Admin role failed', err);
+                          this.notificationService.show('Role updated, but failed to remove Admin.', 'error');
+                        }
+                      });
+                    } else {
+                      this.notificationService.show('Employee updated to Staff.', 'success');
+                      this.loadEmployees();
+                      this.cancelAdminAction();
+                    }
+                  },
+                  error: (err) => {
+                    console.error('Assign Staff role failed', err);
+                    this.notificationService.show('Failed to update employee role.', 'error');
+                  }
+                });
+              }
+            },
+            error: (err) => {
+              console.error('Failed to fetch roles', err);
+              this.notificationService.show('Failed to check current role.', 'error');
+            }
           });
+        },
+        error: (err) => {
+          console.error('Display name update failed', err);
+          this.notificationService.show('Failed to update employee name.', 'error');
         }
+      });
 
-        // 🔽 Demote
-        else {
-          this.employeeService.removeRole(email, 'Admin').subscribe({
-            next: () => this.loadEmployees(),
-            error: (err) => console.error('Remove role failed', err)
-          });
-        }
+      return;
+    }
 
-      },
-      error: (err) => {
-        console.error('Failed to fetch roles', err);
-      }
-    });
-  }
-
-    // 🗑 DELETE
+    // DELETE employee
     if (this.pendingEmployeeRemoval) {
       this.employeeService.deleteUser(this.pendingEmployeeRemoval.email)
         .subscribe({
-          next: () => this.loadEmployees(),
-          error: (err) => console.error('Delete failed', err)
+          next: () => {
+            this.notificationService.show('Employee removed successfully.', 'success');
+            this.loadEmployees();
+            this.cancelAdminAction();
+          },
+          error: (err) => {
+            console.error('Delete failed', err);
+            this.notificationService.show('Failed to remove employee.', 'error');
+          }
         });
+
+      return;
     }
 
-    // ADD (register + assign role)
+    // ADD employee
     if (this.pendingNewEmployee) {
-
       const payload = {
         email: this.newEmployee.email,
         password: this.tempPassword,
         confirmPassword: this.tempPassword
       };
 
+      const selectedRole = this.newEmployee.role;
+
       this.employeeService.register(payload).subscribe({
-        next: () => {
+        next: (createdUser: any) => {
+          const userId = createdUser.id;
 
-          
-          if (this.newEmployee.role === 'Admin') {
-            this.employeeService.assignRole(this.newEmployee.email, 'Admin')
-              .subscribe({
-                next: () => this.loadEmployees(),
-                error: (err) => console.error('Assign role failed', err)
-              });
-          } else {
-            this.loadEmployees();
-          }
+          this.employeeService.assignRole(this.newEmployee.email, selectedRole)
+            .subscribe({
+              next: () => {
+                this.employeeService.updateDisplayName(
+                  userId,
+                  this.newEmployee.name
+                ).subscribe({
+                  next: () => {
+                    this.notificationService.show('Employee added successfully.', 'success');
+                    this.loadEmployees();
+                    this.cancelAdminAction();
 
-          // Reset form
-          this.newEmployee = {
-            name: '',
-            email: '',
-            role: 'Staff'
-          };
+                    this.newEmployee = {
+                      id: '',
+                      name: '',
+                      email: '',
+                      role: 'Staff',
+                      originalRole: 'Staff',
+                      originalName: ''
+                    };
 
-          this.tempPassword = '';
+                    this.tempPassword = '';
+                  },
+                  error: (err) => {
+                    console.error('Display name update failed', err);
+                    this.notificationService.show('Employee created, but name update failed.', 'error');
+                    this.loadEmployees();
+                    this.cancelAdminAction();
+                  }
+                });
+              },
+              error: (err) => {
+                console.error('Assign role failed', err);
+                this.notificationService.show('Employee created, but role assignment failed.', 'error');
+              }
+            });
         },
         error: (err) => {
           console.error('Register failed', err);
+          this.notificationService.show('Failed to add employee.', 'error');
         }
       });
-    }
 
-    
-    this.cancelAdminAction();
+      return;
+    }
   }
 
   cancelAdminAction() {
@@ -225,9 +327,12 @@ export class Administration implements OnInit{
       next: (users: any[]) => {
 
         const mapped = users.map(u => ({
-          name: u.userName,
+          id: u.id,
+          name: u.displayName ?? u.userName,
           email: u.email,
-          role: mapRole(u.roles)
+          role: mapRole(u.roles),
+          originalRole: mapRole(u.roles),
+          originalName: u.displayName
         }));
 
         this.dataSource.data = mapped;

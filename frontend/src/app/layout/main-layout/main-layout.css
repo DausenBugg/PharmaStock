@@ -182,3 +182,29 @@ mat-sidenav-content {
   width: 100%;
   min-width: 1000px; /* adjust per table */
 }
+
+.notification-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  padding: 20px 30px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  text-align: center;
+  min-width: 250px;
+}
+
+.notification-message.success {
+  background: #e6f7ec;
+  color: #1f7a3f;
+  border: 2px solid #8fd19e;
+}
+
+.notification-message.error {
+  background: #fdecea;
+  color: #b42318;
+  border: 2px solid #f5a3a3;
+}

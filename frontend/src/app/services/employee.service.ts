@@ -42,4 +42,10 @@ export class EmployeeService {
     return this.http.get<string[]>(`http://localhost:5177/api/Auth/roles?email=${email}`);
   }
   
+  updateDisplayName(id: string, displayName: string): Observable<any> {
+    return this.http.patch<any>(
+      `${this.apiUrl}/${id}/display-name`,
+      { displayName }
+    )
+  }
 }
