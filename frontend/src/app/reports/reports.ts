@@ -124,11 +124,11 @@ export class Reports implements OnInit, AfterViewInit {
     this.inventoryService.getInventoryStocks({
       pageNumber,
       pageSize,
-      search: this.searchValue || undefined,
-      expired: this.filterExpired ? true : undefined,
-      expiringSoon: this.filterExpiringSoon ? true : undefined,
-      stockedOut: this.filterStockedOut ? true : undefined,
-      lowInventory: this.filterLowInventory ? true : undefined
+      search: this.searchValue || "",
+      expired: this.filterExpired === true,
+      expiringSoon: this.filterExpiringSoon === true,
+      stockedOut: this.filterStockedOut === true,
+      lowInventory: this.filterLowInventory  === true
     }).pipe(
       finalize(() => {
         this.loading = false;

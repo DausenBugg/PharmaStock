@@ -34,13 +34,21 @@ public class InventoryStockService : InventoryStockServiceInterface
     // --------------------------------------------------------------------------------------
     public async Task<PagedResponse<InventoryStockListItemResponse>> GetInStockListAsync(PaginationRequestDto request)
 {
+
+    Console.WriteLine($"Expired: {request.Expired}");
+    Console.WriteLine($"ExpiringSoon: {request.ExpiringSoon}");
+    Console.WriteLine($"StockedOut: {request.StockedOut}");
+    Console.WriteLine($"LowInventory: {request.LowInventory}");
+    Console.WriteLine($"Search: {request.Search}");
+
     var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
     var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
 
     var query = _context.InventoryStocks
+        .Include(s => s.Medication)
         .AsNoTracking();
 
-    // ✅ Declare ONCE and reuse everywhere
+    
     var now = DateTime.Now;
     var soon = now.AddDays(30);
 

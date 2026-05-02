@@ -15,14 +15,21 @@ import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
 
 
         getInventoryStocks(params: PaginationRequest): Observable<PagedResponse<InventoryApiItem>> {
-            return this.http.get<PagedResponse<InventoryApiItem>>
-                (`${this.baseUrl}/InventoryStocks/list`,
-                {
-                    params: {
-                        pageNumber: params.pageNumber,
-                        pageSize: params.pageSize
-                    }
-                }
+
+            let httpParams: any = {
+                pageNumber: params.pageNumber,
+                pageSize: params.pageSize
+            };
+
+            if (params.search) httpParams.search = params.search;
+            if (params.expired !== undefined) httpParams.expired = params.expired;
+            if (params.expiringSoon !== undefined) httpParams.expiringSoon = params.expiringSoon;
+            if (params.stockedOut !== undefined) httpParams.stockedOut = params.stockedOut;
+            if (params.lowInventory !== undefined) httpParams.lowInventory = params.lowInventory;
+
+            return this.http.get<PagedResponse<InventoryApiItem>>(
+                `${this.baseUrl}/InventoryStocks/list`,
+                { params: httpParams }
             );
         }
 
