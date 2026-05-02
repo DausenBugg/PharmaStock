@@ -3,8 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
 import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPatchRequest } from '../models/inventory-api.model';
 import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
-import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
-import { InventoryRow } from '../inventory/inventory.model';
 
 
 @Injectable({
@@ -17,36 +15,39 @@ import { InventoryRow } from '../inventory/inventory.model';
 
 
         getInventoryStocks(params: PaginationRequest): Observable<PagedResponse<InventoryApiItem>> {
-
-            let httpParams: any = {
-                pageNumber: params.pageNumber,
-                pageSize: params.pageSize
-            };
-
-            if (params.search) httpParams.search = params.search;
-            if (params.expired) httpParams.expired = params.expired;
-            if (params.expiringSoon) httpParams.expiringSoon = params.expiringSoon;
-            if (params.stockedOut) httpParams.stockedOut = params.stockedOut;
-            if (params.lowInventory) httpParams.lowInventory = params.lowInventory;
-
-            return this.http.get<PagedResponse<InventoryApiItem>>(
-                `${this.baseUrl}/InventoryStocks/list`,
-                { params: httpParams }
+            return this.http.get<PagedResponse<InventoryApiItem>>
+                (`${this.baseUrl}/InventoryStocks/list`,
+                {
+                    params: {
+                        pageNumber: params.pageNumber,
+                        pageSize: params.pageSize
+                    }
+                }
             );
         }
 
         getAllInventoryStocks(pageSize = 250): Observable<InventoryApiItem[]> {
+
             return this.getInventoryStocks({ pageNumber: 1, pageSize }).pipe(
-                expand((response) =>
-                    response.pageNumber < response.totalPages
-                        ? this.getInventoryStocks({ pageNumber: response.pageNumber + 1, pageSize })
-                        : EMPTY
-                ),
-                map((response) => response.items ?? []),
-                reduce((allItems, items) => [...allItems, ...items], [] as InventoryApiItem[])
+                expand((response, index) => {
+
+                const nextPage = index + 2; // 👈 THIS is the key
+
+                console.log('FETCHING PAGE:', nextPage, 'OF', response.totalPages);
+
+                if (nextPage > response.totalPages) {
+                    return EMPTY;
+                }
+
+                return this.getInventoryStocks({
+                    pageNumber: nextPage,
+                    pageSize
+                });
+                }),
+                map(res => res.items ?? []),
+                reduce((all, items) => all.concat(items), [] as InventoryApiItem[])
             );
         }
-
 
         adjustQuantity(inventoryStockId: number, adjustment: number): Observable<InventoryApiItem> {
             return this.http.patch<InventoryApiItem>(
@@ -142,5 +143,13 @@ import { InventoryRow } from '../inventory/inventory.model';
             );
         }
 
-        
+        getInventorySummary(): Observable<{
+            totalItems: number;
+            expired: number;
+            expiringSoon: number;
+            stockedOut: number;
+            lowInventory: number;
+        }> {
+            return this.http.get<any>(`${this.baseUrl}/InventoryStocks/summary`);
+        }
 }

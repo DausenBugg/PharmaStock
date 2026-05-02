@@ -112,27 +112,34 @@ export class InventoryComponent implements AfterViewInit {
   ) {}
 
   ngAfterViewInit(): void {
-    this.loadInventory();
+    // initial load
+    this.loadInventory(1, 25);
+    
+    this.paginator.page.subscribe(() => {
+      this.loadInventory(
+        this.paginator.pageIndex + 1,
+        this.paginator.pageSize
+      );
+    });
 
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
   }
 
   // -----------------------------
   // LOAD INVENTORY
   // -----------------------------
   
-  loadInventory(): void {
+  loadInventory(pageNumber: number = 1, pageSize: number = 25): void {
 
-    this.inventoryService.getInventoryStocks({ pageNumber: 1, pageSize: 100 }).subscribe({
+    this.inventoryService.getInventoryStocks({
+      pageNumber,
+      pageSize
+    }).subscribe({
       next: (response) => {
-        this.allItems = response.items.map(mapInventoryApiToRow);
-        this.dataSource.data = this.allItems;
 
-        if (this.paginator) {
-          this.dataSource.paginator = this.paginator;
-        }
+        this.dataSource.data = response.items.map(mapInventoryApiToRow);
+
+        
+        this.paginator.length = response.totalItemCount;
 
         this.loadRiskScores();
         this.cdr.detectChanges();

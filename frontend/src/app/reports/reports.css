@@ -28,7 +28,7 @@
   padding: 32px;
   display: flex;
   flex-direction: column;
-  align-items: strecth;
+  align-items: stretch;
   width: 100%;
   box-sizing: border-box;
 }
@@ -161,7 +161,7 @@ td {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 16px;
-  margin-bottom: 20px;
+  margin: 0 auto 20px auto;
 }
 
 .summary-card {

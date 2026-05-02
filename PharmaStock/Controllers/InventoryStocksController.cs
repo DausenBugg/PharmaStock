@@ -343,5 +343,33 @@ namespace PharmaStock.Controllers
 
         }
 
+        [HttpGet("summary")]
+        public async Task<ActionResult<InventorySummaryDto>> GetSummary()
+        {
+            var now = DateTime.Now;
+            var soon = now.AddDays(30);
+
+            var query = _context.InventoryStocks
+                .AsNoTracking();
+
+            var summary = new InventorySummaryDto
+            {
+                TotalItems = await query.CountAsync(),
+                
+                Expired = await query.CountAsync(s => s.ExpirationDate < now),
+
+                ExpiringSoon = await query.CountAsync(s =>
+                    s.ExpirationDate >= now &&
+                    s.ExpirationDate <= soon),
+
+                StockedOut = await query.CountAsync(s => s.QuantityOnHand == 0),
+
+                LowInventory = await query.CountAsync(s =>
+                    s.QuantityOnHand < s.ReorderLevel)
+            };
+
+            return Ok(summary);
+        }
+
     }
 }

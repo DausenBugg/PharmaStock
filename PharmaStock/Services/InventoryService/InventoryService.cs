@@ -40,34 +40,34 @@ public class InventoryStockService : InventoryStockServiceInterface
     var query = _context.InventoryStocks
         .AsNoTracking();
 
+    // ✅ Declare ONCE and reuse everywhere
+    var now = DateTime.Now;
+    var soon = now.AddDays(30);
+
     // SEARCH
     if (!string.IsNullOrWhiteSpace(request.Search))
-    {
-        var search = request.Search.ToLower();
+    {        
+        var searchLower = request.Search.ToLower();
 
         query = query.Where(s =>
-            s.Medication.Name.ToLower().Contains(search) ||
-            s.Medication.GenericName.ToLower().Contains(search) ||
-            s.Medication.NationalDrugCode.ToLower().Contains(search) ||
-            s.LotNumber.ToLower().Contains(search) ||
-            s.PackageNdc.ToLower().Contains(search) ||
-            s.BinLocation.ToLower().Contains(search)
+            (s.Medication.Name != null && s.Medication.Name.ToLower().Contains(searchLower)) ||
+            (s.Medication.GenericName != null && s.Medication.GenericName.ToLower().Contains(searchLower)) ||
+            (s.Medication.NationalDrugCode != null && s.Medication.NationalDrugCode.ToLower().Contains(searchLower)) ||
+            (s.LotNumber != null && s.LotNumber.ToLower().Contains(searchLower)) ||
+            (s.PackageNdc != null && s.PackageNdc.ToLower().Contains(searchLower)) ||
+            (s.BinLocation != null && s.BinLocation.ToLower().Contains(searchLower))
         );
     }
 
     // EXPIRED
     if (request.Expired == true)
     {
-        var now = DateTime.Now;
         query = query.Where(s => s.ExpirationDate < now);
     }
 
     // EXPIRING SOON
     if (request.ExpiringSoon == true)
     {
-        var now = DateTime.Now;
-        var soon = now.AddDays(30);
-
         query = query.Where(s =>
             s.ExpirationDate >= now &&
             s.ExpirationDate <= soon
@@ -85,6 +85,22 @@ public class InventoryStockService : InventoryStockServiceInterface
     {
         query = query.Where(s => s.QuantityOnHand < s.ReorderLevel);
     }
+
+    // SUMMARY (based on filtered query — same behavior as your original)
+    var summary = new InventorySummaryDto
+    {
+        Expired = await query.CountAsync(s => s.ExpirationDate < now),
+
+        ExpiringSoon = await query.CountAsync(s =>
+            s.ExpirationDate >= now &&
+            s.ExpirationDate <= soon),
+
+        StockedOut = await query.CountAsync(s => s.QuantityOnHand == 0),
+
+        LowInventory = await query.CountAsync(s =>
+            s.QuantityOnHand < s.ReorderLevel)
+    };
+
     var totalItemCount = await query.CountAsync();
 
     var items = await query
@@ -112,7 +128,8 @@ public class InventoryStockService : InventoryStockServiceInterface
         PageNumber = pageNumber,
         PageSize = pageSize,
         TotalItemCount = totalItemCount,
-        TotalPages = (int)Math.Ceiling(totalItemCount / (double)pageSize)
+        TotalPages = (int)Math.Ceiling(totalItemCount / (double)pageSize),
+        Summary = summary
     };
 }
 

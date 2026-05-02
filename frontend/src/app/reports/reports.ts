@@ -81,6 +81,13 @@ export class Reports implements OnInit, AfterViewInit {
   filterStockedOut = false;
   filterLowInventory = false;
 
+  summary = {
+    expired: 0,
+    expiringSoon: 0,
+    stockedOut: 0,
+    lowInventory: 0
+  }
+
   // -----------------------------
   // INIT
   // -----------------------------
@@ -99,8 +106,11 @@ export class Reports implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.loadInventory(1, 25);
 
-    this.paginator.page.subscribe(event => {
-      this.loadInventory(event.pageIndex + 1, event.pageSize);
+    this.paginator.page.subscribe(() => {
+      this.loadInventory(
+        this.paginator.pageIndex + 1,
+        this.paginator.pageSize
+      );
     });
   }
 
@@ -128,6 +138,8 @@ export class Reports implements OnInit, AfterViewInit {
       next: (res) => {
         this.dataSource.data = res.items.map(mapInventoryApiToRow);
         this.totalItemCount = res.totalItemCount;
+        this.summary = res.summary;
+        this.paginator.length = res.totalItemCount;
       },
       error: (err) => {
         console.error('Failed to load inventory:', err);
@@ -180,11 +192,26 @@ export class Reports implements OnInit, AfterViewInit {
   }
 
   openExportDialog(): void {
-    this.dialog.open(ReportExportDialogComponent, {
+    const dialogRef = this.dialog.open(ReportExportDialogComponent, {
       width: '500px',
       data: {
-        rows: this.dataSource.data
+        search: this.searchValue || undefined,
+        expired: this.filterExpired ? true : undefined,
+        expiringSoon: this.filterExpiringSoon ? true : undefined,
+        stockedOut: this.filterStockedOut ? true : undefined,
+        lowInventory: this.filterLowInventory ? true : undefined
       }
     });
+  }
+
+  get activeFilterLabels(): string[] {
+    const labels: string[] = [];
+
+    if (this.filterExpired) labels.push('Expired');
+    if (this.filterExpiringSoon) labels.push('Expiring Soon');
+    if (this.filterStockedOut) labels.push('Stocked Out');
+    if (this.filterLowInventory) labels.push('Low Inventory');
+
+    return labels;
   }
 }

@@ -16,4 +16,14 @@ export interface PagedResponse<T> {
     pageSize: number;
     totalItemCount: number;
     totalPages: number;
+
+    summary: InventorySummary;
+}
+
+export interface InventorySummary {
+    expired: number;
+    expiringSoon: number;
+    stockedOut: number;
+    lowInventory: number;
+
 }

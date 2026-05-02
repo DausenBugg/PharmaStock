@@ -70,22 +70,44 @@
     </div>
 
     <div class="report-status report-status-error" *ngIf="!loading && loadError">
-      Failed to load inventory. Please try again.
+      Report data could not be loaded. Try again in a moment.
     </div>
 
-    <!-- ACTIVE FILTERS -->
-    <div class="active-filters" *ngIf="!loading && !loadError && (searchValue.trim() || filterExpired || filterExpiringSoon || filterStockedOut || filterLowInventory)">
-      
+    <div class="report-summary" *ngIf="!loading && !loadError">
+      <div class="summary-card">
+        <span class="summary-label">Visible Records</span>
+        <strong>{{ dataSource.data.length }}</strong>
+        <small>of {{ totalItemCount }}</small>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-label">Expired</span>
+        <strong>{{ summary.expired }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-label">Expiring Soon</span>
+        <strong>{{ summary.expiringSoon }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-label">Stocked Out</span>
+        <strong>{{ summary.stockedOut }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span class="summary-label">Low Inventory</span>
+        <strong>{{ summary.lowInventory }}</strong>
+      </div>
+    </div>
+
+    <div class="active-filters" *ngIf="!loading && !loadError && (activeFilterLabels.length || searchValue.trim())">
       <span class="active-filter-pill" *ngIf="searchValue.trim()">
         Search: {{ searchValue.trim() }}
       </span>
 
-      <span class="active-filter-pill" *ngIf="filterExpired">Expired</span>
-      <span class="active-filter-pill" *ngIf="filterExpiringSoon">Expiring Soon</span>
-      <span class="active-filter-pill" *ngIf="filterStockedOut">Stocked Out</span>
-      <span class="active-filter-pill" *ngIf="filterLowInventory">Low Inventory</span>
-
     </div>
+
 
     <!-- TABLE -->
     <div class="table-wrapper" *ngIf="!loading && !loadError && dataSource.data.length > 0">
@@ -175,7 +197,8 @@
     <mat-paginator
       [length]="totalItemCount"
       [pageSize]="25"
-      [pageSizeOptions]="[5, 10, 25, 50, 100]">
+      [pageSizeOptions]="[25, 50, 100, 150]"
+      showFirstLastButtons>
     </mat-paginator>
 
   </div>

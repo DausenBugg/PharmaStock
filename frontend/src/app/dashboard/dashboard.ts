@@ -202,16 +202,28 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     console.log('Refreshing dashboard data at:', new Date().toLocaleTimeString());
 
-    this.inventoryService.getInventoryStocks({ pageNumber: 1, pageSize: 100 }).subscribe({
-      next: (response) => {
-        this.inventoryItems = response.items.map(mapInventoryApiToRow);
-        this.calculateInventoryStats();
+    this.inventoryService.getInventorySummary().subscribe({
+      next: (summary) => {
+
+        this.expired = summary.expired;
+        this.expiringSoon = summary.expiringSoon;
+        this.stockedOut = summary.stockedOut;
+        this.lowInventory = summary.lowInventory;
+
+        
+        this.totalMeds =
+          this.expired +
+          this.expiringSoon +
+          this.stockedOut +
+          this.lowInventory; 
+
         this.loadAIPredictions();
         this.loadRecentAdjustments();
+
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Dashboard inventory load failed:', err);
+        console.error('Dashboard summary load failed:', err);
       }
     });
   }
