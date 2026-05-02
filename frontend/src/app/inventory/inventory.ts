@@ -542,8 +542,4 @@ export class InventoryComponent implements AfterViewInit {
     return getReorderClass(item.quantity, item.reorderPoint);
   }
 
-  logout() {
-    logoutUser();
-  }
-
 }

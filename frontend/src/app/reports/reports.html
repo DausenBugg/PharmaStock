@@ -43,170 +43,121 @@
     <div class="report-filters">
 
       <label class="filter-option">
-        <input type="checkbox" [(ngModel)]="filterExpired" (change)="applyFilters()">
+        <input type="checkbox" [(ngModel)]="filterExpired" (change)="onFilterChange()">
         Expired
       </label>
 
       <label class="filter-option">
-        <input type="checkbox" [(ngModel)]="filterExpiringSoon" (change)="applyFilters()">
+        <input type="checkbox" [(ngModel)]="filterExpiringSoon" (change)="onFilterChange()">
         About to Expire
       </label>
 
       <label class="filter-option">
-        <input type="checkbox" [(ngModel)]="filterStockedOut" (change)="applyFilters()">
+        <input type="checkbox" [(ngModel)]="filterStockedOut" (change)="onFilterChange()">
         Stocked Out
       </label>
 
       <label class="filter-option">
-        <input type="checkbox" [(ngModel)]="filterLowInventory" (change)="applyFilters()">
+        <input type="checkbox" [(ngModel)]="filterLowInventory" (change)="onFilterChange()">
         Low Inventory
       </label>
 
     </div>
 
+    <!-- STATUS -->
     <div class="report-status" *ngIf="loading">
-      Loading the full inventory report...
+      Loading inventory...
     </div>
 
     <div class="report-status report-status-error" *ngIf="!loading && loadError">
-      Report data could not be loaded. Try again in a moment.
+      Failed to load inventory. Please try again.
     </div>
 
-    <div class="report-summary" *ngIf="!loading && !loadError">
-      <div class="summary-card">
-        <span class="summary-label">Visible Records</span>
-        <strong>{{ summary.visible }}</strong>
-        <small>of {{ totalInventoryCount }}</small>
-      </div>
-
-      <div class="summary-card">
-        <span class="summary-label">Expired</span>
-        <strong>{{ summary.expired }}</strong>
-      </div>
-
-      <div class="summary-card">
-        <span class="summary-label">Expiring Soon</span>
-        <strong>{{ summary.expiringSoon }}</strong>
-      </div>
-
-      <div class="summary-card">
-        <span class="summary-label">Stocked Out</span>
-        <strong>{{ summary.stockedOut }}</strong>
-      </div>
-
-      <div class="summary-card">
-        <span class="summary-label">Low Inventory</span>
-        <strong>{{ summary.lowInventory }}</strong>
-      </div>
-    </div>
-
-    <div class="active-filters" *ngIf="!loading && !loadError && (activeFilterLabels.length || searchValue.trim())">
+    <!-- ACTIVE FILTERS -->
+    <div class="active-filters" *ngIf="!loading && !loadError && (searchValue.trim() || filterExpired || filterExpiringSoon || filterStockedOut || filterLowInventory)">
+      
       <span class="active-filter-pill" *ngIf="searchValue.trim()">
         Search: {{ searchValue.trim() }}
       </span>
 
-      <span class="active-filter-pill" *ngFor="let label of activeFilterLabels">
-        {{ label }}
-      </span>
+      <span class="active-filter-pill" *ngIf="filterExpired">Expired</span>
+      <span class="active-filter-pill" *ngIf="filterExpiringSoon">Expiring Soon</span>
+      <span class="active-filter-pill" *ngIf="filterStockedOut">Stocked Out</span>
+      <span class="active-filter-pill" *ngIf="filterLowInventory">Low Inventory</span>
+
     </div>
 
     <!-- TABLE -->
     <div class="table-wrapper" *ngIf="!loading && !loadError && dataSource.data.length > 0">
-      <table mat-table
-             [dataSource]="dataSource"
-             class="reports-table mat-elevation-z2">
+      <table mat-table [dataSource]="dataSource" class="reports-table mat-elevation-z2">
 
         <ng-container matColumnDef="medicationName">
           <th mat-header-cell *matHeaderCellDef>Medication</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.medicationName }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.medicationName }}</td>
         </ng-container>
 
         <ng-container matColumnDef="genericName">
           <th mat-header-cell *matHeaderCellDef>Generic</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.genericName }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.genericName }}</td>
         </ng-container>
 
         <ng-container matColumnDef="nationalDrugCode">
           <th mat-header-cell *matHeaderCellDef>NDC</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.nationalDrugCode }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.nationalDrugCode }}</td>
         </ng-container>
 
         <ng-container matColumnDef="form">
-          <th mat-header-cell *matHeaderCellDef>Dosage Form</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.form }}
-          </td>
+          <th mat-header-cell *matHeaderCellDef>Form</th>
+          <td mat-cell *matCellDef="let element">{{ element.form }}</td>
         </ng-container>
 
         <ng-container matColumnDef="strength">
           <th mat-header-cell *matHeaderCellDef>Strength</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.strength }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.strength }}</td>
         </ng-container>
 
         <ng-container matColumnDef="packageNdc">
           <th mat-header-cell *matHeaderCellDef>Package NDC</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.packageNdc }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.packageNdc }}</td>
         </ng-container>
 
         <ng-container matColumnDef="packageDescription">
           <th mat-header-cell *matHeaderCellDef>Package</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.packageDescription }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.packageDescription }}</td>
         </ng-container>
 
         <ng-container matColumnDef="quantity">
           <th mat-header-cell *matHeaderCellDef>Quantity</th>
-          <td mat-cell *matCellDef="let element"
-              [ngClass]="getReorderClass(element)">
+          <td mat-cell *matCellDef="let element" [ngClass]="getReorderClass(element)">
             {{ element.quantity }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="reorderPoint">
           <th mat-header-cell *matHeaderCellDef>Reorder</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.reorderPoint }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.reorderPoint }}</td>
         </ng-container>
 
         <ng-container matColumnDef="binLocation">
           <th mat-header-cell *matHeaderCellDef>Bin</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.binLocation }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.binLocation }}</td>
         </ng-container>
 
         <ng-container matColumnDef="lot">
           <th mat-header-cell *matHeaderCellDef>Lot</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.lot }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.lot }}</td>
         </ng-container>
 
         <ng-container matColumnDef="expiration">
           <th mat-header-cell *matHeaderCellDef>Expiration</th>
-          <td mat-cell *matCellDef="let element"
-              [ngClass]="getExpirationClass(element)">
+          <td mat-cell *matCellDef="let element" [ngClass]="getExpirationClass(element)">
             {{ element.expiration }}
           </td>
         </ng-container>
 
         <ng-container matColumnDef="beyondUseDate">
           <th mat-header-cell *matHeaderCellDef>BUD</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.beyondUseDate }}
-          </td>
+          <td mat-cell *matCellDef="let element">{{ element.beyondUseDate }}</td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -215,15 +166,16 @@
       </table>
     </div>
 
+    <!-- EMPTY -->
     <div class="report-status report-status-empty" *ngIf="!loading && !loadError && dataSource.data.length === 0">
-      No medications matched the current search and filter combination.
+      No results found.
     </div>
 
+    <!-- PAGINATOR -->
     <mat-paginator
-      *ngIf="!loading && !loadError && dataSource.data.length > 0"
+      [length]="totalItemCount"
       [pageSize]="25"
-      [pageSizeOptions]="[25, 50, 100, 150]"
-      showFirstLastButtons>
+      [pageSizeOptions]="[5, 10, 25, 50, 100]">
     </mat-paginator>
 
   </div>

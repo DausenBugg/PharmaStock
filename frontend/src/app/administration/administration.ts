@@ -215,11 +215,6 @@ export class Administration implements OnInit{
 
   }
 
-  logout() {
-    logoutUser();
-  }
-
-
   loadEmployees() {
     this.employeeService.getAll().subscribe({
       next: (users: any[]) => {

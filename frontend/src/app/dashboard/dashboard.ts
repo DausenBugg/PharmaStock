@@ -302,10 +302,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.router.navigate(['administration']);
   }
 
-  logout() {
-    logoutUser();
-  }
-
   loadUserProfile(): void {
     this.profileService.getProfile().subscribe({
       next: (data) => {

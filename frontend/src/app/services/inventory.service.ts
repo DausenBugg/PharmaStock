@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
 import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPatchRequest } from '../models/inventory-api.model';
 import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
+import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
+import { InventoryRow } from '../inventory/inventory.model';
 
 
 @Injectable({
@@ -15,14 +17,21 @@ import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
 
 
         getInventoryStocks(params: PaginationRequest): Observable<PagedResponse<InventoryApiItem>> {
-            return this.http.get<PagedResponse<InventoryApiItem>>
-                (`${this.baseUrl}/InventoryStocks/list`,
-                {
-                    params: {
-                        pageNumber: params.pageNumber,
-                        pageSize: params.pageSize
-                    }
-                }
+
+            let httpParams: any = {
+                pageNumber: params.pageNumber,
+                pageSize: params.pageSize
+            };
+
+            if (params.search) httpParams.search = params.search;
+            if (params.expired) httpParams.expired = params.expired;
+            if (params.expiringSoon) httpParams.expiringSoon = params.expiringSoon;
+            if (params.stockedOut) httpParams.stockedOut = params.stockedOut;
+            if (params.lowInventory) httpParams.lowInventory = params.lowInventory;
+
+            return this.http.get<PagedResponse<InventoryApiItem>>(
+                `${this.baseUrl}/InventoryStocks/list`,
+                { params: httpParams }
             );
         }
 
@@ -37,6 +46,7 @@ import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
                 reduce((allItems, items) => [...allItems, ...items], [] as InventoryApiItem[])
             );
         }
+
 
         adjustQuantity(inventoryStockId: number, adjustment: number): Observable<InventoryApiItem> {
             return this.http.patch<InventoryApiItem>(

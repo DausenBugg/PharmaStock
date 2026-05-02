@@ -196,7 +196,4 @@ export class Orders implements AfterViewInit {
     this.showConfirmModal = false;
   }
 
-  logout() {
-    logoutUser();
-  }
 }

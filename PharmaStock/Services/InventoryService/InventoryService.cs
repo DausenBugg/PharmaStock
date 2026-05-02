@@ -33,36 +33,88 @@ public class InventoryStockService : InventoryStockServiceInterface
     // Uses the InventoryStockMapping to convert stock entities to response DTOs    
     // --------------------------------------------------------------------------------------
     public async Task<PagedResponse<InventoryStockListItemResponse>> GetInStockListAsync(PaginationRequestDto request)
+{
+    var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+    var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
+
+    var query = _context.InventoryStocks
+        .AsNoTracking();
+
+    // SEARCH
+    if (!string.IsNullOrWhiteSpace(request.Search))
     {
-        // pagination vars
-        var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
-        var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
+        var search = request.Search.ToLower();
 
-        var query = _context.InventoryStocks
-            .Include(s => s.Medication) // Include related medication data for mapping to response DTO
-            .AsNoTracking()
-            .OrderBy(s => s.InventoryStockId);
-
-        var totalItemCount = await query.CountAsync();
-
-        var stocks = await query
-            .Skip ((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-        
-        var items = stocks
-            .Select(s => s.ToInventoryStockListItemResponse())
-            .ToList();
-
-        return new PagedResponse<InventoryStockListItemResponse>
-        {
-            Items = items, 
-            PageNumber = pageNumber,
-            PageSize = pageSize,
-            TotalItemCount = totalItemCount,
-            TotalPages = (int)Math.Ceiling(totalItemCount / (double)pageSize)
-        };
+        query = query.Where(s =>
+            s.Medication.Name.ToLower().Contains(search) ||
+            s.Medication.GenericName.ToLower().Contains(search) ||
+            s.Medication.NationalDrugCode.ToLower().Contains(search) ||
+            s.LotNumber.ToLower().Contains(search) ||
+            s.PackageNdc.ToLower().Contains(search) ||
+            s.BinLocation.ToLower().Contains(search)
+        );
     }
+
+    // EXPIRED
+    if (request.Expired == true)
+    {
+        var now = DateTime.Now;
+        query = query.Where(s => s.ExpirationDate < now);
+    }
+
+    // EXPIRING SOON
+    if (request.ExpiringSoon == true)
+    {
+        var now = DateTime.Now;
+        var soon = now.AddDays(30);
+
+        query = query.Where(s =>
+            s.ExpirationDate >= now &&
+            s.ExpirationDate <= soon
+        );
+    }
+
+    // STOCKED OUT
+    if (request.StockedOut == true)
+    {
+        query = query.Where(s => s.QuantityOnHand == 0);
+    }
+
+    // LOW INVENTORY
+    if (request.LowInventory == true)
+    {
+        query = query.Where(s => s.QuantityOnHand < s.ReorderLevel);
+    }
+    var totalItemCount = await query.CountAsync();
+
+    var items = await query
+        .OrderBy(s => s.InventoryStockId)
+        .Skip((pageNumber - 1) * pageSize)
+        .Take(pageSize)
+        .Select(s => new InventoryStockListItemResponse
+        {
+            InventoryStockId = s.InventoryStockId,
+            MedicationName = s.Medication.Name,
+            GenericName = s.Medication.GenericName,
+            NationalDrugCode = s.Medication.NationalDrugCode,
+            QuantityOnHand = s.QuantityOnHand,
+            ReorderLevel = s.ReorderLevel,
+            BinLocation = s.BinLocation,
+            LotNumber = s.LotNumber,
+            ExpirationDate = s.ExpirationDate,
+            BeyondUseDate = s.BeyondUseDate
+        })
+        .ToListAsync();
+
+    return new PagedResponse<InventoryStockListItemResponse>
+    {
+        Items = items,
+        PageNumber = pageNumber,
+        PageSize = pageSize,
+        TotalItemCount = totalItemCount,
+        TotalPages = (int)Math.Ceiling(totalItemCount / (double)pageSize)
+    };
+}
 
     // --------------------------------------------------------------------------------------
     // Adjust inventory stock quantity by a specified amount (positive or negative)
