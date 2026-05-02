@@ -21,6 +21,9 @@ import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
                 pageSize: params.pageSize
             };
 
+            if (params.name) httpParams.name = params.name;
+            if (params.lot) httpParams.lot = params.lot;
+
             if (params.search) httpParams.search = params.search;
             if (params.expired !== undefined) httpParams.expired = params.expired;
             if (params.expiringSoon !== undefined) httpParams.expiringSoon = params.expiringSoon;

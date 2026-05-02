@@ -211,11 +211,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.lowInventory = summary.lowInventory;
 
         
-        this.totalMeds =
-          this.expired +
-          this.expiringSoon +
-          this.stockedOut +
-          this.lowInventory; 
+        this.totalMeds = summary.totalItems;
 
         this.loadAIPredictions();
         this.loadRecentAdjustments();

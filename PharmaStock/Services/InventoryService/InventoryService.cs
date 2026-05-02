@@ -35,12 +35,6 @@ public class InventoryStockService : InventoryStockServiceInterface
     public async Task<PagedResponse<InventoryStockListItemResponse>> GetInStockListAsync(PaginationRequestDto request)
 {
 
-    Console.WriteLine($"Expired: {request.Expired}");
-    Console.WriteLine($"ExpiringSoon: {request.ExpiringSoon}");
-    Console.WriteLine($"StockedOut: {request.StockedOut}");
-    Console.WriteLine($"LowInventory: {request.LowInventory}");
-    Console.WriteLine($"Search: {request.Search}");
-
     var pageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
     var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
 
@@ -53,7 +47,28 @@ public class InventoryStockService : InventoryStockServiceInterface
     var soon = now.AddDays(30);
 
     // SEARCH
-    if (!string.IsNullOrWhiteSpace(request.Search))
+    if (!string.IsNullOrWhiteSpace(request.Name))
+    {
+        var name = request.Name.ToLower();
+
+        query = query.Where(s =>
+            (s.Medication.Name != null && s.Medication.Name.ToLower().Contains(name)) ||
+            (s.Medication.GenericName != null && s.Medication.GenericName.ToLower().Contains(name))
+        );
+    }
+
+    if (!string.IsNullOrWhiteSpace(request.Lot))
+    {
+        var lot = request.Lot.ToLower();
+
+        query = query.Where(s =>
+            s.LotNumber != null && s.LotNumber.ToLower().Contains(lot)
+        );
+    }
+
+    if (string.IsNullOrWhiteSpace(request.Name) &&
+        string.IsNullOrWhiteSpace(request.Lot) &&
+        !string.IsNullOrWhiteSpace(request.Search))
     {        
         var searchLower = request.Search.ToLower();
 

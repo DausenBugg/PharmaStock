@@ -42,25 +42,8 @@ namespace PharmaStock.Controllers
         // --------------------------------------------------------------------------------------
         [HttpGet("list")]
         public async Task<ActionResult<PagedResponse<InventoryStockListItemResponse>>> GetInStockList(
-            [FromQuery] int pageNumber,
-            [FromQuery] int pageSize,
-            [FromQuery] string? search,
-            [FromQuery] bool? expired,
-            [FromQuery] bool? expiringSoon,
-            [FromQuery] bool? stockedOut,
-            [FromQuery] bool? lowInventory)
+            [FromQuery] PaginationRequestDto request)
         {
-            var request = new PaginationRequestDto
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                Search = search,
-                Expired = expired,
-                ExpiringSoon = expiringSoon,
-                StockedOut = stockedOut,
-                LowInventory = lowInventory
-            };
-
             var result = await _inventoryStockService.GetInStockListAsync(request);
             return Ok(result);
         }

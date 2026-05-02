@@ -42,10 +42,7 @@ export class MainLayoutComponent implements OnInit, AfterViewInit {
     this.loadUserImage();
   }
 
-  ngAfterViewInit(): void {
-    this.loadUserProfile();
-    this.loadUserImage();
-  }
+  ngAfterViewInit(): void {}
   // =========================
   // PROFILE DATA
   // =========================

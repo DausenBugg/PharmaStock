@@ -76,7 +76,7 @@ export class InventoryComponent implements AfterViewInit {
   ];
 
   // DATA
-  private allItems: InventoryRow[] = [];
+  //private allItems: InventoryRow[] = [];
   dataSource = new MatTableDataSource<InventoryRow>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -132,13 +132,13 @@ export class InventoryComponent implements AfterViewInit {
 
     this.inventoryService.getInventoryStocks({
       pageNumber,
-      pageSize
+      pageSize, 
+      name: this.searchName || "",
+      lot: this.searchLot || ""
     }).subscribe({
       next: (response) => {
 
         this.dataSource.data = response.items.map(mapInventoryApiToRow);
-
-        
         this.paginator.length = response.totalItemCount;
 
         this.loadRiskScores();
@@ -190,7 +190,15 @@ export class InventoryComponent implements AfterViewInit {
   // -----------------------------
   // SEARCH
   // -----------------------------
-  onSearch(): void {
+
+  onSearch(): void{
+    this.paginator.pageIndex = 0;
+    this.loadInventory(1, this.paginator.pageSize);
+  }
+
+
+
+  /* onSearch(): void {
 
     const nameQuery = this.searchName.toLowerCase();
     const lotQuery = this.searchLot.toLowerCase();
@@ -201,14 +209,15 @@ export class InventoryComponent implements AfterViewInit {
       (!lotQuery || item.lot.toLowerCase().includes(lotQuery))
     );
 
-  }
+  } */
 
   clearFilters(): void {
 
     this.searchName = '';
     this.searchLot = '';
 
-    this.dataSource.data = [...this.allItems];
+    this.paginator.pageIndex = 0;
+    this.loadInventory(1, this.paginator.pageSize);
 
   }
 

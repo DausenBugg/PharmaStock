@@ -2,6 +2,9 @@ export interface PaginationRequest{
     pageNumber: number;
     pageSize: number;
 
+    name?: string;
+    lot?: string;
+
     //optional
     search?: string;
     expired?: boolean;
