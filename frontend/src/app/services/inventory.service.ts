@@ -16,26 +16,47 @@ import { CreateMedicationRequest, MedicationResponse } from '../models/medicatio
 
 
         getInventoryStocks(params: PaginationRequest): Observable<PagedResponse<InventoryApiItem>> {
-            return this.http.get<PagedResponse<InventoryApiItem>>
-                (`${this.baseUrl}/InventoryStocks/list`,
-                {
-                    params: {
-                        pageNumber: params.pageNumber,
-                        pageSize: params.pageSize
-                    }
-                }
+
+            let httpParams: any = {
+                pageNumber: params.pageNumber,
+                pageSize: params.pageSize
+            };
+
+            if (params.name) httpParams.name = params.name;
+            if (params.lot) httpParams.lot = params.lot;
+
+            if (params.search) httpParams.search = params.search;
+            if (params.expired !== undefined) httpParams.expired = params.expired;
+            if (params.expiringSoon !== undefined) httpParams.expiringSoon = params.expiringSoon;
+            if (params.stockedOut !== undefined) httpParams.stockedOut = params.stockedOut;
+            if (params.lowInventory !== undefined) httpParams.lowInventory = params.lowInventory;
+
+            return this.http.get<PagedResponse<InventoryApiItem>>(
+                `${this.baseUrl}/InventoryStocks/list`,
+                { params: httpParams }
             );
         }
 
         getAllInventoryStocks(pageSize = 250): Observable<InventoryApiItem[]> {
+
             return this.getInventoryStocks({ pageNumber: 1, pageSize }).pipe(
-                expand((response) =>
-                    response.pageNumber < response.totalPages
-                        ? this.getInventoryStocks({ pageNumber: response.pageNumber + 1, pageSize })
-                        : EMPTY
-                ),
-                map((response) => response.items ?? []),
-                reduce((allItems, items) => [...allItems, ...items], [] as InventoryApiItem[])
+                expand((response, index) => {
+
+                const nextPage = index + 2; // 👈 THIS is the key
+
+                console.log('FETCHING PAGE:', nextPage, 'OF', response.totalPages);
+
+                if (nextPage > response.totalPages) {
+                    return EMPTY;
+                }
+
+                return this.getInventoryStocks({
+                    pageNumber: nextPage,
+                    pageSize
+                });
+                }),
+                map(res => res.items ?? []),
+                reduce((all, items) => all.concat(items), [] as InventoryApiItem[])
             );
         }
 
@@ -138,5 +159,13 @@ import { CreateMedicationRequest, MedicationResponse } from '../models/medicatio
                 request
             );
         }
-        
+        getInventorySummary(): Observable<{
+            totalItems: number;
+            expired: number;
+            expiringSoon: number;
+            stockedOut: number;
+            lowInventory: number;
+        }> {
+            return this.http.get<any>(`${this.baseUrl}/InventoryStocks/summary`);
+        }
 }

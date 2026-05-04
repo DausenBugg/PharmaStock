@@ -44,7 +44,8 @@
           Clear
         </button>
 
-        <button type="button"
+        <button *ngIf="auth.isAdmin()"
+                type="button"
                 class="inventory-btn search-btn"
                 (click)="openInventoryForm()">
           Add / Edit
@@ -63,7 +64,8 @@
           <th mat-header-cell *matHeaderCellDef>Edit</th>
           <td mat-cell *matCellDef="let element">
             <input type="checkbox"
-                  (change)="onSelectRow(element, $event)" />
+              [disabled]="!auth.isAdmin()"
+              (change)="onSelectRow(element, $event)" />
           </td>
         </ng-container>
 
@@ -163,7 +165,7 @@
   </div>
 
   <!-- ================= INVENTORY MODAL ================= -->
-<div class="modal-overlay" *ngIf="showInventoryModal">
+<div class="modal-overlay" *ngIf="showInventoryModal && auth.isAdmin()">
 
   <div class="modal-box">
 
@@ -260,7 +262,9 @@
     <div class="modal-actions">
 
       <!-- IMPORTANT: this does NOT save yet -->
-      <button class="modal-btn" (click)="saveInventory()">
+      <button class="modal-btn"
+              *ngIf="auth.isAdmin()"
+              (click)="saveInventory()">
         Save
       </button>
 
@@ -276,7 +280,7 @@
 
 
 <!-- ================= PASSWORD MODAL ================= -->
-<div class="modal-overlay" *ngIf="showPasswordModal">
+<div class="modal-overlay" *ngIf="showPasswordModal && auth.isAdmin()">
 
   <div class="modal-box">
 

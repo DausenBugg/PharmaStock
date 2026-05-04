@@ -7,6 +7,7 @@ import { Reports } from './reports/reports';
 import { Settings } from './settings/settings';
 import { Administration } from './administration/administration';
 import { MainLayoutComponent } from './layout/main-layout/main-layout';
+import { RoleGuard } from "./guards/role.guard";
 
 export const appRoutes: Routes = [
   { path: '', component: LogonScreen },
@@ -20,7 +21,12 @@ export const appRoutes: Routes = [
       { path: 'orders', component: Orders },
       { path: 'reports', component: Reports },
       { path: 'settings', component: Settings },
-      { path: 'administration', component: Administration }
+      { 
+        path: 'administration', 
+        component: Administration, 
+        canActivate: [RoleGuard], 
+        data: { roles: ['Admin'] } 
+      }
     ]
   },
 

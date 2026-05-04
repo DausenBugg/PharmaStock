@@ -374,10 +374,5 @@ loadProfileImage(): void {
     toggleDensity(this.compactDensity);
   }
 
-  // ================= LOGOUT =================
-  logout() {
-    logoutUser();
-  }
-
 }
 

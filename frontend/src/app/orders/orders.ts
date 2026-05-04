@@ -74,25 +74,27 @@ export class Orders implements AfterViewInit {
   constructor(private inventoryService: InventoryService) {}
 
   ngAfterViewInit(): void {
-    this.loadInventory();
-
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
+    // initial load
+    this.loadInventory(1, 25);
+   
+    this.paginator.page.subscribe(() => {
+      this.loadInventory(
+        this.paginator.pageIndex + 1,
+        this.paginator.pageSize
+      );
+    });
   }
 
-  private loadInventory(): void {
+  loadInventory(pageNumber: number = 1, pageSize: number = 25): void {
     this.inventoryService.getInventoryStocks({
-      pageNumber: 1,
-      pageSize: 100
+      pageNumber,
+      pageSize
     }).subscribe({
       next: (response) => {
         this.allItems = response.items.map(mapInventoryApiToRow);
         this.dataSource.data = this.allItems;
-
-        if (this.paginator) {
-          this.dataSource.paginator = this.paginator;
-        }
+        
+        this.paginator.length = response.totalItemCount;
       },
       error: (err) => {
         console.error('Orders load failed:', err);
@@ -195,7 +197,4 @@ export class Orders implements AfterViewInit {
     this.showConfirmModal = false;
   }
 
-  logout() {
-    logoutUser();
-  }
 }

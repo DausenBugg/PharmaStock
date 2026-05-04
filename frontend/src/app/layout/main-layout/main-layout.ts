@@ -10,7 +10,8 @@ import { ProfileService } from '../../services/profile.service';
 import { Profile } from '../../models/profile.model';
 import { logoutUser } from '../../helpers/auth.helpers';
 import { applySavedTheme, applySavedDensity } from '../../helpers/theme.helpers';
-import { NotificationService } from '../../services/notification.service';
+import { NotificationService } from '../../services/notification.service';import { AuthService } from '../../services/auth.service';
+
 
 @Component({
   selector: 'app-main-layout',
@@ -33,7 +34,7 @@ export class MainLayoutComponent implements OnInit {
   constructor(
     private profileService: ProfileService,
     public notificationService: NotificationService
-  ) {}
+  , public auth: AuthService) {}
 
   ngOnInit(): void {
     console.log('MainLayoutComponent initialized');

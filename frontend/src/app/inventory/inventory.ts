@@ -19,6 +19,7 @@ import { mapInventoryApiToRow } from './inventory.mapper';
 import { InventoryApiItem } from '../models/inventory-api.model';
 import { logoutUser } from "../helpers/auth.helpers";
 import { getExpirationClass, getReorderClass} from '../helpers/inventory.helpers';
+import { AuthService } from "../services/auth.service";
 
 // Updated for Patch Requests
 import { UpdateInventoryStockPatchRequest } from '../models/inventory-api.model';
@@ -80,7 +81,7 @@ export class InventoryComponent implements AfterViewInit {
   ];
 
   // DATA
-  private allItems: InventoryRow[] = [];
+  //private allItems: InventoryRow[] = [];
   dataSource = new MatTableDataSource<InventoryRow>([]);
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -112,31 +113,39 @@ export class InventoryComponent implements AfterViewInit {
     private cdr: ChangeDetectorRef,
     private inventorySaveService: InventorySaveService,
     private medicationSaveService: MedicationSaveService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    public auth: AuthService
   ) {}
 
   ngAfterViewInit(): void {
-    this.loadInventory();
+    // initial load
+    this.loadInventory(1, 25);
+    
+    this.paginator.page.subscribe(() => {
+      this.loadInventory(
+        this.paginator.pageIndex + 1,
+        this.paginator.pageSize
+      );
+    });
 
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
   }
 
   // -----------------------------
   // LOAD INVENTORY
   // -----------------------------
   
-   loadInventory(): void {
+  loadInventory(pageNumber: number = 1, pageSize: number = 25): void {
 
-    this.inventoryService.getInventoryStocks({ pageNumber: 1, pageSize: 100 }).subscribe({
+    this.inventoryService.getInventoryStocks({
+      pageNumber,
+      pageSize, 
+      name: this.searchName || "",
+      lot: this.searchLot || ""
+    }).subscribe({
       next: (response) => {
-        this.allItems = response.items.map(mapInventoryApiToRow);
-        this.dataSource.data = this.allItems;
 
-        if (this.paginator) {
-          this.dataSource.paginator = this.paginator;
-        }
+        this.dataSource.data = response.items.map(mapInventoryApiToRow);
+        this.paginator.length = response.totalItemCount;
 
         this.loadRiskScores();
         this.cdr.detectChanges();
@@ -187,7 +196,15 @@ export class InventoryComponent implements AfterViewInit {
   // -----------------------------
   // SEARCH
   // -----------------------------
-  onSearch(): void {
+
+  onSearch(): void{
+    this.paginator.pageIndex = 0;
+    this.loadInventory(1, this.paginator.pageSize);
+  }
+
+
+
+  /* onSearch(): void {
 
     const nameQuery = this.searchName.toLowerCase();
     const lotQuery = this.searchLot.toLowerCase();
@@ -198,14 +215,15 @@ export class InventoryComponent implements AfterViewInit {
       (!lotQuery || item.lot.toLowerCase().includes(lotQuery))
     );
 
-  }
+  } */
 
   clearFilters(): void {
 
     this.searchName = '';
     this.searchLot = '';
 
-    this.dataSource.data = [...this.allItems];
+    this.paginator.pageIndex = 0;
+    this.loadInventory(1, this.paginator.pageSize);
 
   }
 
@@ -214,18 +232,28 @@ export class InventoryComponent implements AfterViewInit {
   // -----------------------------
   onSelectRow(item: InventoryRow, event: any): void {
 
-      if (event.target.checked) {
-        this.selectedItem = item;
-      } else {
-        this.selectedItem = null;
-      }
-
+    if(!this.auth.isAdmin()){
+      console.warn("Blocked: non-admin attempted to select inventory row.");
+      return;
     }
+
+    if (event.target.checked) {
+      this.selectedItem = item;
+    } else {
+      this.selectedItem = null;
+    }
+  }
+
 
     // -----------------------------
     // OPEN FORM
     // -----------------------------
-    openInventoryForm(): void {
+  openInventoryForm(): void {
+    if(!this.auth.isAdmin()) {
+      console.warn("Blocked: non-admin attempted to open inventory form.");
+      return;
+    }
+  
 
     console.log("OPEN INVENTORY MODAL");
     console.log('selectedItem at open:', this.selectedItem);
@@ -317,6 +345,11 @@ export class InventoryComponent implements AfterViewInit {
   // SAVE CLICK
   // -----------------------------
   saveInventory(): void {
+
+    if(!this.auth.isAdmin()) {
+      console.warn("Blocked: non-admin attempted to alter inventory information.");
+      return;
+    }    
     this.showInventoryModal = false;
     this.showPasswordModal = true;
   }
@@ -338,6 +371,13 @@ export class InventoryComponent implements AfterViewInit {
   // specifically, it checks for changes in medication details (name, generic name, NDC, form, strength) and inventory details (expiration date, beyond use date, package NDC, package description, quantity). and calls the corresponding save functions in the services based on what was changed. After the save operations complete, it calls finishSave to reset the form and reload the inventory list.
   // -----------------------------
  confirmPassword(): void {
+
+  if(!this.auth.isAdmin()) {
+      console.warn("Blocked: non-admin attempted to alter inventory row (safe-guard 2).");
+      return;
+    }
+
+
     console.log('confirmPassword called');
     console.log('passwordInput:', this.passwordInput);
     console.log('editingItem:', this.editingItem);
@@ -553,10 +593,6 @@ export class InventoryComponent implements AfterViewInit {
 
   getReorderClass(item: InventoryRow){
     return getReorderClass(item.quantity, item.reorderPoint);
-  }
-
-  logout() {
-    logoutUser();
   }
 
 }

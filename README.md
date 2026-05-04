@@ -103,7 +103,7 @@ http://localhost:5177
 cd frontend
 ng build --configuration production
 3. Serve PWA
-npx serve -s dist/frontend/browser
+docker exec -it pharmastock-mysql mysql -u root -p
 
 Runs at:
 
