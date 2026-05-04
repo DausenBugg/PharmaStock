@@ -34,8 +34,7 @@ import { createProfileImage, revokeProfileImage } from '../helpers/profile.helpe
     MatListModule,
     MatCardModule,
     RouterModule,
-    CommonModule,
-    MainLayoutComponent
+    CommonModule
   ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']

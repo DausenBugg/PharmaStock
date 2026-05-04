@@ -35,8 +35,7 @@ type Medication = InventoryRow;
     MatToolbarModule,
     MatButtonModule,
     MatPaginatorModule,
-    MatDialogModule,
-    MainLayoutComponent
+    MatDialogModule
   ],
   templateUrl: './reports.html',
   styleUrl: './reports.css',
