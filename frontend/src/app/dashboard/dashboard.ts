@@ -332,7 +332,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   loadUserImage(): void {
     this.profileService.getProfileImage().subscribe({
       next: (blob) => {
-        this.profileImageUrl = createProfileImage(blob);
+        this.profileImageUrl = this.profileImageUrl;
       },
       error: () => {
         this.profileImageUrl = null; // fallback to placeholder

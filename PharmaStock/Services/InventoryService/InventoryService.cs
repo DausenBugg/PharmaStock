@@ -133,15 +133,23 @@ public class InventoryStockService : InventoryStockServiceInterface
         .Select(s => new InventoryStockListItemResponse
         {
             InventoryStockId = s.InventoryStockId,
+            MedicationId = s.MedicationId,
+
             MedicationName = s.Medication.Name,
             GenericName = s.Medication.GenericName,
+            Form = s.Medication.Form,
+            Strength = s.Medication.Strength,
             NationalDrugCode = s.Medication.NationalDrugCode,
+
             QuantityOnHand = s.QuantityOnHand,
             ReorderLevel = s.ReorderLevel,
             BinLocation = s.BinLocation,
             LotNumber = s.LotNumber,
             ExpirationDate = s.ExpirationDate,
-            BeyondUseDate = s.BeyondUseDate
+            BeyondUseDate = s.BeyondUseDate,
+
+            PackageNdc = s.PackageNdc,
+            PackageDescription = s.PackageDescription
         })
         .ToListAsync();
 

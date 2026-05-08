@@ -192,3 +192,41 @@ td {
   gap: 12px;
   width: 100%;
 }
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.form-field label {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(white)
+}
+
+.notification-message {
+  position: fixed;
+  top: 50%;
+  right: 50%;
+  transform: translate(50%, -50%);
+  z-index: 10000;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  background: white;
+  border: 2px solid black;
+}
+
+.notification-message.success {
+  background: #e6f7ec;
+  color: #1f7a3f;
+  border-color: #8fd19e;
+}
+
+.notification-message.error {
+  background: #fdecea;
+  color: #b42318;
+  border-color: #f5a3a3;
+}

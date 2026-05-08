@@ -1,4 +1,4 @@
-<app-main-layout>
+
 
   <!-- HEADER -->
   <mat-toolbar class="administration-header">
@@ -34,7 +34,11 @@
         <ng-container matColumnDef="role">
           <th mat-header-cell *matHeaderCellDef>Role</th>
           <td mat-cell *matCellDef="let emp">
-            <input class="app-input" list="roles" [(ngModel)]="emp.role">
+            <select class="app-input" [(ngModel)]="emp.role">
+              <option *ngFor="let role of roleOptions" [value]="role">
+                {{ role }}
+              </option>
+            </select>
           </td>
         </ng-container>
 
@@ -63,14 +67,6 @@
 
       </table>
     </div>
-    
-    
-    <!-- ROLE OPTIONS -->
-    <datalist id="roles">
-      <option value="User"></option>
-      <option value="Manager"></option>
-      <option value="Administrator"></option>
-    </datalist>
 
     <!-- ADD EMPLOYEE -->
     <div class="add-user-section">
@@ -81,7 +77,11 @@
 
         <input class="app-input" placeholder="Name" [(ngModel)]="newEmployee.name">
         <input class="app-input" placeholder="Email" [(ngModel)]="newEmployee.email">
-        <input class="app-input" list="roles" placeholder="Role" [(ngModel)]="newEmployee.role">
+        <select class="app-input" [(ngModel)]="newEmployee.role">
+          <option *ngFor="let role of roleOptions" [value]="role">
+            {{ role }}
+          </option>
+        </select>
 
         <input type="password"
                class="app-input"
@@ -131,4 +131,3 @@
 
   </div>
 
-</app-main-layout>

@@ -35,21 +35,49 @@ namespace PharmaStock.Controllers
             var users = await _userManager.Users.ToListAsync();
             var userList = new List<object>();
 
-            foreach (var user in users)
-            {
-                var roles = await _userManager.GetRolesAsync(user);
-                userList.Add(new
+                foreach (var user in users)
                 {
-                    id = user.Id,
-                    email = user.Email,
-                    userName = user.UserName,
-                    emailConfirmed = user.EmailConfirmed,
-                    roles
-                });
-            }
+                    var roles = await _userManager.GetRolesAsync(user);
+
+                    var profile = await _context.UserProfiles
+                        .FirstOrDefaultAsync(p => p.UserId == user.Id);
+
+                    userList.Add(new
+                    {
+                        id = user.Id,
+                        email = user.Email,
+                        userName = user.UserName,
+                        emailConfirmed = user.EmailConfirmed,
+                        displayName = profile?.DisplayName ?? user.UserName,
+                        roles
+                    });
+                }
 
             return Ok(userList);
         }
+
+        [HttpPatch("users/{id}/display-name")]
+        public async Task<IActionResult> UpdateDisplayName(string id, [FromBody] UpdateDisplayNameRequest request)
+        {
+            var profile = await _context.UserProfiles
+                .FirstOrDefaultAsync(p => p.UserId == id);
+
+            if (profile == null)
+            {
+                return NotFound(new { message = "User profile not found." });
+            }
+
+            profile.DisplayName = request.DisplayName;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Display name updated." });
+        }
+
+        public class UpdateDisplayNameRequest
+        {
+            public string DisplayName { get; set; } = string.Empty;
+        }
+
 
         [HttpGet("stats")]
         public async Task<IActionResult> GetSystemStats()

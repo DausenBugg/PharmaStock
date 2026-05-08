@@ -155,6 +155,7 @@ namespace PharmaStock.Data
                     .HasPrincipalKey<IdentityUser>(u => u.Id)
                     .OnDelete(DeleteBehavior.Cascade);
             });
+            
             // Seed default notification settings (single-row config)
             modelBuilder.Entity<NotificationSetting>().HasData(new NotificationSetting
             {

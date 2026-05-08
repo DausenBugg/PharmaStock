@@ -13,9 +13,14 @@ function safeExec(command, fallback = '') {
 const buildSha = safeExec('git rev-parse --short HEAD', 'unknown');
 const buildDate = new Date().toISOString();
 
+const appVersion = '1.0.0';
+const releaseChannel = 'Release';
+
 const content = `export const versionInfo = {
   buildSha: '${buildSha}',
-  buildDate: '${buildDate}'
+  buildDate: '${buildDate}',
+  appVersion: '${appVersion}',
+  releaseChannel: '${releaseChannel}'
 };
 `;
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using PharmaStock.Data;
 using PharmaStock.Data.Entities;
 
 namespace PharmaStock.Controllers
@@ -17,17 +18,20 @@ namespace PharmaStock.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
-
+        private readonly PharmaStockDbContext _context;
+        
         public AuthController(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             RoleManager<IdentityRole> roleManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            PharmaStockDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
             _configuration = configuration;
+            _context = context;
         }
 
         [HttpPost("register")]
@@ -55,6 +59,14 @@ namespace PharmaStock.Controllers
 
                 return ValidationProblem(ModelState);
             }
+
+            _context.UserProfiles.Add(new UserProfile
+            {
+                UserId = user.Id,
+                DisplayName = request.Email
+            });
+
+            await _context.SaveChangesAsync();
 
             return Created(string.Empty, new
             {

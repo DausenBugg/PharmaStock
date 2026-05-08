@@ -10,12 +10,11 @@ import { versionInfo } from '../../environments/version';
 
 
 import { NotificationSettingService } from '../services/notification-setting.service';
+import { NotificationService } from '../services/notification.service';
 
 import { ProfileService } from '../services/profile.service';
 import { Profile } from '../models/profile.model';
-import { MainLayoutComponent } from '../layout/main-layout/main-layout';
-import { logoutUser } from "../helpers/auth.helpers";
-import { createProfileImage, revokeProfileImage } from '../helpers/profile.helpers';
+import { revokeProfileImage } from '../helpers/profile.helpers';
 import { applySavedTheme, toggleTheme, applySavedDensity, toggleDensity} from '../helpers/theme.helpers';
 import { isEmpty, validatePasswordMatch } from '../helpers/validation.helpers';
 
@@ -28,8 +27,7 @@ import { isEmpty, validatePasswordMatch } from '../helpers/validation.helpers';
     FormsModule,
     MatSidenavModule,
     MatListModule,
-    MatToolbarModule,
-    MainLayoutComponent
+    MatToolbarModule
   ],
   templateUrl: './settings.html',
   styleUrl: './settings.css',
@@ -53,11 +51,11 @@ export class Settings implements OnInit {
 
   // ================= PROFILE =================
   profile: Profile = {
-    id: '1',
-    email: 'john@example.com',
-    userName: 'John Doe',
-    roles: ['Admin'],
-    displayName: 'John Doe',
+    id: '',
+    email: '',
+    userName: '',
+    roles: [],
+    displayName: '',
     bio: ''
   };
 
@@ -69,7 +67,7 @@ export class Settings implements OnInit {
 
 
   // Keep these for compatibility with existing template bindings.
-  displayName: string = this.profile.userName;
+  displayName: string = '';
   email: string = this.profile.email;
   role: string = this.profile.roles?.[0] ?? 'User';
   profileImage: string | null = null;
@@ -78,6 +76,8 @@ export class Settings implements OnInit {
   currentPassword: string = '';
   newPassword: string = '';
   confirmPassword: string = '';
+  passwordSuccessMessage: string = '';
+  passwordErrorMessage: string = '';
 
   // ================= APPEARANCE =================
   darkMode: boolean = false;
@@ -97,7 +97,8 @@ export class Settings implements OnInit {
   constructor(
     private cdr: ChangeDetectorRef,
     private notificationSettingService: NotificationSettingService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private notificationService: NotificationService
   ) {
     this.checkAdminRole();
   }
@@ -122,12 +123,12 @@ export class Settings implements OnInit {
 
   // ================= LOAD PROFILE =================
   loadProfile(): void {
-    this.profileService.getProfile().subscribe({
-      next: (data) => {
-        this.profile = data;
-        this.displayName = data.displayName;
-        this.email = data.email;
-        this.role = data.roles?.[0] ?? 'User';
+    this.profileService.getProfile(true).subscribe({
+      next: (profile) => {
+        this.profile = profile;
+        this.displayName = profile.displayName;
+        this.email = profile.email;
+        this.role = profile.roles?.[0] ?? 'User';
       },
       error: () => {
         this.errorMessage = 'Failed to load profile.';
@@ -138,10 +139,10 @@ export class Settings implements OnInit {
   // ================= LOAD IMAGE =================
 loadProfileImage(): void {
   this.profileService.getProfileImage().subscribe({
-    next: (blob) => {
+    next: (imageUrl: string | null) => {
       revokeProfileImage(this.profileImageUrl);
 
-      this.profileImageUrl = createProfileImage(blob);
+      this.profileImageUrl = imageUrl;
       this.profileImage = this.profileImageUrl;
       this.cdr.detectChanges();
     },
@@ -237,7 +238,7 @@ loadProfileImage(): void {
 
     // for vaild file type
     this.selectedFile = file;
-    this.refreshPage();
+  
 
     const reader = new FileReader();
     reader.onload = () => {
@@ -341,28 +342,42 @@ loadProfileImage(): void {
         
   
     this.profileService.changePassword({
-      currentPassword: this.currentPassword,
-      newPassword: this.newPassword,
-      confirmPassword: this.confirmPassword
-    }).subscribe({
-      next: () => {
-        this.successMessage = 'Password updated.';
-        this.currentPassword = '';
-        this.newPassword = '';
-        this.confirmPassword = '';
-      },
-      error: () => {
-        this.errorMessage = 'Password update failed.';
-      }
-    });
-    
+    currentPassword: this.currentPassword,
+    newPassword: this.newPassword,
+    confirmNewPassword: this.confirmPassword
+  }).subscribe({
+    next: () => {
+      const message = 'Password updated successfully.';
 
-    // // TEMP: simulate success
-    // this.successMessage = 'Password updated (simulation).';
+      this.passwordErrorMessage = '';
+      this.passwordSuccessMessage = message;
 
-    // this.currentPassword = '';
-    // this.newPassword = '';
-    // this.confirmPassword = '';
+      this.notificationService.show(message, 'success');
+
+      this.currentPassword = '';
+      this.newPassword = '';
+      this.confirmPassword = '';
+
+      this.cdr.detectChanges();
+    },
+
+    error: (err) => {
+      const message =
+        err.error?.message ??
+        'Password update failed.';
+
+      this.passwordSuccessMessage = '';
+      this.passwordErrorMessage = message;
+
+      this.notificationService.show(message, 'error');
+
+      this.currentPassword = '';
+      this.newPassword = '';
+      this.confirmPassword = '';
+
+      this.cdr.detectChanges();
+    }
+  });
   }
 
   // ================= DARK MODE =================

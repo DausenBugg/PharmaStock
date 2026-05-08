@@ -2,7 +2,7 @@
 
   <!-- ================= SIDEBAR ================= -->
   <mat-sidenav mode="side" opened class="sidebar">
-
+    
     <div class="nav-user-block">
 
       <!-- LOGO -->
@@ -40,6 +40,16 @@
 
       </div>
 
+    </div>
+
+    <div
+      *ngIf="(notificationService.notification$ | async) as notification"
+      class="notification-message"
+      [ngClass]="notification.type">
+
+      <span *ngIf="notification.message">
+        {{ notification.message }}
+      </span>
     </div>
 
     <!-- NAVIGATION -->
@@ -101,7 +111,9 @@
 
   <!-- ================= MAIN CONTENT ================= -->
   <mat-sidenav-content>
-    <ng-content></ng-content>
+    <router-outlet></router-outlet>
   </mat-sidenav-content>
 
 </mat-sidenav-container>
+
+

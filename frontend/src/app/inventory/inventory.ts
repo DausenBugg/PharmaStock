@@ -32,6 +32,8 @@ import { Observable, of } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
 import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 
+import { NotificationService } from '../services/notification.service';
+
 
 @Component({
   selector: 'app-inventory',
@@ -44,8 +46,7 @@ import { MainLayoutComponent } from '../layout/main-layout/main-layout';
     MatListModule,
     MatToolbarModule,
     MatTableModule, 
-    MatPaginatorModule,
-    MainLayoutComponent
+    MatPaginatorModule
   ],
   templateUrl: './inventory.html',
   styleUrls: ['./inventory.css']
@@ -55,6 +56,10 @@ export class InventoryComponent implements AfterViewInit {
   // SEARCH
   searchName = '';
   searchLot = '';
+
+  // NOTIFICATIONS
+  showNotificationMessage = '';
+  showNotificationType: 'success' | 'error' | '' = '';
 
   // TABLE
   displayedColumns: string[] = [
@@ -108,6 +113,7 @@ export class InventoryComponent implements AfterViewInit {
     private cdr: ChangeDetectorRef,
     private inventorySaveService: InventorySaveService,
     private medicationSaveService: MedicationSaveService,
+    private notificationService: NotificationService,
     public auth: AuthService
   ) {}
 
@@ -386,17 +392,45 @@ export class InventoryComponent implements AfterViewInit {
     // CREATE NEW ITEM
     // -----------------------------
     if (!this.editingItem) {
-      console.log('Creating new item');
+      console.log('Creating new medication and inventory item');
 
-      this.inventoryService
-        .createInventoryStocks(this.formItem)
+      const medicationRequest = {
+        name: this.formItem.medicationName,
+        genericName: this.formItem.genericName,
+        nationalDrugCode: this.formItem.nationalDrugCode,
+        form: this.formItem.form,
+        strength: this.formItem.strength,
+        manufacturer: 'Unknown'
+      };
+
+      this.inventoryService.createMedication(medicationRequest)
+        .pipe(
+          concatMap((createdMedication) => {
+            const inventoryRequest = {
+              medicationId: createdMedication.medicationId,
+
+              quantityOnHand: this.formItem.quantityOnHand,
+              reorderLevel: this.formItem.reorderLevel,
+              binLocation: this.formItem.binLocation,
+              lotNumber: this.formItem.lotNumber,
+              expirationDate: this.formItem.expirationDate,
+              beyondUseDate: this.formItem.beyondUseDate,
+              packageNdc: this.formItem.packageNdc,
+              packageDescription: this.formItem.packageDescription
+            };
+
+            return this.inventoryService.createInventoryStocks(inventoryRequest);
+          })
+        )
         .subscribe({
           next: (res) => {
             console.log('Create success:', res);
+            this.notificationService.show('Inventory item created successfully', 'success');
             this.finishSave();
           },
           error: (err) => {
             console.error('Create failed:', err);
+            this.notificationService.show('Failed to create inventory item', 'error');
           }
         });
 
@@ -425,6 +459,7 @@ export class InventoryComponent implements AfterViewInit {
 
     if (!overrideFieldsChanged && !inventoryChanged) {
       console.log('No changes detected.');
+      this.notificationService.show('No changes to save', 'error');
       this.finishSave();
       return;
     }
@@ -515,10 +550,12 @@ export class InventoryComponent implements AfterViewInit {
       .subscribe({
         next: () => {
           console.log('Edit save success');
+          this.notificationService.show('Inventory item updated successfully', 'success');
           this.finishSave();
         },
         error: (err: HttpErrorResponse) => {
           console.error('Edit save failed:', err);
+          this.notificationService.show('Failed to update inventory item', 'error');
         }
       });
   }

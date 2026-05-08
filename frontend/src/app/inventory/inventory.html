@@ -1,4 +1,4 @@
-<app-main-layout>
+
 
   <!-- HEADER -->
   <mat-toolbar class="inventory-header">
@@ -9,6 +9,14 @@
   </mat-toolbar>
 
   <div class="content">
+
+    <!-- NOTIFICATIONS -->
+    <div
+      *ngIf="showNotificationMessage"
+      class="notification-message"
+      [ngClass]="showNotificationType">
+      {{ showNotificationMessage }}
+    </div>
 
     <!-- SEARCH -->
     <form class="inventory-search" (ngSubmit)="onSearch()">
@@ -167,59 +175,87 @@
 
     <div class="form-grid">
 
-      <input class="app-input"
-             placeholder="Medication Name"
-             [(ngModel)]="formItem.medicationName" />
+      <div class="form-field">
+        <label>Medication Name</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.medicationName" />
+      </div>
 
-      <input class="app-input"
-             placeholder="Generic Name"
-             [(ngModel)]="formItem.genericName" />
+      <div class="form-field">
+        <label>Generic Name</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.genericName" />
+      </div>
 
-      <input class="app-input"
-             placeholder="NDC"
-             [(ngModel)]="formItem.nationalDrugCode" />
+      <div class="form-field">
+        <label>NDC</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.nationalDrugCode" />
+      </div>
 
-      <input class="app-input"
-             placeholder="Dosage Form"
-             [(ngModel)]="formItem.form" />
+      <div class="form-field">
+        <label>Dosage Form</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.form" />
+      </div>
 
-      <input class="app-input"
-             placeholder="Strength"
-             [(ngModel)]="formItem.strength" />
+      <div class="form-field">
+        <label>Strength</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.strength" />
+      </div>
 
-      <input class="app-input"
-             placeholder="Package NDC"
-             [(ngModel)]="formItem.packageNdc" />
+      <div class="form-field">
+        <label>Package NDC</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.packageNdc" />
+      </div>
 
-      <input class="app-input"
-             placeholder="Package Description"
-             [(ngModel)]="formItem.packageDescription" />
+      <div class="form-field">
+        <label>Package Description</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.packageDescription" />
+      </div>
 
-      <input class="app-input"
-             type="number"
-             placeholder="Quantity"
-             [(ngModel)]="formItem.quantityOnHand" />
+      <div class="form-field">
+        <label>Quantity</label>
+        <input class="app-input"
+              type="number"
+              [(ngModel)]="formItem.quantityOnHand" />
+      </div>
 
-      <input class="app-input"
-             type="number"
-             placeholder="Reorder Level"
-             [(ngModel)]="formItem.reorderLevel" />
+      <div class="form-field">
+        <label>Reorder Level</label>
+        <input class="app-input"
+              type="number"
+              [(ngModel)]="formItem.reorderLevel" />
+      </div>
 
-      <input class="app-input"
-             placeholder="Bin Location"
-             [(ngModel)]="formItem.binLocation" />
+      <div class="form-field">
+        <label>Bin Location</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.binLocation" />
+      </div>
 
-      <input class="app-input"
-             placeholder="Lot"
-             [(ngModel)]="formItem.lotNumber" />
+      <div class="form-field">
+        <label>Lot</label>
+        <input class="app-input"
+              [(ngModel)]="formItem.lotNumber" />
+      </div>
 
-      <input class="app-input"
-             type="date"
-             [(ngModel)]="formItem.expirationDate" />
+      <div class="form-field">
+        <label>Expiration Date</label>
+        <input class="app-input"
+              type="date"
+              [(ngModel)]="formItem.expirationDate" />
+      </div>
 
-      <input class="app-input"
-             type="date"
-             [(ngModel)]="formItem.beyondUseDate" />
+      <div class="form-field">
+        <label>Beyond Use Date</label>
+        <input class="app-input"
+              type="date"
+              [(ngModel)]="formItem.beyondUseDate" />
+      </div>
 
     </div>
 
@@ -276,4 +312,3 @@
 
 </div>
 
-</app-main-layout>

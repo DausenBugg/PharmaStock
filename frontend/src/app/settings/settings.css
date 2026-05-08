@@ -202,6 +202,10 @@ td {
   opacity: 1;
 }
 
+.app-input:focus::placeholder {
+  opacity: 0.0;
+}
+
 /* ================= BUTTONS ================= */
 
 .file-upload-button,

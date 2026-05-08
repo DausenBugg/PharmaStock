@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { EMPTY, Observable, expand, map, reduce } from 'rxjs';
-import { InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPatchRequest } from '../models/inventory-api.model';
+import { CreateInventoryStockRequest, InventoryApiItem, UpdateInventoryStockPatchRequest, UpdateMedicationPatchRequest } from '../models/inventory-api.model';
 import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
+import { CreateMedicationRequest, MedicationResponse } from '../models/medication-create.model';
 
 
 @Injectable({
@@ -66,11 +67,10 @@ import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
             );
         }
 
-        createInventoryStocks(Item: InventoryApiItem ): Observable<InventoryApiItem> {
+        createInventoryStocks(request: CreateInventoryStockRequest ): Observable<InventoryApiItem> {
             return this.http.post<InventoryApiItem>(
                 `${this.baseUrl}/InventoryStocks`,
-                Item
-
+                request
             );
         }
 
@@ -153,6 +153,12 @@ import { PagedResponse, PaginationRequest } from '../models/Pagination.model';
             );
         }
 
+        createMedication(request: CreateMedicationRequest): Observable<MedicationResponse> {
+            return this.http.post<MedicationResponse>(
+                `${this.baseUrl}/Medications`,
+                request
+            );
+        }
         getInventorySummary(): Observable<{
             totalItems: number;
             expired: number;

@@ -85,6 +85,7 @@ namespace PharmaStock.Services
             var newMedication = new Medication
             {
                 Name = request.Name.Trim(),
+                GenericName = request.GenericName?.Trim(),
                 NationalDrugCode = nationalDrugCode,
                 Form = request.Form.Trim(),
                 Strength = request.Strength.Trim(),
