@@ -55,7 +55,7 @@ export class ProfileService {
   changePassword(payload: {
     currentPassword: string;
     newPassword: string;
-    confirmPassword: string;
+    confirmNewPassword: string;
   }): Observable<any> {
     return this.http.patch(`${this.apiUrl}/update-password`, payload, {
       headers: this.getAuthHeaders()

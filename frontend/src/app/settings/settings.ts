@@ -341,7 +341,7 @@ loadProfileImage(): void {
     this.profileService.changePassword({
       currentPassword: this.currentPassword,
       newPassword: this.newPassword,
-      confirmPassword: this.confirmPassword
+      confirmNewPassword: this.confirmPassword
     }).subscribe({
       next: () => {
         this.successMessage = 'Password updated.';
