@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PharmaStock.Data;
-using PharmaStock.Data.Data.Entities;
+using PharmaStock.Dtos.Responses;
 using System.Security.Claims;
 
 namespace PharmaStock.Controllers
@@ -41,9 +41,10 @@ namespace PharmaStock.Controllers
             var summary = new InventorySummaryDto
             {
                 TotalItems = totalItems,
-                LowStockCount = lowStockCount,
-                ExpiringCount = expiringCount,
-                ExpiredCount = expiredCount
+                LowInventory = lowStockCount,
+                ExpiringSoon = expiringCount,
+                Expired = expiredCount,
+                StockedOut = await _dbContext.InventoryStocks.CountAsync(m => m.QuantityOnHand == 0)
             };
 
             return Ok(summary);

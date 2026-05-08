@@ -10,7 +10,8 @@
     class="login-logo logo-dark"
     alt="PharmaStock Logo" />
 
-  <div class="login-card">
+  <form class="login-card" (ngSubmit)="onSubmit()">
+
     <h2>Login</h2>
 
     <input
@@ -18,26 +19,32 @@
       type="email"
       placeholder="Email"
       [(ngModel)]="email"
-      name="email" />
+      name="email" 
+    />
 
     <input
       id="password"
       type="password"
       placeholder="Password"
       [(ngModel)]="password"
-      name="password" />
+      name="password" 
+    />
 
     <button
       id="login-btn"
+      type="submit"
       class="primary-button"
-      (click)="onSubmit()"
-      [disabled]="isLoading">
-      {{ isLoading ? 'Logging in...' : 'Log In' }}
+      [disabled]="isLoading"
+    >
+      {{ isLoading ? 'Logging in...' : 'Login' }} 
+
     </button>
 
     <p *ngIf="errorMessage" class="error-message">
       {{ errorMessage }}
     </p>
-  </div>
 
+  </form>
+    
 </div>
+
