@@ -6,6 +6,7 @@ namespace PharmaStock.Dtos.Requests
     {
         [Required, StringLength(200, MinimumLength = 1)]
         public string Name { get; set; } = string.Empty;
+        public string? GenericName { get; set; } = string.Empty;
 
         [Required, StringLength(50, MinimumLength = 1)]
         public string NationalDrugCode { get; set; } = string.Empty;
