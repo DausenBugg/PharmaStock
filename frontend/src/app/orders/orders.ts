@@ -42,7 +42,7 @@ export class Orders implements AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   searchName: string = '';
-  searchDosage: string = '';
+  searchLot: string = '';
 
   selectedItem: InventoryRow | null = null;
   adjustQuantity: number | null = null;
@@ -66,9 +66,7 @@ export class Orders implements AfterViewInit {
     'beyondUseDate'
   ];
 
-  private allItems: InventoryRow[] = [];
-
-  // ✅ NEW
+  
   dataSource = new MatTableDataSource<InventoryRow>([]);
 
   constructor(private inventoryService: InventoryService) {}
@@ -88,13 +86,15 @@ export class Orders implements AfterViewInit {
   loadInventory(pageNumber: number = 1, pageSize: number = 25): void {
     this.inventoryService.getInventoryStocks({
       pageNumber,
-      pageSize
+      pageSize,
+      name: this.searchName || "",
+      lot: this.searchLot || ""
     }).subscribe({
       next: (response) => {
-        this.allItems = response.items.map(mapInventoryApiToRow);
-        this.dataSource.data = this.allItems;
-        
+
+        this.dataSource.data = response.items.map(mapInventoryApiToRow);
         this.paginator.length = response.totalItemCount;
+
       },
       error: (err) => {
         console.error('Orders load failed:', err);
@@ -102,32 +102,29 @@ export class Orders implements AfterViewInit {
     });
   }
 
-  searchInventory() {
-    const filtered = this.allItems.filter(item =>
-      (!this.searchName ||
-        item.medicationName.toLowerCase().includes(this.searchName.toLowerCase()) ||
-        (item.genericName ?? '').toLowerCase().includes(this.searchName.toLowerCase()))
-      &&
-      (!this.searchDosage ||
-        item.strength.toLowerCase().includes(this.searchDosage.toLowerCase()))
+  searchInventory(): void {
+
+    this.paginator.pageIndex = 0;
+
+    this.loadInventory(
+      1,
+      this.paginator.pageSize
     );
 
-    this.dataSource.data = filtered;
-
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
   }
 
-  clearSearch() {
+  clearSearch(): void {
+
     this.searchName = '';
-    this.searchDosage = '';
+    this.searchLot = '';
 
-    this.dataSource.data = this.allItems;
+    this.paginator.pageIndex = 0;
 
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
+    this.loadInventory(
+      1,
+      this.paginator.pageSize
+    );
+
   }
 
   getExpirationClass(item: InventoryRow){

@@ -170,9 +170,10 @@ td {
   gap: 6px;
   padding: 16px 18px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(241, 245, 249, 0.96));
+  background: var(--button-bg);
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+  color: var(--button-text);
 }
 
 .summary-label {
@@ -180,17 +181,17 @@ td {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--button-bg);
+  color: var(--bg-color);
 }
 
 .summary-card strong {
   font-size: 28px;
   line-height: 1;
-  color: #0f172a;
+  color: var(--button-text);
 }
 
 .summary-card small {
-  color: #475569;
+  color: var(--bg-color);
 }
 
 .active-filters {
@@ -257,4 +258,50 @@ td {
     display: block;
     overflow-x: auto;
   }
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+  background-color: var(--button-bg);
+}
+.clickable-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.18);
+  opacity: 0.96;
+}
+.clickable-card:active {
+  transform: translateY(0);
+}
+
+.health-good {
+  border-left: 12px solid #2e7d32;
+}
+.health-warning {
+  border-left: 12px solid #ed6c02;
+}
+.health-critical {
+  border-left: 12px solid #d32f2f;
+}
+
+.summary-info-card {
+  cursor: default;
+  background: var(--modal-box);
+  color: var(--button-bg);
+  border: 2px dashed #1f4e79;
+  box-shadow: none;
+  opacity: 0.9;
+}
+
+.summary-info-card strong {
+  color: var(--button-bg);
+  font-size: 32px;
+}
+
+.summary-info-card small {
+  color: var(--button-bg);
+}
+
+.summary-info-card .summary-label {
+  color: var(--button-bg);
 }

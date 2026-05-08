@@ -74,28 +74,41 @@
     </div>
 
     <div class="report-summary" *ngIf="!loading && !loadError">
-      <div class="summary-card">
+
+      <div class="summary-card summary-info-card">
         <span class="summary-label">Visible Records</span>
         <strong>{{ dataSource.data.length }}</strong>
         <small>of {{ totalItemCount }}</small>
       </div>
 
-      <div class="summary-card">
+      <div class="summary-card clickable-card"
+        [class.health-good]="summary.expired === 0"
+        [class.health-critical]="summary.expired > 0"
+        (click) = "filterExpired = !filterExpired; onFilterChange()">
         <span class="summary-label">Expired</span>
         <strong>{{ summary.expired }}</strong>
       </div>
 
-      <div class="summary-card">
-        <span class="summary-label">Expiring Soon</span>
+      <div class="summary-card clickable-card"
+        [class.health-good]="summary.expiringSoon === 0"
+        [class.health-warning]="summary.expiringSoon > 0"
+        (click) = "filterExpiringSoon = !filterExpiringSoon; onFilterChange()">
+        <span class="summary-label">Expiring within 30 days</span>
         <strong>{{ summary.expiringSoon }}</strong>
       </div>
 
-      <div class="summary-card">
+      <div class="summary-card clickable-card"
+        [class.health-good]="summary.stockedOut === 0"
+        [class.health-critical]="summary.stockedOut > 0"
+        (click) = "filterStockedOut = !filterStockedOut; onFilterChange()">
         <span class="summary-label">Stocked Out</span>
         <strong>{{ summary.stockedOut }}</strong>
       </div>
 
-      <div class="summary-card">
+      <div class="summary-card clickable-card"
+        [class.health-good]="summary.lowInventory === 0"
+        [class.health-warning]="summary.lowInventory > 0"
+        (click) = "filterLowInventory = !filterLowInventory; onFilterChange()">
         <span class="summary-label">Low Inventory</span>
         <strong>{{ summary.lowInventory }}</strong>
       </div>

@@ -43,7 +43,7 @@ public class InventoryStockService : InventoryStockServiceInterface
         .AsNoTracking();
 
     
-    var now = DateTime.Now;
+    var now = DateTime.Today;
     var soon = now.AddDays(30);
 
     // SEARCH
@@ -82,32 +82,19 @@ public class InventoryStockService : InventoryStockServiceInterface
         );
     }
 
-    // EXPIRED
-    if (request.Expired == true)
-    {
-        query = query.Where(s => s.ExpirationDate < now);
-    }
+    bool expired = request.Expired == true;
+    bool expiringSoon = request.ExpiringSoon == true;
+    bool stockedOut = request.StockedOut == true;
+    bool lowInventory = request.LowInventory == true;
 
-    // EXPIRING SOON
-    if (request.ExpiringSoon == true)
-    {
-        query = query.Where(s =>
-            s.ExpirationDate >= now &&
-            s.ExpirationDate <= soon
-        );
-    }
-
-    // STOCKED OUT
-    if (request.StockedOut == true)
-    {
-        query = query.Where(s => s.QuantityOnHand == 0);
-    }
-
-    // LOW INVENTORY
-    if (request.LowInventory == true)
-    {
-        query = query.Where(s => s.QuantityOnHand < s.ReorderLevel);
-    }
+    if (expired || expiringSoon || stockedOut || lowInventory)
+        {
+            query = query.Where(s=> (expired && s.ExpirationDate < now) ||
+            (expiringSoon && s.ExpirationDate >= now && s.ExpirationDate <= soon) ||
+            (stockedOut && s.QuantityOnHand == 0) ||
+            (lowInventory && s.QuantityOnHand < s.ReorderLevel)
+            );
+        }
 
     // SUMMARY (based on filtered query — same behavior as your original)
     var summary = new InventorySummaryDto
