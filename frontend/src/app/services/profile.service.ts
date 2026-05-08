@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, map, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
 import { Profile } from '../models/profile.model';
 
 @Injectable({
@@ -48,7 +48,7 @@ export class ProfileService {
     return this.http.patch<Profile>(`${this.apiUrl}/update-profile`, profile, {
       headers: this.getAuthHeaders()
     }).pipe(
-      tap(updatedProfile => this.profileSubject.next(updatedProfile))
+      tap(() => this.refreshProfile().subscribe())
     );
   }
 
@@ -74,7 +74,14 @@ export class ProfileService {
       responseType: 'blob'
     }).pipe(
       map(blob => URL.createObjectURL(blob)),
-      tap(imageUrl => this.profileImageSubject.next(imageUrl))
+      tap(imageUrl => this.profileImageSubject.next(imageUrl)),
+      catchError(err => {
+        if(err.status === 404) {
+          this.profileImageSubject.next(null);
+          return of(null);
+        }
+        throw err;
+      })
     );
   }
 
@@ -85,7 +92,10 @@ export class ProfileService {
     return this.http.patch(`${this.apiUrl}/profile-image`, formData, {
       headers: this.getAuthHeaders()
     }).pipe(
-      tap(() => this.refreshProfile().subscribe())
+      tap(() => {
+        this.profileImageSubject.next(null);
+        this.refreshProfile().subscribe();
+      })
     );
   }
   

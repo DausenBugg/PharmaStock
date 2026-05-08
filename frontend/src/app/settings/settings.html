@@ -116,6 +116,14 @@
       <button class="file-upload-button" (click)="changePassword()">
         Update Password
       </button>
+
+      <div *ngIf="passwordSuccessMessage" class="threshold-success">
+        {{ passwordSuccessMessage }}
+      </div>
+
+      <div *ngIf="passwordErrorMessage" class="threshold-error">
+        {{ passwordErrorMessage }}
+      </div>
     </div>
 
     <!-- APPEARANCE -->
