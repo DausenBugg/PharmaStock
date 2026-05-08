@@ -230,3 +230,14 @@ td {
   color: #b42318;
   border-color: #f5a3a3;
 }
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.inventory-table .mat-mdc-cell,
+.inventory-table .mat-mdc-header-cell {
+  white-space: nowrap;
+}

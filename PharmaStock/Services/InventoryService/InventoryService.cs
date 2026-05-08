@@ -92,7 +92,7 @@ public class InventoryStockService : InventoryStockServiceInterface
             query = query.Where(s=> (expired && s.ExpirationDate < now) ||
             (expiringSoon && s.ExpirationDate >= now && s.ExpirationDate <= soon) ||
             (stockedOut && s.QuantityOnHand == 0) ||
-            (lowInventory && s.QuantityOnHand < s.ReorderLevel)
+            (lowInventory && s.QuantityOnHand > 0 && s.QuantityOnHand < s.ReorderLevel)
             );
         }
 
@@ -108,6 +108,7 @@ public class InventoryStockService : InventoryStockServiceInterface
         StockedOut = await query.CountAsync(s => s.QuantityOnHand == 0),
 
         LowInventory = await query.CountAsync(s =>
+            s.QuantityOnHand > 0 &&
             s.QuantityOnHand < s.ReorderLevel)
     };
 

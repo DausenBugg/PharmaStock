@@ -26,12 +26,14 @@
       <div class="user-welcome">
 
         <!-- Avatar (with fallback) -->
-        <img
-          [src]="profileImageUrl || 'assets/avatar-place-holder.png'"
-          (error)="profileImageUrl = null"
-          class="profile-avatar"
-          alt="User"
-        />
+        <a routerLink="/settings" class="profile-link">
+          <img
+            [src]="profileImageUrl || 'assets/avatar-place-holder.png'"
+            (error)="profileImageUrl = null"
+            class="profile-avatar"
+            alt="User"
+          />
+        </a>
 
         <!-- Welcome text -->
         <div class="welcome-text">

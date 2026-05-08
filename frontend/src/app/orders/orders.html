@@ -65,6 +65,7 @@
           <th mat-header-cell *matHeaderCellDef>Select</th>
           <td mat-cell *matCellDef="let element">
             <input type="checkbox"
+                  [checked]="selectedItem?.inventoryStockId === element.inventoryStockId"
                   (change)="onSelectRow(element, $event)" />
           </td>
         </ng-container>
