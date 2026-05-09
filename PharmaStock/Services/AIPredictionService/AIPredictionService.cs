@@ -99,6 +99,9 @@ public class AIPredictionService : IAIPredictionService
 
             // Filter to only medications where current stock is at or below the recommended level
             var alerts = new List<ReorderPredictionResponse>();
+            var settings = await _notificationSettings.GetAsync();
+            var bufferMultiplier = 1 + settings.LowStockThresholdPercent / 100.0;
+
             foreach (var pred in result?.Predictions ?? [])
             {
                 var med = medications.FirstOrDefault(m => m.MedicationId == pred.MedicationId);
@@ -108,8 +111,7 @@ public class AIPredictionService : IAIPredictionService
                     .Where(s => s.ExpirationDate > now)
                     .Sum(s => s.QuantityOnHand);
 
-                var settings = await _notificationSettings.GetAsync();
-                var buffer = pred.RecommendedReorderLevel * (1 + settings.LowStockThresholdPercent / 100.0);
+                var buffer = pred.RecommendedReorderLevel * bufferMultiplier;
                 if (totalStock <= buffer)
                 {
                     alerts.Add(pred);

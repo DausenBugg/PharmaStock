@@ -1,4 +1,5 @@
 import os
+import logging
 import joblib
 import numpy as np
 from datetime import datetime
@@ -10,6 +11,7 @@ from .models import (
 )
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "..", "models")
+logger = logging.getLogger(__name__)
 
 _reorder_model = None
 _expiration_model = None
@@ -24,12 +26,12 @@ def load_models():
     if os.path.exists(reorder_path):
         _reorder_model = joblib.load(reorder_path)
     else:
-        print(f"WARNING: Reorder model not found at {reorder_path}")
+        logger.warning("Reorder model not found at %s", reorder_path)
 
     if os.path.exists(expiration_path):
         _expiration_model = joblib.load(expiration_path)
     else:
-        print(f"WARNING: Expiration model not found at {expiration_path}")
+        logger.warning("Expiration model not found at %s", expiration_path)
 
 
 def models_loaded() -> tuple[bool, bool]:
@@ -37,7 +39,7 @@ def models_loaded() -> tuple[bool, bool]:
 
 
 def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionResponse:
-    print(f"predict_reorder start med {request.medication_id}")
+    logger.debug("predict_reorder start med %s", request.medication_id)
 
     if _reorder_model is None:
         raise RuntimeError("Reorder model not loaded")
@@ -49,10 +51,10 @@ def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionRespo
         num_active_lots=request.num_active_lots,
         days_to_nearest_expiry=request.days_to_nearest_expiry,
     )
-    print("reorder features built")
+    logger.debug("reorder features built")
 
     prediction = _reorder_model.predict(features)[0]
-    print("reorder model predicted")
+    logger.debug("reorder model predicted")
 
     recommended = int(np.clip(round(prediction), 5, 100))
 
@@ -71,7 +73,7 @@ def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionRespo
 
     is_popular = recommended >= 40
 
-    print(f"predict_reorder done med {request.medication_id}")
+    logger.debug("predict_reorder done med %s", request.medication_id)
 
     return ReorderPredictionResponse(
         medication_id=request.medication_id,
@@ -82,14 +84,14 @@ def predict_reorder(request: ReorderPredictionRequest) -> ReorderPredictionRespo
 
 
 def predict_expiration_risk(request: ExpirationRiskRequest) -> ExpirationRiskResponse:
-    print(f"predict_expiration start stock {request.inventory_stock_id}")
+    logger.debug("predict_expiration start stock %s", request.inventory_stock_id)
 
     if _expiration_model is None:
         raise RuntimeError("Expiration model not loaded")
 
     now = datetime.utcnow()
     days_to_expiry = (request.expiration_date.replace(tzinfo=None) - now).days
-    print("expiration days computed")
+    logger.debug("expiration days computed")
 
     features = build_expiration_features(
         days_to_expiry=days_to_expiry,
@@ -98,10 +100,10 @@ def predict_expiration_risk(request: ExpirationRiskRequest) -> ExpirationRiskRes
         medication_unit_value=request.medication_unit_value,
         num_lots_same_med=request.num_lots_same_med,
     )
-    print("expiration features built")
+    logger.debug("expiration features built")
 
     risk_prob = _expiration_model.predict_proba(features)[0][1]
-    print("expiration model predicted")
+    logger.debug("expiration model predicted")
 
     risk_score = round(float(risk_prob), 4)
 
@@ -116,7 +118,7 @@ def predict_expiration_risk(request: ExpirationRiskRequest) -> ExpirationRiskRes
 
     days_to_deplete = request.quantity_on_hand / max(request.avg_daily_usage_30d, 0.01)
 
-    print(f"predict_expiration done stock {request.inventory_stock_id}")
+    logger.debug("predict_expiration done stock %s", request.inventory_stock_id)
 
     return ExpirationRiskResponse(
         inventory_stock_id=request.inventory_stock_id,

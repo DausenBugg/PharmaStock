@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,12 +12,14 @@ from .models import (
 )
 from . import prediction_service
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     prediction_service.load_models()
     reorder_ok, expiration_ok = prediction_service.models_loaded()
-    print(f"Models loaded — Reorder: {reorder_ok}, Expiration: {expiration_ok}")
+    logger.info("Models loaded - Reorder: %s, Expiration: %s", reorder_ok, expiration_ok)
     yield
 
 
@@ -60,17 +63,17 @@ def predict_reorder(request: ReorderPredictionRequest):
 # and to ensure that we return appropriate error responses to the client if something goes wrong during batch processing.
 @app.post("/predict/batch-reorder", response_model=BatchReorderResponse)
 def predict_batch_reorder(request: BatchReorderRequest):
-    print("batch reorder hit")
-    print(f"medications count: {len(request.medications)}")
+    logger.debug("batch reorder hit")
+    logger.debug("medications count: %s", len(request.medications))
     try:
         predictions = [prediction_service.predict_reorder(med) for med in request.medications]
-        print("batch reorder finished")
+        logger.debug("batch reorder finished")
         return BatchReorderResponse(predictions=predictions)
     except RuntimeError as e:
-        print(f"runtime error: {e}")
+        logger.warning("runtime error: %s", e)
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        print(f"unexpected error: {e}")
+        logger.exception("unexpected error: %s", e)
         raise
 
 
@@ -88,15 +91,15 @@ def predict_expiration_risk(request: ExpirationRiskRequest):
 
 @app.post("/predict/batch-expiration", response_model=BatchExpirationResponse)
 def predict_batch_expiration(request: BatchExpirationRequest):
-    print("batch expiration hit")
-    print(f"inventory items count: {len(request.inventory_items)}")
+    logger.debug("batch expiration hit")
+    logger.debug("inventory items count: %s", len(request.inventory_items))
     try:
         scores = [prediction_service.predict_expiration_risk(item) for item in request.inventory_items]
-        print("batch expiration finished")
+        logger.debug("batch expiration finished")
         return BatchExpirationResponse(risk_scores=scores)
     except RuntimeError as e:
-        print(f"runtime error: {e}")
+        logger.warning("runtime error: %s", e)
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        print(f"unexpected error: {e}")
+        logger.exception("unexpected error: %s", e)
         raise

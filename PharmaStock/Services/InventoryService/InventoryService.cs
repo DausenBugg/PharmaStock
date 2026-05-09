@@ -49,20 +49,20 @@ public class InventoryStockService : InventoryStockServiceInterface
     // SEARCH
     if (!string.IsNullOrWhiteSpace(request.Name))
     {
-        var name = request.Name.ToLower();
+        var name = request.Name;
 
         query = query.Where(s =>
-            (s.Medication.Name != null && s.Medication.Name.ToLower().Contains(name)) ||
-            (s.Medication.GenericName != null && s.Medication.GenericName.ToLower().Contains(name))
+            (s.Medication.Name != null && EF.Functions.Like(s.Medication.Name, $"%{name}%")) ||
+            (s.Medication.GenericName != null && EF.Functions.Like(s.Medication.GenericName, $"%{name}%"))
         );
     }
 
     if (!string.IsNullOrWhiteSpace(request.Lot))
     {
-        var lot = request.Lot.ToLower();
+        var lot = request.Lot;
 
         query = query.Where(s =>
-            s.LotNumber != null && s.LotNumber.ToLower().Contains(lot)
+            s.LotNumber != null && EF.Functions.Like(s.LotNumber, $"%{lot}%")
         );
     }
 
@@ -70,15 +70,15 @@ public class InventoryStockService : InventoryStockServiceInterface
         string.IsNullOrWhiteSpace(request.Lot) &&
         !string.IsNullOrWhiteSpace(request.Search))
     {        
-        var searchLower = request.Search.ToLower();
+        var search = request.Search;
 
         query = query.Where(s =>
-            (s.Medication.Name != null && s.Medication.Name.ToLower().Contains(searchLower)) ||
-            (s.Medication.GenericName != null && s.Medication.GenericName.ToLower().Contains(searchLower)) ||
-            (s.Medication.NationalDrugCode != null && s.Medication.NationalDrugCode.ToLower().Contains(searchLower)) ||
-            (s.LotNumber != null && s.LotNumber.ToLower().Contains(searchLower)) ||
-            (s.PackageNdc != null && s.PackageNdc.ToLower().Contains(searchLower)) ||
-            (s.BinLocation != null && s.BinLocation.ToLower().Contains(searchLower))
+            (s.Medication.Name != null && EF.Functions.Like(s.Medication.Name, $"%{search}%")) ||
+            (s.Medication.GenericName != null && EF.Functions.Like(s.Medication.GenericName, $"%{search}%")) ||
+            (s.Medication.NationalDrugCode != null && EF.Functions.Like(s.Medication.NationalDrugCode, $"%{search}%")) ||
+            (s.LotNumber != null && EF.Functions.Like(s.LotNumber, $"%{search}%")) ||
+            (s.PackageNdc != null && EF.Functions.Like(s.PackageNdc, $"%{search}%")) ||
+            (s.BinLocation != null && EF.Functions.Like(s.BinLocation, $"%{search}%"))
         );
     }
 
