@@ -40,7 +40,7 @@
     </div>
 
     <!-- FILTERS -->
-    <div class="report-filters">
+    <!-- <div class="report-filters">
 
       <label class="filter-option">
         <input type="checkbox" [(ngModel)]="filterExpired" (change)="onFilterChange()">
@@ -62,7 +62,7 @@
         Low Inventory
       </label>
 
-    </div>
+    </div> -->
 
     <!-- STATUS -->
     <div class="report-status" *ngIf="loading">
@@ -87,6 +87,9 @@
         (click) = "filterExpired = !filterExpired; onFilterChange()">
         <span class="summary-label">Expired</span>
         <strong>{{ summary.expired }}</strong>
+        <div class="filter-checkbox"
+            [class.checked]="filterExpired">
+        </div>
       </div>
 
       <div class="summary-card clickable-card"
@@ -95,6 +98,9 @@
         (click) = "filterExpiringSoon = !filterExpiringSoon; onFilterChange()">
         <span class="summary-label">Expiring within 30 days</span>
         <strong>{{ summary.expiringSoon }}</strong>
+        <div class="filter-checkbox"
+            [class.checked]="filterExpiringSoon">
+        </div>
       </div>
 
       <div class="summary-card clickable-card"
@@ -103,6 +109,9 @@
         (click) = "filterStockedOut = !filterStockedOut; onFilterChange()">
         <span class="summary-label">Stocked Out</span>
         <strong>{{ summary.stockedOut }}</strong>
+        <div class="filter-checkbox"
+            [class.checked]="filterStockedOut">
+        </div>
       </div>
 
       <div class="summary-card clickable-card"
@@ -111,6 +120,9 @@
         (click) = "filterLowInventory = !filterLowInventory; onFilterChange()">
         <span class="summary-label">Low Inventory</span>
         <strong>{{ summary.lowInventory }}</strong>
+        <div class="filter-checkbox"
+            [class.checked]="filterLowInventory">
+        </div>
       </div>
     </div>
 
