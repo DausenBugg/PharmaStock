@@ -17,8 +17,8 @@ import { mapInventoryApiToRow } from '../inventory/inventory.mapper';
 
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ReportExportDialogComponent } from './reports-export-form';
-import { MainLayoutComponent } from '../layout/main-layout/main-layout';
 import { getExpirationClass, getReorderClass } from '../helpers/inventory.helpers';
+import { ReportsService } from '../services/reports.service';
 
 type Medication = InventoryRow;
 
@@ -46,7 +46,8 @@ export class Reports implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private inventoryService: InventoryService,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private reportsService: ReportsService
   ) {}
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -195,11 +196,38 @@ export class Reports implements OnInit, AfterViewInit {
       width: '500px',
       data: {
         search: this.searchValue || undefined,
-        expired: this.filterExpired ? true : undefined,
-        expiringSoon: this.filterExpiringSoon ? true : undefined,
-        stockedOut: this.filterStockedOut ? true : undefined,
-        lowInventory: this.filterLowInventory ? true : undefined
+        expired: this.filterExpired,
+        expiringSoon: this.filterExpiringSoon,
+        stockedOut: this.filterStockedOut,
+        lowInventory: this.filterLowInventory
       }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
+
+      this.reportsService.exportExpiredMedicationsToCsv(
+        this.filterExpired,
+        this.filterExpiringSoon,
+        this.filterStockedOut,
+        this.filterLowInventory,
+        result.startDate,
+        result.endDate
+      ).subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+
+          link.href = url;
+          link.download = `inventory-report-${new Date().toISOString().split('T')[0]}.csv`;
+          link.click();
+
+          window.URL.revokeObjectURL(url);
+        },
+        error: (err) => {
+          console.error('Export failed:', err);
+        }
+      });
     });
   }
 

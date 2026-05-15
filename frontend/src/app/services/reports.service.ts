@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface ExpiredMedicationReportRequestDto {
+export interface ExpiredMedicationReportResponseDto {
     inventoryStockId: number;
     medicationId: number;
     medicationName: string;
@@ -24,24 +24,37 @@ export class ReportsService {
 
   constructor(private http: HttpClient) {}
 
-    getExpiredMedicationsReport(startDate?: string, endDate?: string): Observable<ExpiredMedicationReportRequestDto[]> {
+    getExpiredMedicationsReport(startDate?: string, endDate?: string): Observable<ExpiredMedicationReportResponseDto[]> {
         let params = new HttpParams();
 
         if (startDate) params = params.set('startDate', startDate);
         if (endDate) params = params.set('endDate', endDate);
 
-        return this.http.get<ExpiredMedicationReportRequestDto[]>(`${this.baseUrl}/expired`, { params });
+        return this.http.get<ExpiredMedicationReportResponseDto[]>(`${this.baseUrl}/expired`, { params });
     }
 
-    exportExpiredMedicationsToCsv(startDate?: string, endDate?: string): Observable<Blob> {
+    exportExpiredMedicationsToCsv(
+        expired?: boolean,
+        expiringSoon?: boolean,
+        stockedOut?: boolean,
+        lowInventory?: boolean,
+        startDate?: string,
+        endDate?: string
+        ): Observable<Blob> {
         let params = new HttpParams();
-    
+
+        if (expired) params = params.set('expired', expired);
+        if (expiringSoon) params = params.set('expiringSoon', expiringSoon);
+        if (stockedOut) params = params.set('stockedOut', stockedOut);
+        if (lowInventory) params = params.set('lowInventory', lowInventory);
 
         if (startDate) params = params.set('startDate', startDate);
         if (endDate) params = params.set('endDate', endDate);
 
-        return this.http.get(`${this.baseUrl}/expired/export`, { params, responseType: 'blob' });
- 
+        return this.http.get(`${this.baseUrl}/expired/export`, {
+            params,
+            responseType: 'blob'
+        });
     }
 
 }
