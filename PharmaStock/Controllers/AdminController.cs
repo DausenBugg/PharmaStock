@@ -33,14 +33,18 @@ namespace PharmaStock.Controllers
         public async Task<IActionResult> GetAllUsers()
         {
             var users = await _userManager.Users.ToListAsync();
-            var userList = new List<object>();
+            var userIds = users.Select(u => u.Id).ToList();
+            var profilesByUserId = await _context.UserProfiles
+                .AsNoTracking()
+                .Where(p => userIds.Contains(p.UserId))
+                .ToDictionaryAsync(p => p.UserId, p => p.DisplayName);
+
+            var userList = new List<object>(users.Count);
 
                 foreach (var user in users)
                 {
                     var roles = await _userManager.GetRolesAsync(user);
-
-                    var profile = await _context.UserProfiles
-                        .FirstOrDefaultAsync(p => p.UserId == user.Id);
+                    profilesByUserId.TryGetValue(user.Id, out var displayName);
 
                     userList.Add(new
                     {
@@ -48,7 +52,7 @@ namespace PharmaStock.Controllers
                         email = user.Email,
                         userName = user.UserName,
                         emailConfirmed = user.EmailConfirmed,
-                        displayName = profile?.DisplayName ?? user.UserName,
+                        displayName = displayName ?? user.UserName,
                         roles
                     });
                 }

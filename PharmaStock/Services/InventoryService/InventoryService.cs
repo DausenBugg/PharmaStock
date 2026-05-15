@@ -3,7 +3,6 @@ using PharmaStock.Data;
 using PharmaStock.Dtos.Requests.Inventory;
 using PharmaStock.Dtos.Responses;
 using PharmaStock.Mappings;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace PharmaStock.Services;
 
@@ -39,7 +38,6 @@ public class InventoryStockService : InventoryStockServiceInterface
     var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
 
     var query = _context.InventoryStocks
-        .Include(s => s.Medication)
         .AsNoTracking();
 
     
@@ -96,23 +94,26 @@ public class InventoryStockService : InventoryStockServiceInterface
             );
         }
 
-    // SUMMARY (based on filtered query — same behavior as your original)
+    var aggregate = await query
+        .GroupBy(_ => 1)
+        .Select(g => new
+        {
+            TotalItemCount = g.Count(),
+            Expired = g.Count(s => s.ExpirationDate < now),
+            ExpiringSoon = g.Count(s => s.ExpirationDate >= now && s.ExpirationDate <= soon),
+            StockedOut = g.Count(s => s.QuantityOnHand == 0),
+            LowInventory = g.Count(s => s.QuantityOnHand > 0 && s.QuantityOnHand < s.ReorderLevel)
+        })
+        .FirstOrDefaultAsync();
+
+    var totalItemCount = aggregate?.TotalItemCount ?? 0;
     var summary = new InventorySummaryDto
     {
-        Expired = await query.CountAsync(s => s.ExpirationDate < now),
-
-        ExpiringSoon = await query.CountAsync(s =>
-            s.ExpirationDate >= now &&
-            s.ExpirationDate <= soon),
-
-        StockedOut = await query.CountAsync(s => s.QuantityOnHand == 0),
-
-        LowInventory = await query.CountAsync(s =>
-            s.QuantityOnHand > 0 &&
-            s.QuantityOnHand < s.ReorderLevel)
+        Expired = aggregate?.Expired ?? 0,
+        ExpiringSoon = aggregate?.ExpiringSoon ?? 0,
+        StockedOut = aggregate?.StockedOut ?? 0,
+        LowInventory = aggregate?.LowInventory ?? 0
     };
-
-    var totalItemCount = await query.CountAsync();
 
     var items = await query
         .OrderBy(s => s.InventoryStockId)
