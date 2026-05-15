@@ -25,12 +25,27 @@ namespace PharmaStock.Services.ReportService
             }
 
             var today = DateTime.UtcNow.Date;
+            var soonThreshold = today.AddDays(30);
+            var hasStatusFilter = request.Expired || request.ExpiringSoon || request.StockedOut || request.LowInventory;
 
             var query = _context.InventoryStocks
                 .Include(i => i.Medication)
-                .Where(i => i.ExpirationDate.Date < today)
                 .AsQueryable();
 
+            if (hasStatusFilter)
+            {
+                query = query.Where(i =>
+                    (request.Expired && i.ExpirationDate.Date < today) ||
+                    (request.ExpiringSoon &&
+                        i.ExpirationDate.Date >= today &&
+                        i.ExpirationDate.Date <= soonThreshold) ||
+                    (request.StockedOut && i.QuantityOnHand <= 0) ||
+                    (request.LowInventory &&
+                        i.QuantityOnHand > 0 &&
+                        i.QuantityOnHand <= i.ReorderLevel)
+                );
+            }
+            
             if (request.StartDate.HasValue)
             {
                 var startDate = request.StartDate.Value.Date;
