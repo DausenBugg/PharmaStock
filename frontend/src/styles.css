@@ -202,6 +202,8 @@ body.compact-density .mat-mdc-header-cell {
   gap: 16px;
   text-align: center;
   align-items: center;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .modal-actions {
