@@ -141,17 +141,19 @@ export class Administration implements OnInit{
               //get the current role to check against the new role to see if we need to change on save 
               const currentRole: 'Staff' | 'Admin' = isCurrentlyAdmin ? 'Admin' : 'Staff';
 
-              // The check to prevent unnecessary API calls if the role hasn't changed
-              if (currentRole === originalRole) {
+              const roleChanged = newRole !== currentRole;
+              const nameChanged = displayName !== originalName;
+
+              // Name change only
+              if (!roleChanged && nameChanged) {
                 this.notificationService.show('Employee name updated successfully.', 'success');
                 this.loadEmployees();
                 this.cancelAdminAction();
                 return;
               }
-              // If the Name has changed but the role has not, we can skip role updates
-              if (displayName === originalName) {
-                this.notificationService.show('Employee role updated successfully.', 'success');
-                this.loadEmployees();
+              // Nothing changed
+              if (!roleChanged && !nameChanged) {
+                this.notificationService.show('No changes made.', 'error');
                 this.cancelAdminAction();
                 return;
               }
