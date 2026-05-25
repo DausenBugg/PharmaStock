@@ -470,7 +470,7 @@ export class InventoryComponent implements AfterViewInit {
     const runOverrideSave = () => {
       if (!overrideFieldsChanged) return of(void 0);
 
-      const calls: Array<() => any> = [];
+      const calls: Array<() => Observable<any>> = [];
       
 
       if ((this.formItem.medicationName ?? '') !== (item.medicationName ?? '')) {

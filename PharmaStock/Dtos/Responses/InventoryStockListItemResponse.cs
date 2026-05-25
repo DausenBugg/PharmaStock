@@ -19,4 +19,10 @@ public class InventoryStockListItemResponse
     //added package level inventory tracking for the list item response DTO
     public string? PackageNdc { get; set; } = string.Empty;
     public string? PackageDescription { get; set; }
+
+    public string? MedicationNameOverride { get; set; }
+    public string? GenericNameOverride { get; set; }
+    public string? NationalDrugCodeOverride { get; set; }
+    public string? StrengthOverride { get; set; }
+    public string? DosageFormOverride { get; set; }
 }
