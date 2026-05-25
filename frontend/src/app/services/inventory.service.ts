@@ -146,10 +146,10 @@ import { CreateMedicationRequest, MedicationResponse } from '../models/medicatio
 
 
         // New method to patch medication national drug code override
-        patchNationalDrugCodeOverride(inventoryStockId: number, nationalDrugCode: string | null) {
+        patchNationalDrugCodeOverride(inventoryStockId: number, nationalDrugCodeOverride: string | null) {
             return this.http.patch(
                 `${this.baseUrl}/InventoryStocks/${inventoryStockId}/update-ndc-override`,
-                { nationalDrugCode }
+                { nationalDrugCodeOverride }
             );
         }
 
