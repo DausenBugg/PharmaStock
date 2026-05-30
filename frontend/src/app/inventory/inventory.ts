@@ -406,6 +406,10 @@ export class InventoryComponent implements AfterViewInit {
       this.inventoryService.createMedication(medicationRequest)
         .pipe(
           concatMap((createdMedication) => {
+
+            console.log('createdMedication:', createdMedication);
+            console.log('medicationId:', createdMedication?.medicationId);
+
             const inventoryRequest = {
               medicationId: createdMedication.medicationId,
 
