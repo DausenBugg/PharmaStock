@@ -124,11 +124,31 @@ public class InventoryStockService : InventoryStockServiceInterface
             InventoryStockId = s.InventoryStockId,
             MedicationId = s.MedicationId,
 
-            MedicationName = s.Medication.Name,
-            GenericName = s.Medication.GenericName,
-            Form = s.Medication.Form,
-            Strength = s.Medication.Strength,
-            NationalDrugCode = s.Medication.NationalDrugCode,
+            MedicationName = string.IsNullOrWhiteSpace(s.MedicationNameOverride)
+                ? s.Medication.Name
+                : s.MedicationNameOverride,
+
+            GenericName = string.IsNullOrWhiteSpace(s.GenericNameOverride)
+                ? s.Medication.GenericName
+                : s.GenericNameOverride,
+
+            Form = string.IsNullOrWhiteSpace(s.DosageFormOverride)
+                ? s.Medication.Form
+                : s.DosageFormOverride, 
+
+            Strength = string.IsNullOrWhiteSpace(s.StrengthOverride)
+                ? s.Medication.Strength
+                : s.StrengthOverride,
+
+            NationalDrugCode = string.IsNullOrWhiteSpace(s.NationalDrugCodeOverride)
+                ? s.Medication.NationalDrugCode
+                : s.NationalDrugCodeOverride,
+
+            MedicationNameOverride = s.MedicationNameOverride,
+            GenericNameOverride = s.GenericNameOverride,
+            NationalDrugCodeOverride = s.NationalDrugCodeOverride,
+            StrengthOverride = s.StrengthOverride,
+            DosageFormOverride = s.DosageFormOverride,
 
             QuantityOnHand = s.QuantityOnHand,
             ReorderLevel = s.ReorderLevel,

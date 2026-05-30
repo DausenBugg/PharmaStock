@@ -13,18 +13,15 @@ namespace PharmaStock.Controllers
     public class AdminController : ControllerBase
     {
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly PharmaStockDbContext _context;
         private readonly IEmailNotificationService _emailService;
 
         public AdminController(
             UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager,
             PharmaStockDbContext context,
             IEmailNotificationService emailService)
         {
             _userManager = userManager;
-            _roleManager = roleManager;
             _context = context;
             _emailService = emailService;
         }
@@ -32,30 +29,54 @@ namespace PharmaStock.Controllers
         [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers()
         {
-            var users = await _userManager.Users.ToListAsync();
+            var users = await _userManager.Users
+                .AsNoTracking()
+                .ToListAsync();
+
             var userIds = users.Select(u => u.Id).ToList();
             var profilesByUserId = await _context.UserProfiles
                 .AsNoTracking()
                 .Where(p => userIds.Contains(p.UserId))
                 .ToDictionaryAsync(p => p.UserId, p => p.DisplayName);
 
+            var rolesByUserId = await _context.UserRoles
+                .AsNoTracking()
+                .Where(ur => userIds.Contains(ur.UserId))
+                .Join(
+                    _context.Roles.AsNoTracking(),
+                    userRole => userRole.RoleId,
+                    role => role.Id,
+                    (userRole, role) => new
+                    {
+                        userRole.UserId,
+                        RoleName = role.Name
+                    })
+                .Where(x => x.RoleName != null)
+                .GroupBy(x => x.UserId)
+                .ToDictionaryAsync(
+                    group => group.Key,
+                    group => (IReadOnlyCollection<string>)group
+                        .Select(x => x.RoleName!)
+                        .OrderBy(roleName => roleName)
+                        .ToArray());
+
             var userList = new List<object>(users.Count);
 
-                foreach (var user in users)
-                {
-                    var roles = await _userManager.GetRolesAsync(user);
-                    profilesByUserId.TryGetValue(user.Id, out var displayName);
+            foreach (var user in users)
+            {
+                profilesByUserId.TryGetValue(user.Id, out var displayName);
+                rolesByUserId.TryGetValue(user.Id, out var roles);
 
-                    userList.Add(new
-                    {
-                        id = user.Id,
-                        email = user.Email,
-                        userName = user.UserName,
-                        emailConfirmed = user.EmailConfirmed,
-                        displayName = displayName ?? user.UserName,
-                        roles
-                    });
-                }
+                userList.Add(new
+                {
+                    id = user.Id,
+                    email = user.Email,
+                    userName = user.UserName,
+                    emailConfirmed = user.EmailConfirmed,
+                    displayName = displayName ?? user.UserName,
+                    roles = roles ?? Array.Empty<string>()
+                });
+            }
 
             return Ok(userList);
         }
@@ -86,17 +107,27 @@ namespace PharmaStock.Controllers
         [HttpGet("stats")]
         public async Task<IActionResult> GetSystemStats()
         {
-            var totalUsers = await _userManager.Users.CountAsync();
-            var totalRoles = await _roleManager.Roles.CountAsync();
+            var totalUsers = await _userManager.Users
+                .AsNoTracking()
+                .CountAsync();
 
-            // Count users per role
-            var roleStats = new Dictionary<string, int>();
-            var roles = await _roleManager.Roles.ToListAsync();
-            foreach (var role in roles)
-            {
-                var usersInRole = await _userManager.GetUsersInRoleAsync(role.Name!);
-                roleStats[role.Name!] = usersInRole.Count;
-            }
+            var roleStats = await _context.Roles
+                .AsNoTracking()
+                .GroupJoin(
+                    _context.UserRoles.AsNoTracking(),
+                    role => role.Id,
+                    userRole => userRole.RoleId,
+                    (role, userRoles) => new
+                    {
+                        RoleName = role.Name,
+                        UserCount = userRoles.Count()
+                    })
+                .Where(x => x.RoleName != null)
+                .ToDictionaryAsync(
+                    x => x.RoleName!,
+                    x => x.UserCount);
+
+            var totalRoles = roleStats.Count;
 
             return Ok(new
             {
